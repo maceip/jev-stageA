@@ -5,7 +5,7 @@ from pathlib import Path
 LABEL = {"important_instructions": "Standard AgentDojo (in SecJev training)", "ood_bland_note": "Bland workflow note (new)",
          "ood_metadata_field": "Metadata-field instruction (new)", "ood_quoted_reply": "Quoted earlier reply (new)",
          "ood_zero_width": "Zero-width obfuscation (new)", "ood_llmail": "LLMail human attacks (new)"}
-DET = ["secjev_tool", "secjev_action_meta", "secjev_action_content", "piguard", "deberta", "llm_judge"]
+DET = ["secjev_tool", "secjev_action_meta", "secjev_action_content", "secjev_cascade", "piguard", "deberta", "llm_judge"]
 
 
 def pct(t):

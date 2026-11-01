@@ -1,6 +1,6 @@
 #!/bin/bash
 # Re-record ood:metadata_field (first pass failed to load: unescaped quotes in YAML); classifier + judge scoring.
-AGENT=${1:-gptoss20b}; MODEL=${2:-openai/gpt-oss-20b}; PORT=${3:-8000}
+AGENT=${1:-astra}; MODEL=${2:-gpt-6.1-astra}; PORT=${3:-https://api.openai.com/v1}
 cd ~/jev-stageA
 until grep -q LLMAIL_DONE record_llmail.log 2>/dev/null; do sleep 30; done
 if [ -f runs/$AGENT/ood_metadata_field.jsonl ] && grep -q ParserError runs/$AGENT/ood_metadata_field.jsonl; then
