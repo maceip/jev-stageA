@@ -87,3 +87,12 @@ class ActionGuardedExecutor(ToolsExecutor):
                 seen += [{"function": cd["function"], "output": text_of(r["content"]) or (r.get("error") or "")} for r in new]
             history.append({"function": cd["function"], "args": cd["args"]})
         return query, runtime, env, [*messages, *results], extra_args
+
+
+def build_secjev_cascade(sj, thr, with_content, mode):
+    """Run the same 4B SecJev model at BOTH spots in the live loop:
+      Spot 1 (ToolOutputGate): filters incoming tool outputs before the agent reads them.
+      Spot 2 (ActionGuardedExecutor): checks outgoing tool calls before they execute."""
+    scorer = lambda user, call, out: secjev_tool_score(sj, {"user": user, "call": call, "output": out})[0]
+    return ActionGuardedExecutor(sj, thr, with_content, mode), [ToolOutputGate(scorer, thr, mode)]
+

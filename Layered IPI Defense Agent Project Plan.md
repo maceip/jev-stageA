@@ -95,11 +95,12 @@ The first run cannot decide the build: the attacks were too weak. Against SecJev
 
 **What changes**
 
-- Agents: current open-weight models self-hosted on an 8×B200 node: DeepSeek V4.1 Flash first, then Step-5 or MiMo V2.6 Pro. Malformed tool calls blocked at the server.
-- Attacks strong enough to get through: an attacker that keeps trying until each defense has let at least 20 attacks through, or 200 targets × 10 rounds is used up, with 3 repeats and the same feedback for every defense.
+- **Agent model**: We exclusively use **`gpt-6.1-astra`** (ChatGPT Astra 6.1 via the OpenAI Responses API `https://api.openai.com/v1`) — we do **not** use `Qwen`, `gpt-oss-20b`, or `DeepSeek`.
+- **JEV tested in both spots together (`secjev_cascade`)**: The same 4B SecJev model runs at both Spot 1 (incoming tool-output filter) and Spot 2 (outgoing tool-call authorization filter) in both standard and 10-round adaptive red-team evaluations (`adaptive.py`).
+- Attacks strong enough to get through: an attacker that keeps trying until each defense has let at least 20 attacks through, or 200 targets × 10 rounds is used up, with 3 repeats and the same feedback for every defense (including `secjev_cascade`).
 - At least one benchmark SecJev was never trained on, alongside AgentDojo.
 - Thresholds picked on two AgentDojo suites and reported on the other two. More normal tasks so false-alarm rates have intervals under ±5 points.
-- One fixed strong LLM judge for every agent, not the agent judging itself. Defenses tested in two modes: stop the run, and remove the flagged text and continue.
+- One fixed strong LLM judge (`gpt-6.1-astra`), not a weak open-weight model judging itself. Defenses tested in two modes: stop the run, and remove the flagged text and continue.
 - Harness, code and this analysis plan frozen and hashed before the first run. Nothing patched mid-run; any fix means rerunning from scratch.
 
 **Pass rules (all must hold, on every agent model)**

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Record all attack sets for one agent model. Usage: record_all.sh <agent_tag> <served_model_name>
-AGENT=${1:-gptoss20b}; MODEL=${2:-openai/gpt-oss-20b}
+# Record all attack sets for gpt-6.1-astra (only model used; no Qwen or gpt-oss-20b). Usage: record_all.sh [agent_tag] [model_name]
+AGENT=${1:-astra}; MODEL=${2:-gpt-6.1-astra}
 source ~/harness-env/bin/activate; cd ~/jev-stageA
 for A in benign important_instructions ood:bland_note ood:metadata_field ood:quoted_reply ood:zero_width; do
   N=$(echo $A | tr ":" "_")
