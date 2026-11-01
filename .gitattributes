@@ -1,2 +1,6 @@
 /data/gptoss20b_stageA.tgz filter=lfs diff=lfs merge=lfs -text
 /data/qwen30b_stageA.tgz filter=lfs diff=lfs merge=lfs -text
+/ft/ft_test.jsonl filter=lfs diff=lfs merge=lfs -text
+/ft/ft_train.jsonl filter=lfs diff=lfs merge=lfs -text
+/run3/mini/important_instructions.jsonl filter=lfs diff=lfs merge=lfs -text
+/run3/mini/ood_bland_note.jsonl filter=lfs diff=lfs merge=lfs -text
