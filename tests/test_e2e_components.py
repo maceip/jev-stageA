@@ -1,57 +1,9 @@
-"""Real end-to-end tests: real AgentDojo v1.2.2, real SecJev on the GPU, real OpenAI API. No stubs, no mocks, no skips.
-
-Required environment (a missing item FAILS the run; it is never skipped):
-  SECJEV_WORK          SecJev work dir (Qwen3.5-4B-Base + Kev source), as on the run boxes
-  SECJEV_MODEL         released SecJev-4B checkpoint dir            (default ~/SecJev/SecJev-4B)
-  SECJEV_ACTION_CKPT   fine-tuned content action monitor (C1 ep1)   (default ~/ckpt/C1_e1)
-  OPENAI_API_KEY       key with gpt-5.4-mini and gpt-5.5
-Run from the repo root:  python -m pytest -q tests/test_e2e_real.py
-"""
+"""Real component tests: recorded runs, real AgentDojo environments, real SecJev (see conftest.py)."""
 import copy, json, os, re, subprocess, sys
-from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-AGENT, ATTACKER = "gpt-5.4-mini", "gpt-5.5"
-ATTACKER_IBAN = "US133000000121212121212"
-
-
-def need(var, default=None):
-    v = os.environ.get(var) or (default and os.path.expanduser(default))
-    if not v or (var != "OPENAI_API_KEY" and not Path(v).exists()):
-        pytest.fail(f"{var} is required for the real end-to-end tests (got {v!r})")
-    return v
-
-
-@pytest.fixture(scope="session")
-def secjev():
-    need("SECJEV_WORK")
-    from secjev_scorer import SecJev
-    return SecJev(need("SECJEV_MODEL", "~/SecJev/SecJev-4B"))
-
-
-@pytest.fixture(scope="session")
-def action_monitor():
-    need("SECJEV_WORK")
-    from secjev_scorer import SecJev
-    return SecJev(need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1"))
-
-
-def episodes(rel):
-    return [json.loads(l) for l in open(ROOT / rel)]
-
-
-def as_live(msgs):
-    """Recorded messages store tool calls as dicts; the live pipeline carries agentdojo FunctionCall objects."""
-    from agentdojo.functions_runtime import FunctionCall
-    return [dict(m, tool_calls=[FunctionCall(**c) for c in m["tool_calls"]]) if m.get("tool_calls") else m for m in msgs]
-
-
-def find(eps, user_task, injection_task):
-    return next(e for e in eps if e["user_task"] == user_task and e["injection_task"] == injection_task)
-
+from conftest import ROOT, AGENT, ATTACKER, ATTACKER_IBAN, need, episodes, find, as_live
 
 # ---------------------------------------------------------------- recorded data, exact replay
 @pytest.mark.parametrize("rel", ["run3/mini/benign.jsonl", "run3/live/bland_none.jsonl", "run3/benign.jsonl"])
@@ -202,56 +154,3 @@ def test_action_monitor_lets_authorized_read_execute(action_monitor):
     assert all(r["error"] is None for r in out[len(pre):])
 
 
-# ---------------------------------------------------------------- wiring
-@pytest.mark.parametrize("spec", ["none", "cascade:content:0.5:stop"])
-def test_build_defense_constructs_real_elements(spec):
-    import run_agent, types
-    need("SECJEV_WORK")
-    ex, post = run_agent.build_defense(spec, types.SimpleNamespace(secjev=need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1")))
-    from agentdojo.agent_pipeline import ToolsExecutor
-    assert isinstance(ex, ToolsExecutor) and len(post) == (1 if spec.startswith("cascade") else 0)
-    del ex, post
-    import gc, torch; gc.collect(); torch.cuda.empty_cache()
-
-
-def test_default_model_names_exist_on_the_api():
-    import openai
-    need("OPENAI_API_KEY")
-    have = {m.id for m in openai.OpenAI().models.list().data}
-    named = set()
-    for f in ["run_agent.py", "adaptive.py", "score.py", "make_paraphrases.py"]:
-        named |= set(re.findall(r'default="(gpt-[\w.\-]+)"', (ROOT / f).read_text()))
-    assert named and named <= have, f"defaults not on the API: {sorted(named - have)}"
-
-
-# ---------------------------------------------------------------- live, through the real OpenAI API
-def _run(args, timeout=900):
-    env = dict(os.environ, SECJEV_TF32="1")
-    r = subprocess.run([sys.executable, *args], cwd=ROOT, env=env, capture_output=True, text=True, timeout=timeout)
-    assert r.returncode == 0, r.stderr[-2000:]
-
-
-def test_live_run_agent_with_defense(tmp_path):
-    need("OPENAI_API_KEY"); need("SECJEV_WORK")
-    out = tmp_path / "live.jsonl"
-    _run(["run_agent.py", "--attack", "ood:bland_note", "--suites", "banking", "--limit", "2", "--model", AGENT,
-          "--defense", "action:content:0.35:redact", "--secjev", need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1"),
-          "--workers", "2", "--out", str(out)])
-    recs = [json.loads(l) for l in open(out)]
-    assert len(recs) == 2 and all(r["error"] is None for r in recs), [r["error"] for r in recs]
-
-
-@pytest.mark.parametrize("defense", ["none", "secjev_action_content", "secjev_cascade"])
-def test_live_adaptive_round(tmp_path, defense):
-    need("OPENAI_API_KEY")
-    sj = []
-    if defense != "none":
-        need("SECJEV_WORK")
-        sj = ["--secjev", need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1")]
-    pairs, out = tmp_path / "p.json", tmp_path / "a.jsonl"
-    pairs.write_text(json.dumps([["banking", "user_task_0", "injection_task_5"]]))
-    _run(["adaptive.py", "--pairs", str(pairs), "--defense", defense, *sj,
-          "--threshold", "0.35", "--mode", "redact", "--model", AGENT, "--attacker-model", ATTACKER,
-          "--judge-model", AGENT, "--rounds", "1", "--workers", "1", "--out", str(out)])
-    rec = json.loads(out.read_text().splitlines()[-1])
-    assert rec["error"] is None and rec["log"], rec["error"]
