@@ -141,6 +141,54 @@ class LLMJudge:
 CHUNK_CHARS, OVERLAP_CHARS = 16000, 1500
 
 
+def decision_key(kind, payload):
+    """Content hash of one decision point. Identical (user, call, output/history) rows are scored once."""
+    body = {"kind": kind, "user": payload.get("user"),
+            "call": {"function": payload["call"].get("function"), "args": payload["call"].get("args")},
+            "output": payload.get("output"), "history": payload.get("history"), "seen": payload.get("seen")}
+    raw = json.dumps(body, sort_keys=True, default=str)
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def score_tools_dedup(sj, payloads):
+    """Score tool-output payloads once per content hash.
+
+    Short unique rows go through sj.score_batch when the checkpoint exposes it (one forward_batch).
+    Long rows keep the overlapping-chunk scorer so nothing is truncated away. Results align to `payloads`.
+    """
+    order, unique = [], {}
+    for payload in payloads:
+        key = decision_key("tool", payload)
+        order.append(key)
+        unique.setdefault(key, payload)
+    scored = {}
+    keys = list(unique)
+    if hasattr(sj, "score_batch"):
+        short = [key for key in keys if len(unique[key].get("output") or "") <= 8000]
+        long = [key for key in keys if key not in set(short)]
+        if short:
+            answers = sj.score_batch([secjev_tool_request(unique[key]) for key in short])
+            for key, answer in zip(short, answers):
+                scored[key] = (answer["injection"]["true"], 1)
+        for key in long:
+            scored[key] = secjev_tool_score(sj, unique[key])
+    else:
+        for key in keys:
+            scored[key] = secjev_tool_score(sj, unique[key])
+    return [scored[key] for key in order]
+
+
+def score_actions_dedup(sj, items):
+    """items are (payload, with_content). Returns (probs, dropped_history) aligned, hashing away duplicates."""
+    order, unique = [], {}
+    for payload, with_content in items:
+        key = decision_key("action", payload) + ("|c" if with_content else "|m")
+        order.append(key)
+        unique.setdefault(key, (payload, with_content))
+    scored = {key: secjev_action_score(sj, payload, with_content) for key, (payload, with_content) in unique.items()}
+    return [scored[key] for key in order]
+
+
 def secjev_tool_score(sj, p):
     """Max injection probability over overlapping chunks of the tool output (SecJev accepts <= 8192 tokens).
     Chunks shrink until each request fits; nothing is truncated away."""
@@ -172,22 +220,31 @@ def score_episode(ep, group, models, pool, use_cache=True):
     pts = list(decision_points(ep["messages"]))
     out = []
     futs = {}
+    tool_payloads = [p for kind, _, _, p in pts if kind == "tool"]
+    tool_scored = iter(score_tools_dedup(models["sj"], tool_payloads) if group == "secjev" else [])
+    action_items = [(p, wc) for kind, _, _, p in pts if kind == "action" for wc in (False, True)]
+    action_scored = iter(score_actions_dedup(models["sj"], action_items) if group == "secjev" else [])
     for idx, (kind, i, k, p) in enumerate(pts):
         ckey = decision_point_key(group, kind, p) if use_cache else None
         if ckey is not None:
             with _DP_LOCK:
                 cached = _DP_CACHE.get(ckey)
             if cached is not None:
+                if group == "secjev":  # keep the pre-scored dedup iterators aligned
+                    if kind == "tool":
+                        next(tool_scored)
+                    else:
+                        next(action_scored); next(action_scored)
                 s = dict(cached, msg=i, call=k, errors=dict(cached.get("errors", {})))
                 out.append(s)
                 continue
         s = {"kind": kind, "msg": i, "call": k, "function": p["call"]["function"], "errors": {}}
         if group == "secjev":
             if kind == "tool":
-                s["secjev_tool"], s["secjev_tool_chunks"] = secjev_tool_score(models["sj"], p)
+                s["secjev_tool"], s["secjev_tool_chunks"] = next(tool_scored)
             else:
-                for name, wc in (("secjev_action_meta", False), ("secjev_action_content", True)):
-                    pr, dropped = secjev_action_score(models["sj"], p, wc)
+                for name, _wc in (("secjev_action_meta", False), ("secjev_action_content", True)):
+                    pr, dropped = next(action_scored)
                     s[name] = pr["2"] + 0.5 * pr["1"]
                     s[name + "_probs"] = pr
                     s[name + "_dropped_history"] = dropped

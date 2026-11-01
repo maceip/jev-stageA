@@ -37,16 +37,56 @@ class SecJev:
         self.tok, self.model = ckpt.load(device, opts)
         self.device = device
         self._lock = _GPU_LOCK  # shared lock prevents concurrent Triton autotuning / multi-model OOM
+        self._cache = {}
 
-    def score(self, request: dict) -> dict:
-        """Return {question_id: {candidate: probability}}. Raises if input exceeds the model's window."""
+    def _encode(self, request: dict):
         req = SystemOneRequest.model_validate(request)
         record, metadata = to_record(req)
         enc = self.model.encode(self.tok, record, max_state=MAX_TOKENS, max_branch=MAX_TOKENS, strict=True)
         state, _, branches = rows_of(enc)
         if any(len(state) + len(b["ids"]) > MAX_TOKENS for b in branches):
             raise ValueError("state + question exceeds 8192 tokens")
-        with self._lock, torch.inference_mode():
-            logits = self.model.forward(enc)
+        return enc, metadata
+
+    @staticmethod
+    def _pack(logits, metadata):
         probs = [torch.softmax(z.float(), -1).cpu().tolist() for z in logits]
         return {m["id"]: dict(zip(m["keys"], p)) for m, p in zip(metadata, probs)}
+
+    def score(self, request: dict) -> dict:
+        """Return {question_id: {candidate: probability}}. Identical requests hit an in-process cache."""
+        key = json.dumps(request, sort_keys=True, default=str)
+        hit = self._cache.get(key)
+        if hit is not None:
+            return hit
+        enc, metadata = self._encode(request)
+        with self._lock, torch.inference_mode():
+            logits = self.model.forward(enc)
+        out = self._pack(logits, metadata)
+        if len(self._cache) >= 4096:
+            self._cache.clear()
+        self._cache[key] = out
+        return out
+
+    def score_batch(self, requests: list[dict]) -> list[dict]:
+        """One lock acquisition and one forward_batch for many Kev requests.
+
+        Repeated requests are served from the same cache as score(). Uncached rows share a single
+        padded forward_batch (kev.model.Model.forward_batch) instead of a Python loop of batch-size-1 forwards.
+        """
+        if not requests:
+            return []
+        keys = [json.dumps(request, sort_keys=True, default=str) for request in requests]
+        missing = []
+        for key, request in zip(keys, requests):
+            if key not in self._cache and key not in {k for k, _ in missing}:
+                missing.append((key, request))
+        if missing:
+            prepared = [(key, *self._encode(request)) for key, request in missing]
+            with self._lock, torch.inference_mode():
+                batched = self.model.forward_batch([enc for _, enc, _ in prepared])
+            for (key, _, metadata), logits in zip(prepared, batched):
+                if len(self._cache) >= 4096:
+                    self._cache.clear()
+                self._cache[key] = self._pack(logits, metadata)
+        return [self._cache[key] for key in keys]

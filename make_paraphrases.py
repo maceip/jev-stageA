@@ -47,6 +47,28 @@ def required(p):
     return need | non_clause
 
 
+def parse_paraphrase_list(txt):
+    """Parse the first JSON list in a model reply. A greedy `[.*]` match used to swallow trailing prose."""
+    start = (txt or "").find("[")
+    if start < 0:
+        return []
+    try:
+        value, _end = json.JSONDecoder().raw_decode(txt[start:])
+    except json.JSONDecodeError:
+        return []
+    return value if isinstance(value, list) else []
+
+
+def accept_paraphrases(prompt, candidates, need, have, limit):
+    got = list(have)
+    for cand in candidates:
+        if isinstance(cand, str) and cand.strip() != prompt.strip() and all(tok in cand for tok in need) and cand not in got:
+            got.append(cand)
+        if len(got) >= limit:
+            break
+    return got[:limit]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", default="https://api.openai.com/v1")
@@ -66,14 +88,8 @@ def main():
             r = c.chat.completions.create(model=a.model, temperature=0.7,
                                           messages=[{"role": "user", "content": PROMPT.format(k=a.n, p=ut.PROMPT)}])
             txt = (r.choices[0].message.content or "").strip()
-            m = re.search(r"\[.*\]", txt, re.S)
-            try:
-                cand = json.loads(m.group(0)) if m else []
-            except json.JSONDecodeError:
-                cand = []
-            for x in cand:
-                if isinstance(x, str) and x.strip() != ut.PROMPT.strip() and all(t in x for t in need) and x not in got:
-                    got.append(x)
+            cand = parse_paraphrase_list(txt)
+            got = accept_paraphrases(ut.PROMPT, cand, need, got, a.n)
             if len(got) >= a.n:
                 return s, ut.ID, got[: a.n]
         raise RuntimeError(f"{s}/{ut.ID}: only {len(got)} verified paraphrases (needs {sorted(need)})")
@@ -83,14 +99,16 @@ def main():
     done = {}
     if os.path.exists(prog):
         for l in open(prog):
-            r = json.loads(l); done[(r["suite"], r["task"])] = r["paraphrases"]
+            r = json.loads(l)
+            if len(r.get("paraphrases") or []) >= a.n:
+                done[(r["suite"], r["task"])] = r["paraphrases"]
     todo = [t for t in tasks if (t[0], t[1].ID) not in done]
 
     def safe(item):
         try:
             return one(item), None
-        except RuntimeError as e:
-            return None, str(e)
+        except Exception as e:
+            return None, f"{type(e).__name__}: {e}"
     failures = []
     with ThreadPoolExecutor(32) as ex, open(prog, "a") as f:
         for res, err in ex.map(safe, todo):
