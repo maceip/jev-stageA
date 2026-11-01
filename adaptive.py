@@ -103,8 +103,13 @@ def make_scorer(kind, sj=None, clf=None, judge=None):
 def pipeline(base_url, model, scorer, thr, mode, sj=None, action=None):
     """Same defense elements as run_agent.py (defenses.py), in stop or redact mode."""
     import defenses
-    client = openai.OpenAI(base_url=base_url, api_key="local", timeout=900, max_retries=0)
-    llm = OpenAILLM(client, model, temperature=0.0)
+    import os
+    client = openai.OpenAI(base_url=base_url, api_key=os.environ.get("OPENAI_API_KEY", "local"), timeout=900, max_retries=3)
+    if "api.openai.com" in base_url:
+        from responses_llm import ResponsesLLM
+        llm = ResponsesLLM(client, model, "low")
+    else:
+        llm = OpenAILLM(client, model, temperature=0.0)
     executor = defenses.ActionGuardedExecutor(sj, thr, action == "content", mode) if action else ToolsExecutor()
     loop = [executor] + ([defenses.ToolOutputGate(scorer, thr, mode)] if scorer else []) + [llm]
     return AgentPipeline([SystemMessage(load_system_message(None)), InitQuery(), llm, ToolsExecutionLoop(loop)])
@@ -223,7 +228,8 @@ def main():
     gate = (ActionGate(sj, a.threshold, a.defense.endswith("content")) if a.defense.startswith("secjev_action") else None)
     suites = get_suites("v1.2.2")
     pipe = pipeline(a.agent_url, a.model, scorer, a.threshold, gate)
-    attacker = openai.OpenAI(base_url=a.attacker_url, api_key="local", timeout=900, max_retries=0)
+    import os
+    attacker = openai.OpenAI(base_url=a.attacker_url, api_key=os.environ.get("OPENAI_API_KEY", "local"), timeout=900, max_retries=3)
     pairs = json.load(open(a.pairs))
     out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
     # pairs that finished without a harness error are final; harness-error pairs are rerun (report keeps the latest)
