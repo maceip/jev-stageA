@@ -243,10 +243,14 @@ def test_live_run_agent_with_defense(tmp_path):
 
 @pytest.mark.parametrize("defense", ["none", "secjev_action_content", "secjev_cascade"])
 def test_live_adaptive_round(tmp_path, defense):
-    need("OPENAI_API_KEY"); need("SECJEV_WORK")
+    need("OPENAI_API_KEY")
+    sj = []
+    if defense != "none":
+        need("SECJEV_WORK")
+        sj = ["--secjev", need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1")]
     pairs, out = tmp_path / "p.json", tmp_path / "a.jsonl"
     pairs.write_text(json.dumps([["banking", "user_task_0", "injection_task_5"]]))
-    _run(["adaptive.py", "--pairs", str(pairs), "--defense", defense, "--secjev", need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1"),
+    _run(["adaptive.py", "--pairs", str(pairs), "--defense", defense, *sj,
           "--threshold", "0.35", "--mode", "redact", "--model", AGENT, "--attacker-model", ATTACKER,
           "--judge-model", AGENT, "--rounds", "1", "--workers", "1", "--out", str(out)])
     rec = json.loads(out.read_text().splitlines()[-1])
