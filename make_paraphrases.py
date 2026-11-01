@@ -26,8 +26,14 @@ PROMPT = ("Rewrite the following request {k} different ways, as different people
           "strings and nothing else.\n\nRequest:\n{p}")
 
 
+_STARTERS = {"Please", "Show", "Send", "Find", "Book", "Check", "Get", "List", "Tell", "Give",
+             "Make", "Create", "Delete", "Update", "What", "When", "Where", "Who", "How", "Can"}
+
+
 def required(p):
-    """Identifier-like tokens; a capitalised word that only ever appears at a sentence/clause start is not one."""
+    """Identifier-like tokens; a capitalised word that only ever appears at a sentence/clause
+    start is not one, unless the word is not a common imperative starter: a proper noun that
+    happens to open a sentence (e.g. 'Emma ...') is an identifier and must survive paraphrase."""
     need = set()
     clause_starts = set()
     non_clause = set()
@@ -44,7 +50,14 @@ def required(p):
                 non_clause.add(t)
         else:
             need.add(t)
-    return need | non_clause
+    return need | non_clause | {t for t in clause_starts if t not in _STARTERS}
+
+
+def verify_paraphrase(original, candidate):
+    """True when candidate is a distinct rewording keeping every identifier verbatim."""
+    if not isinstance(candidate, str) or candidate.strip() == original.strip():
+        return False
+    return all(t in candidate for t in required(original))
 
 
 def main():
@@ -72,7 +85,7 @@ def main():
             except json.JSONDecodeError:
                 cand = []
             for x in cand:
-                if isinstance(x, str) and x.strip() != ut.PROMPT.strip() and all(t in x for t in need) and x not in got:
+                if verify_paraphrase(ut.PROMPT, x) and x not in got:
                     got.append(x)
             if len(got) >= a.n:
                 return s, ut.ID, got[: a.n]

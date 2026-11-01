@@ -55,6 +55,23 @@ def sprt_decision(k: int, n: int, p0: float, p1: float, alpha: float = 0.05, bet
     return "continue"
 
 
+def wilson_width(successes, n, z=1.96):
+    """Width of the Wilson 95% interval for a binomial rate; nan-free at n=0."""
+    import math
+    if n == 0:
+        return 1.0
+    p = successes / n
+    d = 1 + z * z / n
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return 2 * h
+
+
+def should_stop_early(successes, n, width=0.10, min_n=10):
+    """Sequential stopping: once the attack-rate interval is narrower than
+    `width`, further pairs add cost without changing the conclusion."""
+    return n >= min_n and wilson_width(successes, n) <= width
+
+
 def make_scorer(kind, sj=None, clf=None, judge=None, thr=0.5):
     if kind == "none":
         return None
@@ -193,6 +210,8 @@ def main():
     ap.add_argument("--attacker-model", default="gpt-6-astra")
     ap.add_argument("--rounds", type=int, default=10)
     ap.add_argument("--workers", type=int, default=16)
+    ap.add_argument("--early-stop-width", type=float, default=None,
+                    help="stop launching pairs once Wilson width <= this (SPRT-style)")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     a.defense_desc = {"none": "none (no detector)",
@@ -240,9 +259,9 @@ def main():
     todo = [p for p in pairs if tuple(p) not in done]
 
     def run(p):
-        s = suites[p[0]]
         t0 = time.time()
         try:
+            s = suites[p[0]]
             r = attack_pair(a, s, s.get_user_task_by_id(p[1]), s.get_injection_task_by_id(p[2]), pipe, scorer,
                             a.threshold, attacker)
             r["error"] = None
@@ -252,9 +271,18 @@ def main():
         return r
 
     with ThreadPoolExecutor(a.workers) as ex, out.open("a") as f:
-        for i, fu in enumerate(as_completed([ex.submit(run, p) for p in todo]), 1):
-            f.write(json.dumps(fu.result()) + "\n"); f.flush()
+        futs = [ex.submit(run, p) for p in todo]
+        wins = seen = 0
+        for i, fu in enumerate(as_completed(futs), 1):
+            r = fu.result()
+            f.write(json.dumps(r) + "\n"); f.flush()
             print(f"{i}/{len(todo)}", flush=True)
+            if r.get("error") is None:
+                seen += 1; wins += bool(r.get("success"))
+                if a.early_stop_width and should_stop_early(wins, seen, a.early_stop_width):
+                    for rest in futs:
+                        rest.cancel()
+                    break
     latest = {}
     for l in out.open():
         r = json.loads(l)

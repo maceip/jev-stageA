@@ -89,10 +89,17 @@ class HFClassifier:
         self.torch = torch
 
     def __call__(self, text):
-        enc = self.tok(text, truncation=True, max_length=512, return_tensors="pt").to(self.device)
+        return self.predict_many([text])[0]
+
+    def predict_many(self, texts):
+        """One padded batch forward pass for many texts (was: one pass per text)."""
+        if not texts:
+            return []
+        enc = self.tok(list(texts), truncation=True, max_length=512, padding=True,
+                       return_tensors="pt").to(self.device)
         with self.torch.inference_mode():
-            p = self.torch.softmax(self.m(**enc).logits.float(), -1)[0]
-        return float(p[self.pos])
+            p = self.torch.softmax(self.m(**enc).logits.float(), -1)
+        return [float(row[self.pos]) for row in p]
 
 
 class LLMJudge:
@@ -139,6 +146,29 @@ class LLMJudge:
 
 
 CHUNK_CHARS, OVERLAP_CHARS = 16000, 1500
+
+
+def cache_key(kind, payload):
+    """Content hash of one decision-point payload. Identical (user, call, output/history)
+    prefixes recur across attack sets; a shared cache scores each distinct payload once.
+    Retained as a standalone helper; score_episode itself uses main's thread-safe
+    decision_point_key/_DP_CACHE, which implements the same dedup."""
+    blob = json.dumps(payload, sort_keys=True, default=str).encode()
+    return (kind, hashlib.sha256(blob).hexdigest())
+
+
+def cached(cache, key, compute):
+    if key not in cache:
+        cache[key] = compute()
+        cache["_hits"] = cache.get("_hits", 0)
+    else:
+        cache["_hits"] = cache.get("_hits", 0) + 1
+    return cache[key]
+
+
+def dedup_stats(cache):
+    keys = [k for k in cache if k != "_hits"]
+    return {"unique": len(keys), "hits": cache.get("_hits", 0)}
 
 
 def secjev_tool_score(sj, p):
