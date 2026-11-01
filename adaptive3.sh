@@ -11,5 +11,6 @@ run secjev_tool
 run secjev_action_meta
 run secjev_action_content
 run secjev_cascade
+run secjev_cascade_judge
 wait
 echo ADAPT3_DONE $(date -u)
