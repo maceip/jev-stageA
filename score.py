@@ -34,7 +34,7 @@ def decision_points(messages):
                 history.append({"function": c["function"], "args": c["args"]})
         elif m["role"] == "tool":
             c = m["tool_call"]
-            out = text_of(m["content"]) or (m.get("error") or "")
+            out = (m.get("error") or text_of(m["content"]))
             yield "tool", i, 0, {"user": user, "call": c, "output": out}
             seen.append({"function": c["function"], "output": out})
 
