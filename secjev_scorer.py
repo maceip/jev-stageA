@@ -37,9 +37,13 @@ class SecJev:
         self.tok, self.model = ckpt.load(device, opts)
         self.device = device
         self._lock = _GPU_LOCK  # shared lock prevents concurrent Triton autotuning / multi-model OOM
+        self._cache = {}
 
     def score(self, request: dict) -> dict:
         """Return {question_id: {candidate: probability}}. Raises if input exceeds the model's window."""
+        key = json.dumps(request, sort_keys=True)
+        if key in self._cache:
+            return self._cache[key]
         req = SystemOneRequest.model_validate(request)
         record, metadata = to_record(req)
         enc = self.model.encode(self.tok, record, max_state=MAX_TOKENS, max_branch=MAX_TOKENS, strict=True)
@@ -49,4 +53,9 @@ class SecJev:
         with self._lock, torch.inference_mode():
             logits = self.model.forward(enc)
         probs = [torch.softmax(z.float(), -1).cpu().tolist() for z in logits]
-        return {m["id"]: dict(zip(m["keys"], p)) for m, p in zip(metadata, probs)}
+        res = {m["id"]: dict(zip(m["keys"], p)) for m, p in zip(metadata, probs)}
+        self._cache[key] = res
+        return res
+
+    def score_batch(self, requests: list[dict]) -> list[dict]:
+        return [self.score(r) for r in requests]

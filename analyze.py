@@ -20,6 +20,7 @@ DETECTORS = {  # name -> (decision-point kind(s), score key)
     "secjev_action_content": ("action", "secjev_action_content"),
     "secjev_cascade": ("action", "secjev_cascade"),
     "secjev_cascade_judge": ("action", "secjev_cascade_judge"),
+    "secjev_fusion": ("action", "secjev_fusion"),
 }
 
 
@@ -122,7 +123,17 @@ def load_scores(score_dir, stem):
                             q["errors"].update(vv)
                         elif kk not in q:
                             q[kk] = vv
-    return {k: {"points": sorted(v.values(), key=lambda p: (p["msg"], p["call"]))} for k, v in merged.items()}
+    out_sc = {}
+    for k, v in merged.items():
+        pts = sorted(v.values(), key=lambda p: (p["msg"], p["call"]))
+        max_t = 0.0
+        for p in pts:
+            if p["kind"] == "tool" and "secjev_tool" in p:
+                max_t = max(max_t, p["secjev_tool"])
+            elif p["kind"] == "action" and "secjev_action_content" in p:
+                p.setdefault("secjev_fusion", math.sqrt(p["secjev_action_content"] * max_t))
+        out_sc[k] = {"points": pts}
+    return out_sc
 
 
 def load(run_path, score_dir):

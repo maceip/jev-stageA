@@ -139,33 +139,47 @@ class LLMJudge:
 
 
 CHUNK_CHARS, OVERLAP_CHARS = 16000, 1500
+_CACHE: dict[str, object] = {}
+
+
+def _memo(key_obj, fn):
+    k = json.dumps(key_obj, sort_keys=True)
+    if k not in _CACHE:
+        _CACHE[k] = fn()
+    return _CACHE[k]
 
 
 def secjev_tool_score(sj, p):
     """Max injection probability over overlapping chunks of the tool output (SecJev accepts <= 8192 tokens).
     Chunks shrink until each request fits; nothing is truncated away."""
-    out = p["output"]
-    size = CHUNK_CHARS
-    while True:
-        chunks = [out[i:i + size] for i in range(0, max(len(out), 1), size - OVERLAP_CHARS)] or [""]
-        try:
-            return max(sj.score(secjev_tool_request(dict(p, output=c)))["injection"]["true"] for c in chunks), len(chunks)
-        except ValueError as e:
-            if "exceeds" not in str(e) or size <= 2000:
-                raise
-            size //= 2
+    req0 = secjev_tool_request(p)
+    def _compute():
+        out = p["output"]
+        size = CHUNK_CHARS
+        while True:
+            chunks = [out[i:i + size] for i in range(0, max(len(out), 1), size - OVERLAP_CHARS)] or [""]
+            try:
+                return max(sj.score(secjev_tool_request(dict(p, output=c)))["injection"]["true"] for c in chunks), len(chunks)
+            except ValueError as e:
+                if "exceeds" not in str(e) or size <= 2000:
+                    raise
+                size //= 2
+    return _memo(("sj_tool", id(sj), req0), _compute)
 
 
 def secjev_action_score(sj, p, with_content):
     """Drop the oldest history entries (never the proposed call or user request) until the request fits."""
-    q = dict(p)
-    while True:
-        try:
-            return sj.score(secjev_action_request(q, with_content))["authorization"], len(p["history"]) - len(q["history"])
-        except ValueError as e:
-            if "exceeds" not in str(e) or (not q["history"] and not q["seen"]):
-                raise
-            q = dict(q, history=q["history"][1:], seen=q["seen"][1:])
+    req0 = secjev_action_request(p, with_content)
+    def _compute():
+        q = dict(p)
+        while True:
+            try:
+                return sj.score(secjev_action_request(q, with_content))["authorization"], len(p["history"]) - len(q["history"])
+            except ValueError as e:
+                if "exceeds" not in str(e) or (not q["history"] and not q["seen"]):
+                    raise
+                q = dict(q, history=q["history"][1:], seen=q["seen"][1:])
+    return _memo(("sj_act", id(sj), with_content, req0), _compute)
 
 
 def score_episode(ep, group, models, pool, use_cache=True):
