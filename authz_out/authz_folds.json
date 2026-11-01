@@ -1,0 +1,219 @@
+{
+  "folds": 2,
+  "fold_of_suite": {
+    "travel": 0,
+    "workspace": 0,
+    "slack": 1,
+    "banking": 1
+  },
+  "suites_per_fold": {
+    "0": [
+      "travel",
+      "workspace"
+    ],
+    "1": [
+      "banking",
+      "slack"
+    ]
+  },
+  "overlap_components": [
+    [
+      "travel",
+      "workspace"
+    ],
+    [
+      "slack"
+    ],
+    [
+      "banking"
+    ]
+  ],
+  "train_folds": [
+    0
+  ],
+  "test_folds": [
+    1
+  ],
+  "counts": {
+    "total_examples": 41499,
+    "train": 27923,
+    "test": 7758,
+    "unknown": 5818,
+    "train_per_suite": {
+      "travel": 6877,
+      "workspace": 21046
+    },
+    "test_per_suite": {
+      "banking": 3626,
+      "slack": 4132
+    },
+    "unknown_per_suite": {
+      "banking": 1281,
+      "slack": 2421,
+      "travel": 1373,
+      "workspace": 743
+    },
+    "train_per_label": {
+      "authorized": 27231,
+      "unauthorized": 692
+    },
+    "test_per_label": {
+      "authorized": 6517,
+      "unauthorized": 1241
+    }
+  },
+  "leakage_report": {
+    "pairs": [
+      {
+        "suites": [
+          "banking",
+          "slack"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "union_count": 24,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "banking",
+          "travel"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "union_count": 40,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "banking",
+          "workspace"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "union_count": 38,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "slack",
+          "travel"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "union_count": 42,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "slack",
+          "workspace"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "union_count": 40,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "travel",
+          "workspace"
+        ],
+        "shared_functions": [
+          "cancel_calendar_event",
+          "create_calendar_event",
+          "get_day_calendar_events",
+          "search_calendar_events",
+          "send_email"
+        ],
+        "shared_count": 5,
+        "union_count": 51,
+        "jaccard": 0.098039
+      }
+    ],
+    "max_pairwise_jaccard": 0.098039,
+    "max_pairwise_jaccard_suites": [
+      "travel",
+      "workspace"
+    ],
+    "per_fold": {
+      "0": {
+        "suites": [
+          "travel",
+          "workspace"
+        ],
+        "max_internal_jaccard": 0.098039,
+        "internal_shared_functions": [
+          "cancel_calendar_event",
+          "create_calendar_event",
+          "get_day_calendar_events",
+          "search_calendar_events",
+          "send_email"
+        ]
+      },
+      "1": {
+        "suites": [
+          "banking",
+          "slack"
+        ],
+        "max_internal_jaccard": 0.0,
+        "internal_shared_functions": []
+      }
+    },
+    "note": "tool sets are read off the recordings, so a suite's tool names are visible in every split; the numbers above say which suite pairs may not be split across a train/test boundary"
+  },
+  "train_test_leakage": {
+    "train_suites": [
+      "travel",
+      "workspace"
+    ],
+    "test_suites": [
+      "banking",
+      "slack"
+    ],
+    "pairs": [
+      {
+        "suites": [
+          "travel",
+          "banking"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "travel",
+          "slack"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "workspace",
+          "banking"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "jaccard": 0.0
+      },
+      {
+        "suites": [
+          "workspace",
+          "slack"
+        ],
+        "shared_functions": [],
+        "shared_count": 0,
+        "jaccard": 0.0
+      }
+    ],
+    "max_cross_split_jaccard": 0.0,
+    "max_cross_split_jaccard_suites": [
+      "workspace",
+      "slack"
+    ],
+    "shared_functions": []
+  }
+}

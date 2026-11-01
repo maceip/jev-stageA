@@ -62,6 +62,43 @@ def outcome(ep, cut, version="v1.2.2"):
     return bool(util), (bool(asr) if asr is not None else None)
 
 
+def redact_bounds(pre_flag, undefended):
+    """Bracket the outcome of a REDACTING defense from its two computable endpoints.
+
+    `stop` mode is exactly computable by replay: the trajectory up to the
+    flag is identical to the recording, so the outcome of the truncated
+    trajectory IS the defended outcome. `redact` mode is not exactly
+    computable, because the agent continues on a path the recording does
+    not contain. What IS computable is a bracket:
+
+      lower bound (certain): the outcome of the trajectory truncated at the
+        flag. Everything before the flag executed identically. When the
+        flag fires on a tool output, the injected text was removed before
+        the agent read it, so the injected goal is unreachable from that
+        point on: the lower bound for the attack success rate is 0.
+      upper bound: the undefended outcome. Redaction only removes
+        information; it cannot hand the agent a capability the undefended
+        run did not have, so the attack cannot succeed at a higher rate
+        than the undefended run.
+
+    Returns a dict with the bracket. `pre_flag` and `undefended` are
+    (utility, attack_success) pairs.
+    """
+    pre_u, pre_a = pre_flag
+    full_u, full_a = undefended
+    asr_upper = None if full_a is None else bool(full_a)
+    asr_lower = None if (pre_a is None or full_a is None) else bool(pre_a) and bool(full_a)
+    return {"utility_pre_flag": bool(pre_u),
+            "utility_undefended": bool(full_u),
+            "asr_lower": asr_lower,
+            "asr_upper": asr_upper}
+
+
+def redact_outcome(ep, cut, version="v1.2.2"):
+    """Counterfactual bounds for a redacting defense on one episode."""
+    return redact_bounds(outcome(ep, cut, version), outcome(ep, None, version))
+
+
 def validate(path, version="v1.2.2"):
     bad, n = [], 0
     for line in open(path):

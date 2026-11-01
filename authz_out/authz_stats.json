@@ -1,0 +1,273 @@
+{
+  "inputs": [
+    "/Users/mac/.raffle/worktrees/agent-786e4f-r3/jev-stageA/data/gptoss20b_stageA.tgz",
+    "/Users/mac/.raffle/worktrees/agent-786e4f-r3/jev-stageA/data/qwen30b_stageA.tgz"
+  ],
+  "out_dir": "/Users/mac/.raffle/worktrees/agent-786e4f-r3/jev-stageA/authz_out",
+  "folds": 2,
+  "max_per_suite": 0,
+  "seed": 0,
+  "content_request": false,
+  "label_counts": {
+    "authorized": 33748,
+    "unauthorized": 1933,
+    "unknown": 5818
+  },
+  "label_counts_train": {
+    "authorized": 27231,
+    "unauthorized": 692
+  },
+  "label_counts_test": {
+    "authorized": 6517,
+    "unauthorized": 1241
+  },
+  "rule_counts": {
+    "ambiguous_attack_success": 5818,
+    "cred_access": 45,
+    "egress_sink": 225,
+    "foreign_tool": 1,
+    "injection_target_arg": 1662,
+    "ordinary_call_attack_resisted": 33044,
+    "ordinary_call_no_injection": 704
+  },
+  "rule_counts_train": {
+    "egress_sink": 84,
+    "injection_target_arg": 608,
+    "ordinary_call_attack_resisted": 26787,
+    "ordinary_call_no_injection": 444
+  },
+  "rule_counts_test": {
+    "cred_access": 45,
+    "egress_sink": 141,
+    "foreign_tool": 1,
+    "injection_target_arg": 1054,
+    "ordinary_call_attack_resisted": 6257,
+    "ordinary_call_no_injection": 260
+  },
+  "per_suite": {
+    "banking": {
+      "all": {
+        "authorized": 2958,
+        "unauthorized": 668,
+        "unknown": 1281
+      },
+      "train": {},
+      "test": {
+        "authorized": 2958,
+        "unauthorized": 668
+      },
+      "unknown": {
+        "unknown": 1281
+      },
+      "fold": 1,
+      "ordinary_tools": [
+        "get_balance",
+        "get_iban",
+        "get_most_recent_transactions",
+        "get_scheduled_transactions",
+        "get_user_info",
+        "read_file",
+        "schedule_transaction",
+        "send_money",
+        "update_password",
+        "update_scheduled_transaction",
+        "update_user_info"
+      ]
+    },
+    "slack": {
+      "all": {
+        "authorized": 3559,
+        "unauthorized": 573,
+        "unknown": 2421
+      },
+      "train": {},
+      "test": {
+        "authorized": 3559,
+        "unauthorized": 573
+      },
+      "unknown": {
+        "unknown": 2421
+      },
+      "fold": 1,
+      "ordinary_tools": [
+        "add_user_to_channel",
+        "get_channel_messages",
+        "get_channels",
+        "get_users_in_channel",
+        "get_users_in_channel?commentary?",
+        "get_webpage",
+        "invite_user_to_slack",
+        "post_webpage",
+        "read_channel_messages",
+        "read_channel_messages?",
+        "read_inbox",
+        "send_channel_message",
+        "send_direct_message"
+      ]
+    },
+    "travel": {
+      "all": {
+        "authorized": 6677,
+        "unauthorized": 200,
+        "unknown": 1373
+      },
+      "train": {
+        "authorized": 6677,
+        "unauthorized": 200
+      },
+      "test": {},
+      "unknown": {
+        "unknown": 1373
+      },
+      "fold": 0,
+      "ordinary_tools": [
+        "cancel_calendar_event",
+        "check_restaurant_opening_hours",
+        "create_calendar_event",
+        "get_all_car_rental_companies_in_city",
+        "get_all_hotels_in_city",
+        "get_all_restaurants_in_city",
+        "get_car_fuel_options",
+        "get_car_price_per_day",
+        "get_car_rental_address",
+        "get_car_types_available",
+        "get_contact_information_for_restaurants",
+        "get_cuisine_type_for_restaurants",
+        "get_day_calendar_events",
+        "get_dietary_restrictions_for_all_restaurants",
+        "get_flight_information",
+        "get_hotels_address",
+        "get_hotels_prices",
+        "get_price_for_restaurants",
+        "get_rating_reviews_for_car_rental",
+        "get_rating_reviews_for_hotels",
+        "get_rating_reviews_for_restaurants",
+        "get_restaurants_address",
+        "get_user_information",
+        "reserve_car_rental",
+        "reserve_flight",
+        "reserve_hotel",
+        "reserve_restaurant",
+        "search_calendar_events",
+        "send_email"
+      ]
+    },
+    "workspace": {
+      "all": {
+        "authorized": 20554,
+        "unauthorized": 492,
+        "unknown": 743
+      },
+      "train": {
+        "authorized": 20554,
+        "unauthorized": 492
+      },
+      "test": {},
+      "unknown": {
+        "unknown": 743
+      },
+      "fold": 0,
+      "ordinary_tools": [
+        "add_calendar_event_participants",
+        "append_to_file",
+        "cancel_calendar_event",
+        "create_calendar_event",
+        "create_file",
+        "delete_email",
+        "delete_file",
+        "get_current_day",
+        "get_current_time",
+        "get_day_calendar_events",
+        "get_draft_emails",
+        "get_file_by_id",
+        "get_received_emails",
+        "get_sent_emails",
+        "get_unread_emails",
+        "list_files",
+        "reschedule_calendar_event",
+        "search_calendar_events",
+        "search_contacts_by_email",
+        "search_contacts_by_name",
+        "search_emails",
+        "search_files",
+        "search_files_by_content",
+        "search_files_by_email",
+        "search_files_by_filename",
+        "send_email",
+        "share_file"
+      ]
+    }
+  },
+  "per_fold": {
+    "0": {
+      "suites": [
+        "travel",
+        "workspace"
+      ],
+      "labels": {
+        "authorized": 27231,
+        "unauthorized": 692,
+        "unknown": 2116
+      },
+      "rules": {
+        "ambiguous_attack_success": 2116,
+        "egress_sink": 84,
+        "injection_target_arg": 608,
+        "ordinary_call_attack_resisted": 26787,
+        "ordinary_call_no_injection": 444
+      }
+    },
+    "1": {
+      "suites": [
+        "banking",
+        "slack"
+      ],
+      "labels": {
+        "authorized": 6517,
+        "unauthorized": 1241,
+        "unknown": 3702
+      },
+      "rules": {
+        "ambiguous_attack_success": 3702,
+        "cred_access": 45,
+        "egress_sink": 141,
+        "foreign_tool": 1,
+        "injection_target_arg": 1054,
+        "ordinary_call_attack_resisted": 6257,
+        "ordinary_call_no_injection": 260
+      }
+    }
+  },
+  "tool_overlap_matrix": {
+    "banking": {
+      "banking": 1.0,
+      "slack": 0.0,
+      "travel": 0.0,
+      "workspace": 0.0
+    },
+    "slack": {
+      "banking": 0.0,
+      "slack": 1.0,
+      "travel": 0.0,
+      "workspace": 0.0
+    },
+    "travel": {
+      "banking": 0.0,
+      "slack": 0.0,
+      "travel": 1.0,
+      "workspace": 0.098039
+    },
+    "workspace": {
+      "banking": 0.0,
+      "slack": 0.0,
+      "travel": 0.098039,
+      "workspace": 1.0
+    }
+  },
+  "suite_tool_counts": {
+    "banking": 11,
+    "slack": 13,
+    "travel": 29,
+    "workspace": 27
+  }
+}

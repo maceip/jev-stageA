@@ -47,6 +47,35 @@ def required(p):
     return need | non_clause
 
 
+def parse_candidates(txt):
+    """Extract the JSON list of paraphrase candidates from a model reply.
+
+    The previous implementation used the greedy pattern `\\[.*\\]`, which
+    swallowed everything between the first `[` and the LAST `]`. A reply
+    that contained two arrays ("[...]" plus a trailing example list) or
+    any text after the array therefore failed to parse, and the run threw
+    away all 8 attempts' worth of good candidates and re-queried. This
+    scans for the first balanced JSON array instead.
+    """
+    for match in re.finditer(r"\[", txt):
+        depth = 0
+        for end in range(match.start(), len(txt)):
+            char = txt[end]
+            if char == "[":
+                depth += 1
+            elif char == "]":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        parsed = json.loads(txt[match.start():end + 1])
+                    except json.JSONDecodeError:
+                        break
+                    if isinstance(parsed, list):
+                        return parsed
+                    break
+    return []
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", default="https://api.openai.com/v1")
@@ -66,11 +95,7 @@ def main():
             r = c.chat.completions.create(model=a.model, temperature=0.7,
                                           messages=[{"role": "user", "content": PROMPT.format(k=a.n, p=ut.PROMPT)}])
             txt = (r.choices[0].message.content or "").strip()
-            m = re.search(r"\[.*\]", txt, re.S)
-            try:
-                cand = json.loads(m.group(0)) if m else []
-            except json.JSONDecodeError:
-                cand = []
+            cand = parse_candidates(txt)
             for x in cand:
                 if isinstance(x, str) and x.strip() != ut.PROMPT.strip() and all(t in x for t in need) and x not in got:
                     got.append(x)
@@ -87,10 +112,13 @@ def main():
     todo = [t for t in tasks if (t[0], t[1].ID) not in done]
 
     def safe(item):
+        # Any exception (API outage, malformed response, timeout) must not
+        # abort the whole run: the progress file already written keeps the
+        # finished tasks and the failed ones are retried on the next run.
         try:
             return one(item), None
-        except RuntimeError as e:
-            return None, str(e)
+        except Exception as e:
+            return None, f"{type(e).__name__}: {e}"
     failures = []
     with ThreadPoolExecutor(32) as ex, open(prog, "a") as f:
         for res, err in ex.map(safe, todo):

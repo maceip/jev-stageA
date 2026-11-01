@@ -141,6 +141,71 @@ class LLMJudge:
 CHUNK_CHARS, OVERLAP_CHARS = 16000, 1500
 
 
+def decision_hash(p):
+    """Content hash of one decision point: (user request, tool call, tool output).
+
+    Unchanged prefixes of an episode are byte-identical across attack runs
+    and across shards, so the same decision point is otherwise scored once
+    per attack set (6x) and once per shard. Hashing the content lets the
+    pipeline score it once. The hash covers everything that enters the
+    request, so a cache hit is guaranteed to produce the same score.
+    """
+    blob = json.dumps([p.get("user", ""), p["call"].get("function", ""),
+                       p["call"].get("args", {}), p.get("output", "")],
+                      sort_keys=True, default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:20]
+
+
+class DecisionCache:
+    """Persistent cache of scored decision points, keyed by content hash.
+
+    Only deterministic scorers are cached (SecJev, the classifiers); the
+    LLM judge is stochastic across runs and is not cached.
+    """
+
+    def __init__(self, path=None):
+        self.path = path
+        self.entries = {}
+        self.hits = 0
+        self.misses = 0
+        self.new = []
+        if path and os.path.exists(path):
+            for line in open(path):
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                self.entries[rec["h"]] = rec["v"]
+
+    def get(self, h):
+        if h is None:
+            return None
+        if h in self.entries:
+            self.hits += 1
+            return self.entries[h]
+        self.misses += 1
+        return None
+
+    def put(self, h, value):
+        if h is None:
+            return
+        self.entries[h] = value
+        self.new.append({"h": h, "v": value})
+
+    def flush(self):
+        if not self.path:
+            return 0
+        parent = os.path.dirname(self.path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(self.path, "a") as handle:
+            for rec in self.new:
+                handle.write(json.dumps(rec, default=str) + "\n")
+        written = len(self.new)
+        self.new = []
+        return written
+
+
 def secjev_tool_score(sj, p):
     """Max injection probability over overlapping chunks of the tool output (SecJev accepts <= 8192 tokens).
     Chunks shrink until each request fits; nothing is truncated away."""
@@ -168,7 +233,44 @@ def secjev_action_score(sj, p, with_content):
             q = dict(q, history=q["history"][1:], seen=q["seen"][1:])
 
 
-def score_episode(ep, group, models, pool, use_cache=True):
+def score_tool_points(sj, points):
+    """Score many tool decision points in ONE batched forward pass.
+
+    `points` is a list of decision-point payloads. Every chunk of every
+    tool output becomes one SecJev request; the requests are handed to the
+    scorer in a single batch so the GPU runs one padded forward pass
+    instead of one pass per request. Falls back to the per-point path when
+    the scorer cannot batch or when a request exceeds the model window.
+    """
+    requests, owners = [], []
+    for index, p in enumerate(points):
+        out = p["output"]
+        size = CHUNK_CHARS
+        chunks = [out[i:i + size] for i in range(0, max(len(out), 1), size - OVERLAP_CHARS)] or [""]
+        for chunk_index, chunk in enumerate(chunks):
+            requests.append(secjev_tool_request(dict(p, output=chunk)))
+            owners.append((index, chunk_index))
+    if not requests:
+        return []
+    try:
+        results = sj.score_batch(requests)
+        if results is None or len(results) != len(requests):
+            raise ValueError("batch scorer returned no usable result")
+    except Exception:
+        # No batch support, or the batch does not fit: score point by point
+        # (the per-point path shrinks chunks until every request fits).
+        return [secjev_tool_score(sj, p)[0] for p in points]
+    best = {}
+    for (index, _), result in zip(owners, results):
+        value = result["injection"]["true"]
+        if value > best.get(index, float("-inf")):
+            best[index] = value
+    return [best.get(index, 0.0) for index in range(len(points))]
+
+
+def score_episode(ep, group, models, pool, use_cache=True, cache=None):
+    if isinstance(use_cache, DecisionCache):  # positional cache (pre-main signature)
+        cache, use_cache = use_cache, True
     pts = list(decision_points(ep["messages"]))
     out = []
     futs = {}
@@ -182,7 +284,11 @@ def score_episode(ep, group, models, pool, use_cache=True):
                 out.append(s)
                 continue
         s = {"kind": kind, "msg": i, "call": k, "function": p["call"]["function"], "errors": {}}
-        if group == "secjev":
+        h = decision_hash(p) if (cache is not None and group != "judge") else None
+        cached = cache.get(h) if cache is not None else None
+        if cached is not None:
+            s.update(cached)
+        elif group == "secjev":
             if kind == "tool":
                 s["secjev_tool"], s["secjev_tool_chunks"] = secjev_tool_score(models["sj"], p)
             else:
@@ -202,6 +308,9 @@ def score_episode(ep, group, models, pool, use_cache=True):
         if ckey is not None and idx not in futs:
             with _DP_LOCK:
                 _DP_CACHE[ckey] = dict(s)
+        if h is not None and cached is None and group != "judge":
+            cache.put(h, {key: value for key, value in s.items()
+                          if key not in ("kind", "msg", "call", "function", "errors")})
         out.append(s)
     for idx, (ckey, field, fu) in futs.items():
         try:
@@ -214,6 +323,50 @@ def score_episode(ep, group, models, pool, use_cache=True):
     return out
 
 
+def score_episodes(eps, group, models, pool, cache=None):
+    """Score a batch of episodes, batching the SecJev forward passes.
+
+    The tool decision points of every episode in the batch are collected
+    and scored in one batched pass; the action decision points keep the
+    per-point path because their request size depends on the episode
+    history.
+    """
+    if group != "secjev":
+        return [score_episode(ep, group, models, pool, cache=cache) for ep in eps]
+    per_episode = [list(decision_points(ep["messages"])) for ep in eps]
+    tool_requests = []
+    for points in per_episode:
+        tool_requests.extend(p for kind, _i, _k, p in points if kind == "tool")
+    batched = score_tool_points(models["sj"], tool_requests) if tool_requests else []
+    cursor = 0
+    results = []
+    for ep, points in zip(eps, per_episode):
+        out = []
+        for kind, i, k, p in points:
+            s = {"kind": kind, "msg": i, "call": k,
+                 "function": p["call"]["function"], "errors": {}}
+            h = decision_hash(p) if cache is not None else None
+            cached = cache.get(h) if cache is not None else None
+            if cached is not None:
+                s.update(cached)
+            elif kind == "tool":
+                s["secjev_tool"] = batched[cursor]
+                s["secjev_tool_chunks"] = 1
+                cursor += 1
+            else:
+                for name, wc in (("secjev_action_meta", False), ("secjev_action_content", True)):
+                    pr, dropped = secjev_action_score(models["sj"], p, wc)
+                    s[name] = pr["2"] + 0.5 * pr["1"]
+                    s[name + "_probs"] = pr
+                    s[name + "_dropped_history"] = dropped
+            if h is not None and cached is None:
+                cache.put(h, {key: value for key, value in s.items()
+                              if key not in ("kind", "msg", "call", "function", "errors")})
+            out.append(s)
+        results.append(out)
+    return results
+
+
 def main():
     from concurrent.futures import ThreadPoolExecutor
     ap = argparse.ArgumentParser()
@@ -224,6 +377,8 @@ def main():
     ap.add_argument("--model", default="gpt-6-astra")
     ap.add_argument("--shard", default="0/1", help="i/n: score every n-th episode starting at i")
     ap.add_argument("--outdir", required=True)
+    ap.add_argument("--cache", default=None,
+                    help="JSONL content-hash cache of scored decision points; reused across runs and shards")
     a = ap.parse_args()
     si, sn = map(int, a.shard.split("/"))
 
@@ -238,6 +393,7 @@ def main():
         models["judge"] = LLMJudge(a.port, a.model)
     pool = ThreadPoolExecutor(48)        # decision-point calls
     outer = ThreadPoolExecutor(12)       # episodes (judge only); separate pool avoids nested-wait deadlock
+    cache = DecisionCache(a.cache) if a.cache else None
 
     for run in a.runs:
         out = Path(a.outdir) / a.group / (Path(run).stem + f".{si}of{sn}.jsonl")
@@ -250,15 +406,21 @@ def main():
                and (e["suite"], e["user_task"], e["injection_task"], e.get("variant", 0)) not in done]
         with out.open("a") as f:
             if a.group == "judge":
-                futs = [(e, outer.submit(score_episode, e, a.group, models, pool)) for e in eps]
+                futs = [(e, outer.submit(score_episode, e, a.group, models, pool, cache=cache)) for e in eps]
                 results = ((e, fu.result()) for e, fu in futs)
+            elif a.group == "secjev":
+                # one batched forward pass per run file for the tool points
+                results = zip(eps, score_episodes(eps, a.group, models, pool, cache))
             else:
-                results = ((e, score_episode(e, a.group, models, pool)) for e in eps)
+                results = ((e, score_episode(e, a.group, models, pool, cache=cache)) for e in eps)
             for e, pts in results:
                 f.write(json.dumps({"suite": e["suite"], "user_task": e["user_task"], "injection_task": e["injection_task"],
                                     "variant": e.get("variant", 0), "points": pts}) + "\n")
                 f.flush()
         print("scored", a.group, run, flush=True)
+    if cache is not None:
+        written = cache.flush()
+        print(f"cache {a.cache}: {written} new entries, {cache.hits} hits, {cache.misses} misses", flush=True)
 
 
 if __name__ == "__main__":

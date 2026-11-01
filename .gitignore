@@ -28,3 +28,8 @@ secjev-4b-work/
 ft/ckpt/tokenizer.json
 ft/ckpt/chat_template.jinja
 ft/ckpt/tokenizer_config.json
+
+# Generated action-authorization corpus: 113 MB of JSONL, deterministically
+# regenerable with `python experiments/run_authz_dataset.py` (seed 0).
+/authz_out/*.jsonl
+/authz_out/__pycache__/
