@@ -18,3 +18,5 @@ env/
 /results/
 *.log
 *.tmp
+
+/Layered IPI Defense Agent Project Plan.md

@@ -21,6 +21,12 @@ def wilson(k, n, z=1.96):
 
 def agent_tables(name, res, mode):
     out = [f"### {name} — operating point `{mode}`\n"]
+    if "protocol" in res:
+        protocol = res["protocol"]
+        out.append("Primary held-out suites: " + ", ".join(protocol["report_suites"]) +
+                   "; benign calibration only: " + ", ".join(protocol["calibration_suites"]) + ".\n")
+        out.append("Stop-mode replay; redaction bounds in JSON are not live outcomes or confidence intervals. "
+                   "Full-suite results include calibration tasks and are descriptive only.\n")
     b = res["benign"]
     out.append(f"Normal tasks (no attack): n={b['n']} (+{b['errors']} agent errors), undefended utility "
                f"{pct(b['utility_undefended'])}.\n")
@@ -44,21 +50,32 @@ def agent_tables(name, res, mode):
 
 
 def adaptive_table(paths):
-    out = ["| Agent | Defense | Pairs | Attacker success within 10 rounds | Mean rounds to success |", "|---|---|---|---|---|"]
+    out = ["| Agent | Defense / mode / repeat / budget | Pair-repeats | Attacker success within recorded budget | Mean rounds to success |", "|---|---|---|---|---|"]
     for p in paths:
         latest = {}
         for r in map(json.loads, open(p)):
-            latest[tuple(r["pair"])] = r
-        R = list(latest.values())
-        ok = [r for r in R if r["error"] is None]
-        if not ok:
-            continue
-        k = sum(r["success"] for r in ok)
-        rounds = [r["rounds"] for r in ok if r["success"]]
-        agent, defense = Path(p).stem.split("_", 1)
-        out.append(f"| {agent} | {defense} | {len(ok)} (+{len(R)-len(ok)} errors) | {pct(wilson(k, len(ok)))} | "
-                   f"{sum(rounds)/len(rounds):.1f} |" if rounds else
-                   f"| {agent} | {defense} | {len(ok)} (+{len(R)-len(ok)} errors) | {pct(wilson(k, len(ok)))} | – |")
+            key = (tuple(r["pair"]), r.get("repeat", 0), r.get("mode", "stop"), r.get("defense"),
+                   r.get("threshold"), r.get("model"), r.get("attacker_model"), r.get("max_rounds"))
+            latest[key] = r
+        groups = {}
+        for key, row in latest.items():
+            groups.setdefault(key[1:], []).append(row)
+        for config, rows in groups.items():
+            ok = [r for r in rows if r["error"] is None]
+            if not ok:
+                continue
+            k = sum(r["success"] for r in ok)
+            rounds = [r["rounds"] for r in ok if r["success"]]
+            parts = Path(p).stem.split("_", 1)
+            agent = ok[0].get("model") or parts[0]
+            defense = ok[0].get("defense") or (parts[1] if len(parts) > 1 else "unknown")
+            repeat, mode, _, threshold, _, attacker, budget = config
+            label = f"{defense}@{threshold} / {mode} / {repeat} / {budget if budget is not None else 'unrecorded'}"
+            if attacker:
+                label += f" / attacker={attacker}"
+            mean = f"{sum(rounds)/len(rounds):.1f}" if rounds else "n/a"
+            out.append(f"| {agent} | {label} | {len(ok)} (+{len(rows)-len(ok)} errors) | "
+                       f"{pct(wilson(k, len(ok)))} | {mean} |")
     return "\n".join(out) + "\n"
 
 

@@ -22,6 +22,8 @@ with gzip.open(sys.argv[2], "rt") as s:
             else:
                 ok = max(p, key=p.get) == q["label"]
             hit[q["src"]] += ok; tot[q["src"]] += 1
+if not lat:
+    raise SystemExit("No eligible corpus records: expected source agentdojo_tool_outputs or injecagent")
 for k in tot:
     print(f"{k}: {hit[k]}/{tot[k]} = {100*hit[k]/tot[k]:.2f}%")
 lat.sort(); print(f"latency p50 {1000*lat[len(lat)//2]:.0f} ms, p95 {1000*lat[int(len(lat)*.95)]:.0f} ms, n={len(lat)}")

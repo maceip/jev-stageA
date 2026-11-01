@@ -27,7 +27,8 @@ class ToolOutputGate(BasePipelineElement):
     """Runs after ToolsExecutor: scores each new tool result."""
 
     def __init__(self, scorer, thr, mode):
-        assert mode in ("stop", "redact")
+        if mode not in ("stop", "redact"):
+            raise ValueError("mode must be stop or redact")
         self.scorer, self.thr, self.mode = scorer, thr, mode
 
     def query(self, query, runtime, env, messages, extra_args):
@@ -35,11 +36,14 @@ class ToolOutputGate(BasePipelineElement):
         i = len(messages) - 1
         while i >= 0 and messages[i]["role"] == "tool":
             m = messages[i]
-            out = text_of(m["content"]) or (m.get("error") or "")
+            out = m.get("error") or text_of(m["content"])
             if self.scorer(user, as_call(m["tool_call"]), out) >= self.thr:
                 if self.mode == "stop":
                     raise AbortAgentError("defense flagged tool output", list(messages), env)
                 m["content"] = [text_content_block_from_string(REDACTED)]
+                # Both agent clients prefer error over content. Leaving it populated would leak
+                # the flagged error text straight through a nominally redacted message.
+                m["error"] = None
                 m.setdefault("flags", []).append("redacted")
             i -= 1
         return query, runtime, env, messages, extra_args
@@ -52,7 +56,8 @@ class ActionGuardedExecutor(ToolsExecutor):
 
     def __init__(self, sj, thr, with_content, mode):
         super().__init__()
-        assert mode in ("stop", "redact")
+        if mode not in ("stop", "redact"):
+            raise ValueError("mode must be stop or redact")
         self.sj, self.thr, self.with_content, self.mode = sj, thr, with_content, mode
 
     def query(self, query, runtime, env, messages, extra_args):
@@ -65,7 +70,7 @@ class ActionGuardedExecutor(ToolsExecutor):
                 history += [{"function": as_call(c)["function"], "args": as_call(c)["args"]} for c in (m.get("tool_calls") or [])]
             elif m["role"] == "tool":
                 seen.append({"function": as_call(m["tool_call"])["function"],
-                             "output": text_of(m["content"]) or (m.get("error") or "")})
+                             "output": m.get("error") or text_of(m["content"])})
         last = messages[-1]
         results = []
         for c in last["tool_calls"]:
@@ -78,11 +83,12 @@ class ActionGuardedExecutor(ToolsExecutor):
             if flagged:
                 results.append(ChatToolResultMessage(role="tool", content=[text_content_block_from_string("")],
                                                      tool_call_id=cd.get("id"), tool_call=c, error=BLOCKED))
+                results[-1]["flags"] = ["blocked"]
             else:
                 single = dict(last, tool_calls=[c])
                 _, _, env, out, _ = super().query(query, runtime, env, [*messages[:-1], single], extra_args)
                 new = out[len(messages):]
                 results += new
-                seen += [{"function": cd["function"], "output": text_of(r["content"]) or (r.get("error") or "")} for r in new]
+                seen += [{"function": cd["function"], "output": r.get("error") or text_of(r["content"])} for r in new]
             history.append({"function": cd["function"], "args": cd["args"]})
         return query, runtime, env, [*messages, *results], extra_args
