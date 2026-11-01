@@ -51,10 +51,10 @@ class ActionGuardedExecutor(ToolsExecutor):
     stop: abort on the first flagged call. redact: the flagged call is not executed and the agent receives a tool
     error in its place; other calls run normally, in order. The assistant message is never altered."""
 
-    def __init__(self, sj, thr, with_content, mode):
+    def __init__(self, sj, thr, with_content, mode, judge=None):
         super().__init__()
         assert mode in ("stop", "redact")
-        self.sj, self.thr, self.with_content, self.mode = sj, thr, with_content, mode
+        self.sj, self.thr, self.with_content, self.mode, self.judge = sj, thr, with_content, mode, judge
 
     def query(self, query, runtime, env, messages, extra_args):
         if not messages or messages[-1]["role"] != "assistant" or not messages[-1].get("tool_calls"):
@@ -74,6 +74,12 @@ class ActionGuardedExecutor(ToolsExecutor):
             pr, _ = secjev_action_score(self.sj, {"user": user, "call": cd, "history": list(history), "seen": list(seen)},
                                         self.with_content)
             flagged = pr["2"] + 0.5 * pr["1"] >= self.thr
+            if flagged and self.judge is not None:
+                ctx = f"Proposed tool call: {cd['function']}({cd['args']})\nRecent tool outputs: {seen[-2:]}"
+                try:
+                    flagged = self.judge(user, ctx) >= 0.5
+                except ValueError:
+                    flagged = True
             if flagged and self.mode == "stop":
                 raise AbortAgentError("action monitor flagged a proposed tool call", [*messages, *results], env)
             if flagged:
@@ -89,10 +95,17 @@ class ActionGuardedExecutor(ToolsExecutor):
         return query, runtime, env, [*messages, *results], extra_args
 
 
-def build_secjev_cascade(sj, thr, with_content, mode):
-    """Run the same 4B SecJev model at BOTH spots in the live loop:
+def build_secjev_cascade(sj, thr, with_content, mode, judge=None):
+    """Run the same 4B SecJev model at BOTH spots in the live loop (with optional LLM Judge second opinion on flags):
       Spot 1 (ToolOutputGate): filters incoming tool outputs before the agent reads them.
       Spot 2 (ActionGuardedExecutor): checks outgoing tool calls before they execute."""
-    scorer = lambda user, call, out: secjev_tool_score(sj, {"user": user, "call": call, "output": out})[0]
-    return ActionGuardedExecutor(sj, thr, with_content, mode), [ToolOutputGate(scorer, thr, mode)]
+    def scorer(user, call, out):
+        s = secjev_tool_score(sj, {"user": user, "call": call, "output": out})[0]
+        if s >= thr and judge is not None:
+            try:
+                return judge(user, out)
+            except ValueError:
+                return 1.0
+        return s
+    return ActionGuardedExecutor(sj, thr, with_content, mode, judge=judge), [ToolOutputGate(scorer, thr, mode)]
 

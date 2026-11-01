@@ -117,7 +117,7 @@ class JevSuite(unittest.TestCase):
                 analyze.main()
             pairs_f, ad_out = td / "pairs.json", td / "astra_secjev_cascade.jsonl"
             pairs_f.write_text(json.dumps([["workspace", "user_task_0", "injection_task_0"]]))
-            with patch.object(sys, "argv", ["adaptive.py", "--pairs", str(pairs_f), "--defense", "secjev_cascade", "--secjev", "m", "--agent-url", "http://localhost:8000/v1", "--attacker-url", "http://localhost:8000/v1", "--model", "gpt-6.1-astra", "--attacker-model", "gpt-6.1-astra", "--rounds", "2", "--out", str(ad_out)]):
+            with patch.object(sys, "argv", ["adaptive.py", "--pairs", str(pairs_f), "--defense", "secjev_cascade_judge", "--secjev", "m", "--agent-url", "http://localhost:8000/v1", "--attacker-url", "http://localhost:8000/v1", "--judge-url", "http://localhost:8000/v1", "--model", "gpt-6.1-astra", "--attacker-model", "gpt-6.1-astra", "--rounds", "2", "--out", str(ad_out)]):
                 adaptive.main()
             self.assertIn("astra", report.agent_tables("astra", json.loads(out_j.read_text()), "u95"))
             self.assertIn("secjev_cascade", report.agent_tables("astra", json.loads(out_j.read_text()), "u95"))
