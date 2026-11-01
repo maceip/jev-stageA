@@ -27,7 +27,12 @@ PROMPT = ("Rewrite the following request {k} different ways, as different people
 
 
 def required(p):
-    """Identifier-like tokens; a capitalised word that only ever appears at a sentence/clause start is not one."""
+    """Identifier-like tokens; a capitalised word that only ever appears at a sentence/clause start is not one.
+
+    The clause-start exemption applies only when the token never appears in a
+    non-clause-start position anywhere in the prompt, so genuine proper nouns
+    that open a sentence ("Emma Johnson will ...") stay protected.
+    """
     need = set()
     clause_starts = set()
     non_clause = set()
@@ -45,6 +50,20 @@ def required(p):
         else:
             need.add(t)
     return need | non_clause
+
+
+def added_identifiers(original: str, candidate: str) -> set[str]:
+    """Identifiers present in the candidate but absent from the original.
+
+    The verifier only checked that every original token SURVIVED. A paraphrase
+    that invents a new recipient, account number or URL still passed, and that
+    changes the task - a paraphrase is supposed to be the same task in
+    different words. Invented identifiers are therefore rejected.
+    """
+    have = required(original)
+    lowered = original.lower()
+    return {t for t in required(candidate)
+            if t not in have and t.lower() not in lowered}
 
 
 def main():
@@ -72,8 +91,13 @@ def main():
             except json.JSONDecodeError:
                 cand = []
             for x in cand:
-                if isinstance(x, str) and x.strip() != ut.PROMPT.strip() and all(t in x for t in need) and x not in got:
-                    got.append(x)
+                if not (isinstance(x, str) and x.strip() != ut.PROMPT.strip()):
+                    continue
+                if not all(t in x for t in need) or x in got:
+                    continue
+                if added_identifiers(ut.PROMPT, x):
+                    continue  # invented a recipient, account or URL: different task
+                got.append(x)
             if len(got) >= a.n:
                 return s, ut.ID, got[: a.n]
         raise RuntimeError(f"{s}/{ut.ID}: only {len(got)} verified paraphrases (needs {sorted(need)})")

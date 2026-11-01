@@ -8,6 +8,8 @@ Scores are written per episode so thresholds and replay are computed later witho
 import argparse, hashlib, json, os, re, sys, threading
 from pathlib import Path
 
+import dedup
+
 _DP_CACHE = {}
 _DP_LOCK = threading.Lock()
 
@@ -168,20 +170,42 @@ def secjev_action_score(sj, p, with_content):
             q = dict(q, history=q["history"][1:], seen=q["seen"][1:])
 
 
-def score_episode(ep, group, models, pool, use_cache=True):
+def score_episode(ep, group, models, pool, cache=None, use_cache=True):
+    """Score every decision point of one episode.
+
+    Two memo layers, both keyed on exactly what a scorer reads: the in-process
+    `_DP_CACHE` (disabled with `use_cache=False`) and an optional persistent
+    `dedup.ScoreCache` (`cache`). Attack sets differ only in the injected text,
+    so identical points recur across sets and are served from a cache instead
+    of re-encoded. Only score fields are cached; kind/msg/call/function stay
+    per-episode. A bool passed positionally as `cache` is read as `use_cache`
+    for callers written against the older signature.
+    """
+    if isinstance(cache, bool):
+        use_cache, cache = cache, None
     pts = list(decision_points(ep["messages"]))
     out = []
     futs = {}
     for idx, (kind, i, k, p) in enumerate(pts):
+        s = {"kind": kind, "msg": i, "call": k, "function": p["call"]["function"], "errors": {}}
+        key = dedup.point_key(kind, p) if cache is not None else None
+        if key is not None:
+            hit = cache.get(key)
+            if hit is not None:
+                s.update(hit)
+                out.append(s)
+                continue
         ckey = decision_point_key(group, kind, p) if use_cache else None
         if ckey is not None:
             with _DP_LOCK:
                 cached = _DP_CACHE.get(ckey)
             if cached is not None:
                 s = dict(cached, msg=i, call=k, errors=dict(cached.get("errors", {})))
+                if key is not None:
+                    cache.put(key, {kk: vv for kk, vv in s.items()
+                                    if kk not in ("kind", "msg", "call", "function")})
                 out.append(s)
                 continue
-        s = {"kind": kind, "msg": i, "call": k, "function": p["call"]["function"], "errors": {}}
         if group == "secjev":
             if kind == "tool":
                 s["secjev_tool"], s["secjev_tool_chunks"] = secjev_tool_score(models["sj"], p)
@@ -196,19 +220,25 @@ def score_episode(ep, group, models, pool, use_cache=True):
             s["piguard"] = models["piguard"](p["output"])
         elif group == "judge":
             if kind == "tool":
-                futs[idx] = (ckey, "llm_judge", pool.submit(models["judge"], p["user"], p["output"]))
+                futs[idx] = (ckey, "llm_judge", pool.submit(models["judge"], p["user"], p["output"]), key)
             elif kind == "action":
-                futs[idx] = (ckey, "llm_judge_action", pool.submit(models["judge"].judge_action, p["user"], p["call"], p["history"], p["seen"]))
+                futs[idx] = (ckey, "llm_judge_action", pool.submit(models["judge"].judge_action, p["user"], p["call"], p["history"], p["seen"]), key)
         if ckey is not None and idx not in futs:
             with _DP_LOCK:
                 _DP_CACHE[ckey] = dict(s)
+        if cache is not None and key is not None and idx not in futs:
+            cache.put(key, {kk: vv for kk, vv in s.items()
+                            if kk not in ("kind", "msg", "call", "function")})
         out.append(s)
-    for idx, (ckey, field, fu) in futs.items():
+    for idx, (ckey, field, fu, key) in futs.items():
         try:
             out[idx][field] = fu.result()
             if ckey is not None:
                 with _DP_LOCK:
                     _DP_CACHE[ckey] = dict(out[idx])
+            if cache is not None and key is not None:
+                cache.put(key, {kk: vv for kk, vv in out[idx].items()
+                                if kk not in ("kind", "msg", "call", "function")})
         except ValueError as e:
             out[idx]["errors"][field] = str(e)
     return out
@@ -224,8 +254,11 @@ def main():
     ap.add_argument("--model", default="gpt-6-astra")
     ap.add_argument("--shard", default="0/1", help="i/n: score every n-th episode starting at i")
     ap.add_argument("--outdir", required=True)
+    ap.add_argument("--cache", default=None,
+                    help="JSONL dedup cache: identical decision points are scored once")
     a = ap.parse_args()
     si, sn = map(int, a.shard.split("/"))
+    cache = dedup.ScoreCache(a.cache) if a.cache else None
 
     models = {}
     if a.group == "secjev":
@@ -250,15 +283,17 @@ def main():
                and (e["suite"], e["user_task"], e["injection_task"], e.get("variant", 0)) not in done]
         with out.open("a") as f:
             if a.group == "judge":
-                futs = [(e, outer.submit(score_episode, e, a.group, models, pool)) for e in eps]
+                futs = [(e, outer.submit(score_episode, e, a.group, models, pool, cache)) for e in eps]
                 results = ((e, fu.result()) for e, fu in futs)
             else:
-                results = ((e, score_episode(e, a.group, models, pool)) for e in eps)
+                results = ((e, score_episode(e, a.group, models, pool, cache)) for e in eps)
             for e, pts in results:
                 f.write(json.dumps({"suite": e["suite"], "user_task": e["user_task"], "injection_task": e["injection_task"],
                                     "variant": e.get("variant", 0), "points": pts}) + "\n")
                 f.flush()
-        print("scored", a.group, run, flush=True)
+        if cache is not None:
+            cache.save()
+        print("scored", a.group, run, cache.stats() if cache else "", flush=True)
 
 
 if __name__ == "__main__":
