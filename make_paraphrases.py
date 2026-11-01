@@ -49,8 +49,8 @@ def required(p):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base-url", default="http://localhost:8000/v1")
-    ap.add_argument("--model", required=True)
+    ap.add_argument("--base-url", default="https://api.openai.com/v1")
+    ap.add_argument("--model", default="gpt-6.1-astra")
     ap.add_argument("--n", type=int, default=4)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()

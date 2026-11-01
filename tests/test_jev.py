@@ -77,7 +77,7 @@ def _stubs():
 class JevSuite(unittest.TestCase):
     def test_all(self):
         _stubs()
-        import adaptive, analyze, attacks_ood, defenses, make_paraphrases, replay, report, score, verify_corpus
+        import adaptive, analyze, attacks_ood, defenses, make_paraphrases, replay, report, run_agent, score, verify_corpus
         sj = sys.modules["secjev_scorer"].SecJev()
         msgs = [{"role": "user", "content": [{"type": "text", "content": "Hi"}]},
                 {"role": "assistant", "tool_calls": [{"function": "send_email", "args": {"to": "a"}, "id": "1"}]},
@@ -92,7 +92,7 @@ class JevSuite(unittest.TestCase):
             for nm in ("benign", "important_instructions"):
                 (runs / f"{nm}.jsonl").write_text(json.dumps(ep) + "\n")
             for grp in ("secjev", "judge"):
-                with patch.object(sys, "argv", ["score.py", str(runs / "benign.jsonl"), str(runs / "important_instructions.jsonl"), "--group", grp, "--secjev", "m", "--outdir", str(sc_dir)]):
+                with patch.object(sys, "argv", ["score.py", str(runs / "benign.jsonl"), str(runs / "important_instructions.jsonl"), "--group", grp, "--secjev", "m", "--port", "http://localhost:8000/v1", "--outdir", str(sc_dir)]):
                     score.main()
             with ThreadPoolExecutor(2) as pool:
                 pts_clf = score.score_episode(ep, "classifiers", {"deberta": lambda x: 0.2, "piguard": lambda x: 0.8}, pool, use_cache=False)
@@ -106,24 +106,28 @@ class JevSuite(unittest.TestCase):
             defenses.ActionGuardedExecutor(sj, 0.99, False, "stop").query("q", None, {}, [msgs[0], msgs[1]], {})
             with self.assertRaises(Exception):
                 defenses.ActionGuardedExecutor(sj, 0.5, False, "stop").query("q", None, {}, [msgs[0], msgs[1]], {})
+            ex_c, post_c = run_agent.build_defense("cascade:content:0.5:redact", types.SimpleNamespace(secjev="m"))
+            self.assertIsInstance(ex_c, defenses.ActionGuardedExecutor)
+            self.assertEqual(len(post_c), 1)
             self.assertEqual(replay.outcome(ep, ("action", 1, 0)), (False, False))
             self.assertEqual(replay.outcome(ep, ("tool", 2, 0)), (True, True))
             self.assertEqual(replay.validate(str(runs / "benign.jsonl")), (1, []))
-            out_j = td / "qwen.json"
+            out_j = td / "astra.json"
             with patch.object(sys, "argv", ["analyze.py", "--runs", str(runs), "--scores", str(sc_dir), "--attacks", "important_instructions", "--out", str(out_j)]):
                 analyze.main()
-            pairs_f, ad_out = td / "pairs.json", td / "qwen_secjev.jsonl"
+            pairs_f, ad_out = td / "pairs.json", td / "astra_secjev_cascade.jsonl"
             pairs_f.write_text(json.dumps([["workspace", "user_task_0", "injection_task_0"]]))
-            with patch.object(sys, "argv", ["adaptive.py", "--pairs", str(pairs_f), "--defense", "secjev_tool", "--secjev", "m", "--model", "m", "--attacker-model", "m", "--rounds", "2", "--out", str(ad_out)]):
+            with patch.object(sys, "argv", ["adaptive.py", "--pairs", str(pairs_f), "--defense", "secjev_cascade", "--secjev", "m", "--agent-url", "http://localhost:8000/v1", "--attacker-url", "http://localhost:8000/v1", "--model", "gpt-6.1-astra", "--attacker-model", "gpt-6.1-astra", "--rounds", "2", "--out", str(ad_out)]):
                 adaptive.main()
-            self.assertIn("qwen", report.agent_tables("qwen", json.loads(out_j.read_text()), "u95"))
-            self.assertIn("qwen", report.adaptive_table([str(ad_out)]))
+            self.assertIn("astra", report.agent_tables("astra", json.loads(out_j.read_text()), "u95"))
+            self.assertIn("secjev_cascade", report.agent_tables("astra", json.loads(out_j.read_text()), "u95"))
+            self.assertIn("astra", report.adaptive_table([str(ad_out)]))
             s = replay.suites()["workspace"]
             for k in ("bland_note", "metadata_field", "quoted_reply", "zero_width", "llmail"):
                 attacks_ood.load(k, s).attack(s.get_user_task_by_id("user_task_0"), s.get_injection_task_by_id("injection_task_100" if k == "llmail" else "injection_task_0"))
             self.assertEqual(adaptive.sprt_decision(5, 5, 0.05, 0.5), "accept_h1")
             self.assertEqual(adaptive.sprt_decision(0, 10, 0.05, 0.5), "accept_h0")
-            with patch.object(sys, "argv", ["make_paraphrases.py", "--model", "m", "--out", str(td / "p.json")]):
+            with patch.object(sys, "argv", ["make_paraphrases.py", "--base-url", "http://localhost:8000/v1", "--model", "gpt-6.1-astra", "--out", str(td / "p.json")]):
                 make_paraphrases.main()
             gz = td / "c.jsonl.gz"
             with gzip.open(gz, "wt") as f:

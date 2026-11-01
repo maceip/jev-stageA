@@ -34,12 +34,16 @@ def to_jsonable(o):
 
 def build_defense(spec: str, a):
     """spec: 'none' | 'tool:<secjev_tool|piguard|deberta|llm_judge>:<thr>:<stop|redact>'
-                    | 'action:<meta|content>:<thr>:<stop|redact>'  -> (executor, post_elements)"""
+                    | 'action:<meta|content>:<thr>:<stop|redact>'
+                    | 'cascade:<meta|content>:<thr>:<stop|redact>'  -> (executor, post_elements)"""
     if spec == "none":
         return ToolsExecutor(), []
     kind, name, thr, mode = spec.split(":")
     thr = float(thr)
     import defenses
+    if kind == "cascade":
+        from secjev_scorer import SecJev
+        return defenses.build_secjev_cascade(SecJev(a.secjev), thr, name == "content", mode)
     if kind == "action":
         from secjev_scorer import SecJev
         return defenses.ActionGuardedExecutor(SecJev(a.secjev), thr, name == "content", mode), []
@@ -110,13 +114,13 @@ def main():
     ap.add_argument("--attack", required=True, help="agentdojo attack name, ood:<name>, or 'benign'")
     ap.add_argument("--version", default="v1.2.2")
     ap.add_argument("--suites", default="workspace,travel,banking,slack,shopping,github,dailylife")
-    ap.add_argument("--base-url", default="http://localhost:8000/v1")
+    ap.add_argument("--base-url", default="https://api.openai.com/v1")
     ap.add_argument("--defense", default="none")
     ap.add_argument("--secjev", default=None)
-    ap.add_argument("--judge-url", default=None)
-    ap.add_argument("--judge-model", default=None)
+    ap.add_argument("--judge-url", default="https://api.openai.com/v1")
+    ap.add_argument("--judge-model", default="gpt-6.1-astra")
     ap.add_argument("--paraphrases", default=None, help="benign only: JSON from make_paraphrases.py")
-    ap.add_argument("--model", required=True)
+    ap.add_argument("--model", default="gpt-6.1-astra")
     ap.add_argument("--reasoning", default=None)
     ap.add_argument("--workers", type=int, default=48)
     ap.add_argument("--limit", type=int, default=0, help="max episodes (0 = all)")
