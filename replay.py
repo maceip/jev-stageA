@@ -23,10 +23,13 @@ def suites(version="v1.2.2"):
 def executed_calls(messages, cut):
     """Tool calls executed before an abort at `cut` = (kind, msg_index, call_index); cut=None means no abort."""
     calls = []
+    ran = {(m.get("tool_call_id") or (m.get("tool_call") or {}).get("id")) for m in messages if m["role"] == "tool"}
     for i, m in enumerate(messages):
         if m["role"] != "assistant":
             continue
         for k, c in enumerate(m.get("tool_calls") or []):
+            if c.get("id") not in ran:  # proposed but never executed in the recording (e.g. run ended)
+                continue
             if cut is not None:
                 kind, ci, ck = cut
                 if kind == "action" and (i, k) >= (ci, ck):
