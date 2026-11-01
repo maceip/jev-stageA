@@ -66,7 +66,7 @@ class ActionGuardedExecutor(ToolsExecutor):
                 history += [{"function": as_call(c)["function"], "args": as_call(c)["args"]} for c in (m.get("tool_calls") or [])]
             elif m["role"] == "tool":
                 seen.append({"function": as_call(m["tool_call"])["function"],
-                             "output": text_of(m["content"]) or (m.get("error") or "")})
+                             "output": m.get("error") or text_of(m["content"]) or ""})
         last = messages[-1]
         results = []
         for c in last["tool_calls"]:
@@ -90,7 +90,7 @@ class ActionGuardedExecutor(ToolsExecutor):
                 _, _, env, out, _ = super().query(query, runtime, env, [*messages[:-1], single], extra_args)
                 new = out[len(messages):]
                 results += new
-                seen += [{"function": cd["function"], "output": text_of(r["content"]) or (r.get("error") or "")} for r in new]
+                seen += [{"function": cd["function"], "output": r.get("error") or text_of(r["content"]) or ""} for r in new]
             history.append({"function": cd["function"], "args": cd["args"]})
         return query, runtime, env, [*messages, *results], extra_args
 

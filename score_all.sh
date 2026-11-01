@@ -1,7 +1,7 @@
 #!/bin/bash
 # Score each recorded attack set once its recording finishes; three detector groups in parallel.
 source ~/secjev-env/bin/activate; export SECJEV_WORK=$HOME/secjev-4b-work; cd ~/jev-stageA
-AGENT=${1:-astra}; PORT=${2:-https://api.openai.com/v1}; MODEL=${3:-gpt-6.1-astra}
+AGENT=${1:-astra}; PORT=${2:-https://api.openai.com/v1}; MODEL=${3:-gpt-6-astra}
 order=(benign important_instructions ood_bland_note ood_metadata_field ood_quoted_reply ood_zero_width ood_llmail)
 next=(important_instructions ood:bland_note ood:metadata_field ood:quoted_reply ood:zero_width ALL_DONE LLMAIL_DONE)
 for i in "${!order[@]}"; do
