@@ -35,12 +35,12 @@ class ToolOutputGate(BasePipelineElement):
         i = len(messages) - 1
         while i >= 0 and messages[i]["role"] == "tool":
             m = messages[i]
-            out = (m.get("error") or text_of(m["content"]))
+            out = m.get("error") or text_of(m["content"]) or ""
             if self.scorer(user, as_call(m["tool_call"]), out) >= self.thr:
                 if self.mode == "stop":
                     raise AbortAgentError("defense flagged tool output", list(messages), env)
                 m["content"] = [text_content_block_from_string(REDACTED)]
-                m["error"] = None  # AgentDojo clients show error in place of content
+                m["error"] = None
                 m.setdefault("flags", []).append("redacted")
             i -= 1
         return query, runtime, env, messages, extra_args
@@ -66,7 +66,7 @@ class ActionGuardedExecutor(ToolsExecutor):
                 history += [{"function": as_call(c)["function"], "args": as_call(c)["args"]} for c in (m.get("tool_calls") or [])]
             elif m["role"] == "tool":
                 seen.append({"function": as_call(m["tool_call"])["function"],
-                             "output": (m.get("error") or text_of(m["content"]))})
+                             "output": text_of(m["content"]) or (m.get("error") or "")})
         last = messages[-1]
         results = []
         for c in last["tool_calls"]:
@@ -84,6 +84,15 @@ class ActionGuardedExecutor(ToolsExecutor):
                 _, _, env, out, _ = super().query(query, runtime, env, [*messages[:-1], single], extra_args)
                 new = out[len(messages):]
                 results += new
-                seen += [{"function": cd["function"], "output": (r.get("error") or text_of(r["content"]))} for r in new]
+                seen += [{"function": cd["function"], "output": text_of(r["content"]) or (r.get("error") or "")} for r in new]
             history.append({"function": cd["function"], "args": cd["args"]})
         return query, runtime, env, [*messages, *results], extra_args
+
+
+def build_secjev_cascade(sj, thr, with_content, mode):
+    """Run the same 4B SecJev model at BOTH spots in the live loop:
+      Spot 1 (ToolOutputGate): filters incoming tool outputs before the agent reads them.
+      Spot 2 (ActionGuardedExecutor): checks outgoing tool calls before they execute."""
+    scorer = lambda user, call, out: secjev_tool_score(sj, {"user": user, "call": call, "output": out})[0]
+    return ActionGuardedExecutor(sj, thr, with_content, mode), [ToolOutputGate(scorer, thr, mode)]
+
