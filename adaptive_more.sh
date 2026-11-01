@@ -1,5 +1,5 @@
 #!/bin/bash
-AGENT=${1:-astra}; MODEL=${2:-gpt-6.1-astra}
+AGENT=${1:-astra}; MODEL=${2:-gpt-6-astra}
 cd ~/jev-stageA
 source ~/secjev-env/bin/activate; export SECJEV_WORK=$HOME/secjev-4b-work SECJEV_TF32=1 PYTHONPATH=~/agentdojo/src PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 run() { python adaptive.py --pairs adaptive_pairs.json --defense $1 --secjev ~/SecJev/SecJev-4B --model $MODEL \

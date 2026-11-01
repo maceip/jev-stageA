@@ -1,6 +1,6 @@
 #!/bin/bash
-# Adaptive-attacker arms for gpt-6.1-astra (only model used; no Qwen or gpt-oss-20b).
-AGENT=${1:-astra}; MODEL=${2:-gpt-6.1-astra}; WAITLOG=$3; WAITPAT=$4; SKIPNONE=${5:-0}
+# Adaptive-attacker arms for gpt-6-astra (only model used; no Qwen or gpt-oss-20b).
+AGENT=${1:-astra}; MODEL=${2:-gpt-6-astra}; WAITLOG=$3; WAITPAT=$4; SKIPNONE=${5:-0}
 cd ~/jev-stageA; mkdir -p adaptive logs
 source ~/secjev-env/bin/activate; export SECJEV_WORK=$HOME/secjev-4b-work SECJEV_TF32=1 PYTHONPATH=~/agentdojo/src
 run() { python adaptive.py --pairs adaptive_pairs.json --defense $1 --secjev ~/SecJev/SecJev-4B --model $MODEL \
