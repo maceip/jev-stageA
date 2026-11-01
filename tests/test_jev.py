@@ -53,8 +53,9 @@ def _stubs():
     fr.FunctionCall, fr.FunctionsRuntime = FunctionCall, type("FR", (), {"__init__": lambda s, t=None: None, "run_function": lambda s, e, f, a: None})
     _suites = {k: _Suite() for k in ("workspace", "travel", "banking", "slack")}
     ls.get_suites = lambda v="v1.2.2": _suites
-    ts.functions_stack_trace_from_messages, ts.read_suite_file = lambda m: [x for x in m if x.get("role") == "tool"], lambda *a: 'vec: "{vec}"\n'
+    ts.functions_stack_trace_from_messages, ts.model_output_from_messages, ts.read_suite_file = lambda m: [x for x in m if x.get("role") == "tool"], lambda m: [], lambda *a: 'vec: "{vec}"\n'
     ba.FixedJailbreakAttack, bt.BaseInjectionTask, bt.BaseUserTask = FixedJailbreakAttack, _Task, _Task
+    atk_mod = M("a"); atk_mod.load_attack = lambda *a, **k: S(attack=lambda u, i: {"vec": "inj"}, task_ids=["injection_task_0"])
     oai.OpenAI = lambda **kw: S(base_url=kw.get("base_url", "http://localhost"), chat=S(completions=S(create=lambda **c: S(choices=[S(message=S(
         content='["Mail alice@example.com on 2026-05-01 re \'Project X\' https://example.com", "2026-05-01 alice@example.com \'Project X\' https://example.com a", "2026-05-01 alice@example.com \'Project X\' https://example.com b", "2026-05-01 alice@example.com \'Project X\' https://example.com c"]'
         if "Rewrite" in str(c) else ("<payload>inj</payload>" if "Round 1" in str(c) else "YES")))])))
@@ -68,8 +69,8 @@ def _stubs():
     for n, m in [("agentdojo", ad), ("agentdojo.agent_pipeline", ap), ("agentdojo.agent_pipeline.base_pipeline_element", bpe),
                  ("agentdojo.agent_pipeline.agent_pipeline", apm), ("agentdojo.types", tp), ("agentdojo.functions_runtime", fr),
                  ("agentdojo.task_suite", M("t")), ("agentdojo.task_suite.load_suites", ls), ("agentdojo.task_suite.task_suite", ts),
-                 ("agentdojo.attacks", M("a")), ("agentdojo.attacks.base_attacks", ba), ("agentdojo.base_tasks", bt),
-                 ("openai", oai), ("yaml", yml), ("agent_llm", S(OpenAILLM=lambda *a, **k: _Pipe())),
+                 ("agentdojo.attacks", atk_mod), ("agentdojo.attacks.base_attacks", ba), ("agentdojo.base_tasks", bt),
+                 ("openai", oai), ("yaml", yml), ("pydantic", S(BaseModel=object)), ("agent_llm", S(OpenAILLM=lambda *a, **k: _Pipe())),
                  ("responses_llm", S(ResponsesLLM=lambda *a, **k: _Pipe())), ("secjev_scorer", S(SecJev=FakeSJ))]:
         sys.modules[n] = m
 
@@ -121,6 +122,7 @@ class JevSuite(unittest.TestCase):
                 adaptive.main()
             self.assertIn("astra", report.agent_tables("astra", json.loads(out_j.read_text()), "u95"))
             self.assertIn("secjev_cascade", report.agent_tables("astra", json.loads(out_j.read_text()), "u95"))
+            self.assertIn("Double JEV + LLM Judge", report.executive_summary("astra", json.loads(out_j.read_text()), [str(ad_out)]))
             self.assertIn("astra", report.adaptive_table([str(ad_out)]))
             s = replay.suites()["workspace"]
             for k in ("bland_note", "metadata_field", "quoted_reply", "zero_width", "llmail"):

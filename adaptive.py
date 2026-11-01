@@ -250,6 +250,13 @@ def main():
         for i, fu in enumerate(as_completed([ex.submit(run, p) for p in todo]), 1):
             f.write(json.dumps(fu.result()) + "\n"); f.flush()
             print(f"{i}/{len(todo)}", flush=True)
+    all_rows = [json.loads(l) for l in out.open() if json.loads(l).get("error") is None]
+    if all_rows:
+        n_ok = len(all_rows)
+        n_hij = sum(bool(r.get("success")) for r in all_rows)
+        blk_pct = (1.0 - n_hij / n_ok) * 100.0
+        print(f"SUMMARY [{a.defense}]: blocked {blk_pct:.1f}% of 10-try adaptive red-team attacks "
+              f"({n_ok - n_hij}/{n_ok} blocked; {n_hij} got through)", flush=True)
 
 
 if __name__ == "__main__":
