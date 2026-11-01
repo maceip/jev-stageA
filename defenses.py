@@ -35,11 +35,12 @@ class ToolOutputGate(BasePipelineElement):
         i = len(messages) - 1
         while i >= 0 and messages[i]["role"] == "tool":
             m = messages[i]
-            out = text_of(m["content"]) or (m.get("error") or "")
+            out = m.get("error") or text_of(m["content"]) or ""
             if self.scorer(user, as_call(m["tool_call"]), out) >= self.thr:
                 if self.mode == "stop":
                     raise AbortAgentError("defense flagged tool output", list(messages), env)
                 m["content"] = [text_content_block_from_string(REDACTED)]
+                m["error"] = None
                 m.setdefault("flags", []).append("redacted")
             i -= 1
         return query, runtime, env, messages, extra_args

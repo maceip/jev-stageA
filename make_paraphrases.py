@@ -15,6 +15,7 @@ TOKEN = re.compile(
     r"|[\w.+-]+@[\w-]+(?:\.[\w-]+)+"
     r"|https?://[^\s]+"
     r"|www\.[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}"
+    r"|\b[\w-]+\.[A-Za-z][A-Za-z0-9]{1,4}\b"
     r"|\b[A-Z]{2}\d{2}[A-Z0-9]{8,30}\b"
     r"|\b\d+(?:[.,:/-]\d+)*\b"
     r"|\b[A-Z][a-zA-Z]+\b"
@@ -31,7 +32,7 @@ def required(p):
     clause_starts = set()
     non_clause = set()
     for m in TOKEN.finditer(p):
-        t = m.group(0).strip(".,;:!?)(").strip()
+        t = m.group(0).strip(".,;:!?)('\"").strip()
         if not t:
             continue
         before = p[:m.start()].rstrip()
@@ -53,7 +54,8 @@ def main():
     ap.add_argument("--n", type=int, default=4)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    c = openai.OpenAI(base_url=a.base_url, api_key="local", timeout=600, max_retries=0)
+    import os
+    c = openai.OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "local"), timeout=600, max_retries=0)
     suites = get_suites("v1.2.2")
     tasks = [(s, ut) for s in ("workspace", "travel", "banking", "slack") for ut in suites[s].user_tasks.values()]
 
