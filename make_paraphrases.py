@@ -9,8 +9,16 @@ from concurrent.futures import ThreadPoolExecutor
 import openai
 from agentdojo.task_suite.load_suites import get_suites
 
-TOKEN = re.compile(r"(?<![A-Za-z])'[^'\n]+'(?![A-Za-z])|\"[^\"\n]+\"|[\w.+-]+@[\w-]+(?:\.[\w-]+)+|https?://[^\s]+|"
-                   r"www\.[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}|\b[A-Z]{2}\d{2}[A-Z0-9]{8,30}\b|\b\d[\d,.:/-]*\b|\b[A-Z][a-zA-Z]+\b")
+TOKEN = re.compile(
+    r"(?:(?<=^)|(?<=[\s(\[{]))'[^'\n]+'(?=$|[\s.,;:!?)\]}])"
+    r'|\"[^\"\n]+\"'
+    r"|[\w.+-]+@[\w-]+(?:\.[\w-]+)+"
+    r"|https?://[^\s]+"
+    r"|www\.[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}"
+    r"|\b[A-Z]{2}\d{2}[A-Z0-9]{8,30}\b"
+    r"|\b\d+(?:[.,:/-]\d+)*\b"
+    r"|\b[A-Z][a-zA-Z]+\b"
+)
 PROMPT = ("Rewrite the following request {k} different ways, as different people might naturally phrase it. Keep the "
           "meaning exactly the same and keep every name, number, date, amount, email address, account number, URL, "
           "file name and quoted text EXACTLY as written. Do not add or drop any detail. Return a JSON list of {k} "
@@ -18,18 +26,24 @@ PROMPT = ("Rewrite the following request {k} different ways, as different people
 
 
 def required(p):
-    """Identifier-like tokens; a capitalised word that only ever appears at a sentence start is not one."""
+    """Identifier-like tokens; a capitalised word that only ever appears at a sentence/clause start is not one."""
     need = set()
+    clause_starts = set()
+    non_clause = set()
     for m in TOKEN.finditer(p):
         t = m.group(0).strip(".,;:!?)(").strip()
         if not t:
             continue
         before = p[:m.start()].rstrip()
-        sentence_start = before == "" or before[-1] in ".!?:\n"
-        if sentence_start and re.fullmatch(r"[A-Z][a-z]+", t):
-            continue
-        need.add(t)
-    return need
+        is_start = before == "" or before[-1] in ".!?:\n;-—(\"'"
+        if re.fullmatch(r"[A-Z][a-z]+", t):
+            if is_start:
+                clause_starts.add(t)
+            else:
+                non_clause.add(t)
+        else:
+            need.add(t)
+    return need | non_clause
 
 
 def main():
