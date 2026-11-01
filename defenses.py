@@ -35,11 +35,12 @@ class ToolOutputGate(BasePipelineElement):
         i = len(messages) - 1
         while i >= 0 and messages[i]["role"] == "tool":
             m = messages[i]
-            out = text_of(m["content"]) or (m.get("error") or "")
+            out = (m.get("error") or text_of(m["content"]))
             if self.scorer(user, as_call(m["tool_call"]), out) >= self.thr:
                 if self.mode == "stop":
                     raise AbortAgentError("defense flagged tool output", list(messages), env)
                 m["content"] = [text_content_block_from_string(REDACTED)]
+                m["error"] = None  # AgentDojo clients show error in place of content
                 m.setdefault("flags", []).append("redacted")
             i -= 1
         return query, runtime, env, messages, extra_args
@@ -65,7 +66,7 @@ class ActionGuardedExecutor(ToolsExecutor):
                 history += [{"function": as_call(c)["function"], "args": as_call(c)["args"]} for c in (m.get("tool_calls") or [])]
             elif m["role"] == "tool":
                 seen.append({"function": as_call(m["tool_call"])["function"],
-                             "output": text_of(m["content"]) or (m.get("error") or "")})
+                             "output": (m.get("error") or text_of(m["content"]))})
         last = messages[-1]
         results = []
         for c in last["tool_calls"]:
@@ -83,6 +84,6 @@ class ActionGuardedExecutor(ToolsExecutor):
                 _, _, env, out, _ = super().query(query, runtime, env, [*messages[:-1], single], extra_args)
                 new = out[len(messages):]
                 results += new
-                seen += [{"function": cd["function"], "output": text_of(r["content"]) or (r.get("error") or "")} for r in new]
+                seen += [{"function": cd["function"], "output": (r.get("error") or text_of(r["content"]))} for r in new]
             history.append({"function": cd["function"], "args": cd["args"]})
         return query, runtime, env, [*messages, *results], extra_args

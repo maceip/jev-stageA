@@ -12,6 +12,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("ckpt"); ap.add_argument("run"); ap.add_argument("out")
 ap.add_argument("--suites", default="")
 ap.add_argument("--shard", default="0/1")
+ap.add_argument("--content", action="store_true")
 a = ap.parse_args()
 si, sn = map(int, a.shard.split("/"))
 suites = set(a.suites.split(",")) if a.suites else None
@@ -24,10 +25,10 @@ with open(a.out, "w") as f:
         for kind, i, k, p in decision_points(e["messages"]):
             if kind != "action":
                 continue
-            pr, dropped = secjev_action_score(sj, p, False)
+            pr, dropped = secjev_action_score(sj, p, a.content)
+            name = "secjev_action_content" if a.content else "secjev_action_meta"
             pts.append({"kind": kind, "msg": i, "call": k, "function": p["call"]["function"], "errors": {},
-                        "secjev_action_meta": pr["2"] + 0.5 * pr["1"], "secjev_action_meta_probs": pr,
-                        "secjev_action_meta_dropped_history": dropped})
+                        name: pr["2"] + 0.5 * pr["1"], name + "_probs": pr, name + "_dropped_history": dropped})
         f.write(json.dumps({"suite": e["suite"], "user_task": e["user_task"], "injection_task": e["injection_task"],
                             "variant": e.get("variant", 0), "points": pts}) + "\n")
 print("RESCORED", a.run, len(eps), flush=True)
