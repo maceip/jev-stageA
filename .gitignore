@@ -28,3 +28,5 @@ secjev-4b-work/
 ft/ckpt/tokenizer.json
 ft/ckpt/chat_template.jinja
 ft/ckpt/tokenizer_config.json
+
+/Layered IPI Defense Agent Project Plan.md

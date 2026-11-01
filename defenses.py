@@ -32,7 +32,8 @@ class ToolOutputGate(BasePipelineElement):
     """Runs after ToolsExecutor: scores each new tool result."""
 
     def __init__(self, scorer, thr, mode):
-        assert mode in ("stop", "redact")
+        if mode not in ("stop", "redact"):
+            raise ValueError("mode must be stop or redact")
         self.scorer, self.thr, self.mode = scorer, thr, mode
 
     def query(self, query, runtime, env, messages, extra_args):
@@ -45,6 +46,8 @@ class ToolOutputGate(BasePipelineElement):
                 if self.mode == "stop":
                     raise AbortAgentError("defense flagged tool output", list(messages), env)
                 m["content"] = [text_content_block_from_string(REDACTED)]
+                # Both agent clients prefer error over content. Leaving it populated would leak
+                # the flagged error text straight through a nominally redacted message.
                 m["error"] = None
                 m.setdefault("flags", []).append("redacted")
             i -= 1
@@ -58,7 +61,8 @@ class ActionGuardedExecutor(ToolsExecutor):
 
     def __init__(self, sj, thr, with_content, mode, judge=None):
         super().__init__()
-        assert mode in ("stop", "redact")
+        if mode not in ("stop", "redact"):
+            raise ValueError("mode must be stop or redact")
         self.sj, self.thr, self.with_content, self.mode, self.judge = sj, thr, with_content, mode, judge
 
     def query(self, query, runtime, env, messages, extra_args):
@@ -93,6 +97,7 @@ class ActionGuardedExecutor(ToolsExecutor):
             if flagged:
                 results.append(ChatToolResultMessage(role="tool", content=[text_content_block_from_string("")],
                                                      tool_call_id=cd.get("id"), tool_call=c, error=BLOCKED))
+                results[-1]["flags"] = ["blocked"]
             else:
                 single = dict(last, tool_calls=[c])
                 _, _, env, out, _ = super().query(query, runtime, env, [*messages[:-1], single], extra_args)

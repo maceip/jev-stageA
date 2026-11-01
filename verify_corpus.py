@@ -32,6 +32,8 @@ def main(argv=None):
     from secjev_scorer import SecJev
     m = SecJev(argv[0])
     hit, tot, lat = evaluate_corpus(m, argv[1])
+    if not lat:
+        raise SystemExit("No eligible corpus records: expected source agentdojo_tool_outputs or injecagent")
     for k in tot:
         print(f"{k}: {hit[k]}/{tot[k]} = {100*hit[k]/tot[k]:.2f}%")
     if lat:
