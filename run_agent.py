@@ -35,22 +35,24 @@ def to_jsonable(o):
 def build_defense(spec: str, a):
     """spec: 'none' | 'tool:<secjev_tool|piguard|deberta|llm_judge>:<thr>:<stop|redact>'
                     | 'action:<meta|content>:<thr>:<stop|redact>'
-                    | 'cascade:<meta|content>:<thr>:<stop|redact>'  -> (executor, post_elements)"""
+                    | 'cascade:<meta|content>:<thr>:<stop|redact>'
+                    | 'cascade_judge:<meta|content>:<thr>:<stop|redact>'  -> (executor, post_elements)"""
     if spec == "none":
         return ToolsExecutor(), []
     kind, name, thr, mode = spec.split(":")
     thr = float(thr)
     import defenses
-    if kind == "cascade":
+    from score import HFClassifier, LLMJudge, secjev_tool_score
+    if kind in ("cascade", "cascade_judge"):
         from secjev_scorer import SecJev
         sj = SecJev(a.secjev)
         sj_tool = SecJev(a.secjev_tool) if getattr(a, "secjev_tool", None) else sj
         t_tool = getattr(a, "tool_threshold", None)
-        return defenses.build_secjev_cascade(sj, thr, name == "content", mode, sj_tool=sj_tool, thr_tool=t_tool)
+        judge = LLMJudge(a.judge_url, a.judge_model) if kind == "cascade_judge" else None
+        return defenses.build_secjev_cascade(sj, thr, name == "content", mode, judge=judge, sj_tool=sj_tool, thr_tool=t_tool)
     if kind == "action":
         from secjev_scorer import SecJev
         return defenses.ActionGuardedExecutor(SecJev(a.secjev), thr, name == "content", mode), []
-    from score import HFClassifier, LLMJudge, secjev_tool_score
     if name == "secjev_tool":
         from secjev_scorer import SecJev
         sj = SecJev(a.secjev)

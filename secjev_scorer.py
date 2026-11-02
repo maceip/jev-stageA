@@ -9,6 +9,7 @@ from kev.checkpoint import Checkpoint, LoadOptions  # noqa: E402
 from kev.model import rows_of  # noqa: E402
 
 MAX_TOKENS = 8192
+_GPU_LOCK = threading.Lock()  # module-level lock across all SecJev instances on the same GPU
 
 
 def default_device() -> str:
@@ -31,7 +32,7 @@ class SecJev:
         ckpt.meta.base_revision = None
         self.tok, self.model = ckpt.load(device, LoadOptions(dtype=torch.float32, merge=False, attn="sdpa"))
         self.device = device
-        self._lock = threading.Lock()  # Triton autotuning in fla kernels is not thread-safe
+        self._lock = _GPU_LOCK  # shared lock prevents concurrent Triton autotuning / multi-model OOM
 
     def score(self, request: dict) -> dict:
         """Return {question_id: {candidate: probability}}. Raises if input exceeds the model's window."""
