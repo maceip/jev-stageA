@@ -170,6 +170,8 @@ def test_action_request_preserves_full_seen_history_and_cascade_replay_matches_l
     pts_spot2_hit = [{"kind": "tool", "msg": 2, "call": 0, "secjev_tool": 0.1, "errors": {}},
                      {"kind": "action", "msg": 3, "call": 0, "secjev_action_content": 0.64, "errors": {}}]
     assert first_flag(pts_spot2_hit, "secjev_cascade", 0.35, thr_tool=0.99) == ("action", 3, 0)
+    with pytest.raises(RuntimeError, match="llm_judge_action missing"):
+        first_flag(pts_spot2_hit, "secjev_cascade_judge", 0.35, thr_tool=0.99)
 
 
 
