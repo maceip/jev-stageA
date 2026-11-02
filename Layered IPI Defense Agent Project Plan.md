@@ -293,3 +293,74 @@ tests/            e2e, integration, property (no mock directory exists, by polic
 - Primary deployment model for QLLM: gpt-oss-20b (deepest CounterSteer evidence) vs Qwen3-30B.
 - Whether non-CaMeL agent mode ships at all, or exists only for evaluation.
 - Policy library scope for v1 beyond the trivial policy used in paper 5's evaluation.
+
+## 8. JEV + LLM judge: what the 10-configuration run showed, and what to do next (Nov 2, 2026)
+
+Source: `run3/clean_summary_all.md` (clean live runs at `0f3506d` / `226b348`; gpt-5.4-mini agent, gpt-6-astra judge,
+gpt-5.5 adaptive attacker; banking+slack; redact mode; 148 normal / 249 one-shot / 100 adaptive targets per arm;
+0 errors in every file).
+
+### What the data shows
+
+- **The model decides security; the spot decides utility.** Every configuration stops one-shot attacks (ASR 0-3.6%),
+  so only the adaptive attacker separates them. Wherever the judge decides every item, adaptive ASR is 4-7%. Wherever
+  JEV decides -- alone or as the gate in front of the judge -- it is 37-60% (no defense: 67%). Every Spot 2-only
+  configuration keeps 77-80% utility under attack (no defense: 79%); any configuration with a Spot 1 filter keeps
+  26-29%, whichever model runs it.
+- **JEV -> judge (judge confirms JEV's flags) has JEV's security.** Adaptive ASR 37% vs 40% (both spots), 48% vs 50%
+  (Spot 1), 60% vs 58% (Spot 2). It cut false positives to 0% and nothing else.
+- **Best single configuration measured:** judge at Spot 2 (checks every tool call): adaptive ASR 7%, UA 80%, FPR 4.7%.
+
+### Why JEV -> judge could not help security (what we did wrong)
+
+1. **The judge was wired as a confirm-only (AND) gate.** It only sees what JEV flags and can only remove a block, never
+   add one, so the combination cannot catch anything JEV misses. By construction its ASR is >= JEV alone.
+2. **JEV's thresholds were tuned for JEV acting alone** (Spot 1 @0.99, Spot 2 @0.35: high precision, low recall, chosen
+   to protect normal tasks). A gate in front of a judge needs the opposite -- high recall, with the judge removing the
+   false positives. Most attacks never reached the judge.
+
+The thesis -- a cheap JEV screen plus an expensive judge, working together -- has therefore not been tested yet.
+
+### Next five options (standard ways to build a model cascade that does not inherit the weaker model's security)
+
+1. **Recall-tuned cascade** (Viola-Jones style). Set JEV's threshold for ~99% recall; it rejects only clearly benign
+   items, the judge does the precise work.
+2. **Learning to defer / selective prediction.** JEV gets two thresholds: below the low one, allow without the judge;
+   above the high one, block without the judge; in between, defer to the judge. JEV becomes a router, not a gate.
+   Security comes from the judge on everything uncertain; cost savings come from JEV handling the easy cases.
+3. **Conformal calibration for a recall guarantee.** Pick the low (auto-allow) threshold with conformal risk control
+   on a labeled calibration set, so "at most a stated share of attacks is auto-allowed without the judge" is a bounded
+   risk rather than an accident.
+4. **Score fusion / stacking.** Run both models on every item and combine JEV's score, the judge's verdict and simple
+   features (spot, tool type) with a small learned combiner, or a plain OR. Gets the stronger model's recall, but the
+   judge runs on everything, so it loses the cost win.
+5. **Distillation + adversarial training.** Label traffic with the judge (teacher), fine-tune JEV on it, add the
+   adaptive attacker's winning payloads as hard negatives, and iterate red-team -> retrain. The only option that makes
+   JEV itself stronger.
+
+### Recommendation
+
+Run **#2 with #3 setting the thresholds** first. It needs no training (thresholds are already arguments), takes about
+1.5 hours on an 8-GPU node, and answers the thesis directly: report adaptive ASR against the share of items sent to
+the judge. If deferral holds ASR near judge-alone (~7%) while the judge sees only a fraction of traffic, JEV has a
+real job -- frontier-level security at a fraction of frontier cost. If ASR only reaches ~7% when JEV forwards nearly
+everything, JEV adds nothing and the judge should run alone.
+
+### Ryan's proposal: go straight to #5 -- and why not *only* #5
+
+Going straight to #5 is the one option that could make JEV better, but on its own it has three problems:
+
+1. **Test-set contamination.** The adaptive attacker's winning payloads come from the same 100 banking+slack targets
+   the evaluation scores on. Training on them and testing there would inflate the result. Done properly, #5 needs new
+   attacks generated on workspace+travel only, with banking+slack untouched for testing -- hours of attacker and judge
+   runs before any training.
+2. **It is the step most likely to fail quietly.** Earlier fine-tunes hit the same wall: the metadata-view monitor did
+   not transfer to unseen tools, and the content-view monitor beat one-shot attacks but lost to the adaptive attacker
+   (58%). Without #2, a weak #5 result would not tell whether JEV is too weak or the threshold is wrong.
+3. **#5 needs #2 anyway.** A distilled JEV still deploys as a router in front of the judge; #2/#3 is the frame it plugs
+   into, and #2 measures the uncertain band that distillation has to shrink.
+
+**Resolution: run them in parallel.** Start the #2/#3 deferral sweep on the existing checkpoints now, and at the same
+time start #5's data generation (adaptive red-team on workspace+travel only, every tool output and call labeled by
+gpt-6-astra). Fine-tune JEV on that data, then evaluate it inside the #2 cascade on banking+slack with a fresh attacker
+run.
