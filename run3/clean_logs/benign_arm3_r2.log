@@ -1,0 +1,7 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:  22%|██▏       | 94/426 [00:00<00:00, 910.47it/s]Loading weights:  44%|████▎     | 186/426 [00:00<00:00, 766.50it/s]Loading weights:  62%|██████▏   | 264/426 [00:00<00:00, 701.52it/s]Loading weights:  79%|███████▊  | 335/426 [00:00<00:00, 703.69it/s]Loading weights:  95%|█████████▌| 406/426 [00:00<00:00, 703.20it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 715.98it/s]
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:  22%|██▏       | 94/426 [00:00<00:00, 917.06it/s]Loading weights:  44%|████▎     | 186/426 [00:00<00:00, 782.30it/s]Loading weights:  62%|██████▏   | 266/426 [00:00<00:00, 733.23it/s]Loading weights:  80%|███████▉  | 340/426 [00:00<00:00, 700.35it/s]Loading weights:  96%|█████████▋| 411/426 [00:00<00:00, 684.07it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 717.49it/s]
+37 episodes to run (0 already done)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+25/37 ok=25 err=0
+37/37 ok=37 err=0
