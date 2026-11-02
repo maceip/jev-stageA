@@ -21,6 +21,7 @@ from agentdojo.task_suite.task_suite import functions_stack_trace_from_messages,
 from agentdojo.task_suite.load_suites import get_suites
 
 import attacks_ood
+import policy
 
 
 DEFENSE_SPEC = "none"
@@ -32,12 +33,20 @@ def to_jsonable(o):
     raise TypeError(type(o))
 
 
+def build_stack(spec: str, a):
+    import defenses
+    return defenses.build_stack(spec, secjev=a.secjev, secjev_tool=a.secjev_tool,
+                                judge_url=a.judge_url, judge_model=a.judge_model)
+
+
 def build_defense(spec: str, a):
     """spec: 'none' | 'tool:<secjev_tool|piguard|deberta|llm_judge>:<thr>:<stop|redact>'
                     | 'action:<meta|content>:<thr>:<stop|redact>'
                     | 'cascade:<meta|content>:<thr>:<stop|redact>'  -> (executor, post_elements)"""
     if spec == "none":
         return ToolsExecutor(), []
+    if spec.startswith("stack:"):
+        return build_stack(spec, a)
     kind, name, thr, mode = spec.split(":")
     thr = float(thr)
     import defenses
@@ -89,6 +98,8 @@ def episode(suite, pipeline, user_task, injection_task, injections, variant=0, p
         env = user_task.init_environment(env)
         pre = env.model_copy(deep=True)
         runtime = FunctionsRuntime(suite.tools)
+        if type(env).__name__ in policy.SUITE_OF_ENV:  # known entities as of task start, for the policy layer
+            policy.register_episode(runtime, env)
         try:
             _, _, env, messages, _ = pipeline.query(prompt or user_task.PROMPT, runtime, env)
             rec["aborted"] = False
@@ -116,7 +127,8 @@ def main():
     ap.add_argument("--suites", default="workspace,travel,banking,slack,shopping,github,dailylife")
     ap.add_argument("--base-url", default="https://api.openai.com/v1")
     ap.add_argument("--defense", default="none")
-    ap.add_argument("--secjev", default=None)
+    ap.add_argument("--secjev", default=None, help="SecJev checkpoint for action/cascade layers")
+    ap.add_argument("--secjev-tool", default=None, help="SecJev checkpoint for a stack's tool=secjev_tool layer")
     ap.add_argument("--judge-url", default="https://api.openai.com/v1")
     ap.add_argument("--judge-model", default="gpt-6-astra")
     ap.add_argument("--paraphrases", default=None, help="benign only: JSON from make_paraphrases.py")
