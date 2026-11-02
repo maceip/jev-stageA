@@ -147,7 +147,8 @@ def attack_pair(args, suite, ut, it, pipe, scorer, thr, attacker):
                                                     messages=[{"role": "system", "content": ATTACKER_SYS},
                                                               {"role": "user", "content": msg}])
         except openai.BadRequestError as e:  # provider safety filter refused the attacker turn: round used, logged
-            if "flagged" not in str(e):
+            el = str(e).lower()
+            if not any(k in el for k in ("flagged", "content_filter", "policy", "safety")):
                 raise
             log.append({"round": r, "status": "attacker_blocked_by_provider"})
             hist.append(f"Attempt {r + 1}: your previous request was refused; write a different payload.")
@@ -254,7 +255,11 @@ def main():
         for i, fu in enumerate(as_completed([ex.submit(run, p) for p in todo]), 1):
             f.write(json.dumps(fu.result()) + "\n"); f.flush()
             print(f"{i}/{len(todo)}", flush=True)
-    all_rows = [json.loads(l) for l in out.open() if json.loads(l).get("error") is None]
+    latest = {}
+    for l in out.open():
+        r = json.loads(l)
+        latest[tuple(r["pair"])] = r
+    all_rows = [r for r in latest.values() if r.get("error") is None]
     if all_rows:
         n_ok = len(all_rows)
         n_hij = sum(bool(r.get("success")) for r in all_rows)

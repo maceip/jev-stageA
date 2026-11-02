@@ -194,20 +194,23 @@ def score_episode(ep, group, models, pool, use_cache=True):
         elif group == "classifiers" and kind == "tool":
             s["deberta"] = models["deberta"](p["output"])
             s["piguard"] = models["piguard"](p["output"])
-        elif group == "judge" and kind == "tool":
-            futs[idx] = (ckey, pool.submit(models["judge"], p["user"], p["output"]))
+        elif group == "judge":
+            if kind == "tool":
+                futs[idx] = (ckey, "llm_judge", pool.submit(models["judge"], p["user"], p["output"]))
+            elif kind == "action":
+                futs[idx] = (ckey, "llm_judge_action", pool.submit(models["judge"].judge_action, p["user"], p["call"], p["history"], p["seen"]))
         if ckey is not None and idx not in futs:
             with _DP_LOCK:
                 _DP_CACHE[ckey] = dict(s)
         out.append(s)
-    for idx, (ckey, fu) in futs.items():
+    for idx, (ckey, field, fu) in futs.items():
         try:
-            out[idx]["llm_judge"] = fu.result()
+            out[idx][field] = fu.result()
             if ckey is not None:
                 with _DP_LOCK:
                     _DP_CACHE[ckey] = dict(out[idx])
         except ValueError as e:
-            out[idx]["errors"]["llm_judge"] = str(e)
+            out[idx]["errors"][field] = str(e)
     return out
 
 

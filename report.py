@@ -14,12 +14,15 @@ def _pooled_blocked_and_fp(res, det, mode="u95"):
     u_key = "benign_utility_u95" if (mode == "u95" and d_info.get("benign_utility_u95")) else "benign_utility_native"
     u_def = (d_info.get(u_key) or [b_u0])[0]
     fp_pct = max(0.0, (b_u0 - u_def) / b_u0 * 100.0) if b_u0 > 0 else 0.0
-    asrs = []
+    total_n = 0
+    total_s = 0.0
     for row in res.get("attacks", {}).values():
         cell = row.get(f"{det}@{mode}") or row.get(f"{det}@native")
-        if cell:
-            asrs.append(cell["asr"][0])
-    blocked_pct = (1.0 - (sum(asrs) / len(asrs))) * 100.0 if asrs else 0.0
+        n = row.get("n", 0)
+        if cell and n > 0:
+            total_n += n
+            total_s += cell["asr"][0] * n
+    blocked_pct = (1.0 - (total_s / total_n)) * 100.0 if total_n > 0 else 0.0
     return blocked_pct, fp_pct
 
 
@@ -67,6 +70,8 @@ def pct(t):
 
 
 def wilson(k, n, z=1.96):
+    if n == 0:
+        return (float("nan"),) * 3
     p = k / n; d = 1 + z*z/n; c = (p + z*z/(2*n)) / d
     h = z * math.sqrt(p*(1-p)/n + z*z/(4*n*n)) / d
     return p, max(0, c-h), min(1, c+h)
