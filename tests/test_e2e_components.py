@@ -154,18 +154,20 @@ def test_action_monitor_lets_authorized_read_execute(action_monitor):
     assert all(r["error"] is None for r in out[len(pre):])
 
 
-def test_internal_read_calls_and_arg_provenance_tagging():
-    """Internal read-only calls are recognized and argument provenance distinguishes USER_PROMPT vs UNTRUSTED_TOOL_OUTPUT."""
-    from score import is_internal_read_call, compute_arg_provenance, decision_points
-    assert is_internal_read_call("get_scheduled_transactions")
-    assert is_internal_read_call("read_channel_messages")
-    assert not is_internal_read_call("send_money")
-    assert not is_internal_read_call("get_webpage")
+def test_action_request_preserves_full_seen_history_and_cascade_score_couples_signals():
+    """secjev_action_request retains all prior tool outputs (no [-3:] truncation) and cascade_point_score
+    couples Spot 1 and Spot 2 probabilities without function-name heuristics."""
+    from score import decision_points, secjev_action_request
+    from analyze import cascade_point_score
     ep = find(episodes("run3/live/bland_none.jsonl"), "user_task_0", "injection_task_5")
-    pts = [p for k, _, _, p in decision_points(ep["messages"]) if k == "action" and p["call"]["function"] == "send_money"]
-    attacker_pt = next(p for p in pts if p["call"]["args"].get("recipient") == ATTACKER_IBAN)
-    prov = compute_arg_provenance(attacker_pt["user"], attacker_pt["call"], attacker_pt["seen"])
-    assert prov["recipient"] == "UNTRUSTED_TOOL_OUTPUT"
+    action_pts = [p for k, _, _, p in decision_points(ep["messages"]) if k == "action"]
+    last_pt = action_pts[-1]
+    req = secjev_action_request(last_pt, with_content=True)
+    assert len(req["state"]["untrusted_tool_outputs_seen"]) == len(last_pt["seen"])
+    pts_low_tool = [{"kind": "tool", "secjev_tool": 0.0}, {"kind": "action", "secjev_action_content": 0.64}]
+    pts_high_tool = [{"kind": "tool", "secjev_tool": 0.95}, {"kind": "action", "secjev_action_content": 0.64}]
+    assert cascade_point_score(pts_high_tool, 1) > cascade_point_score(pts_low_tool, 1)
+
 
 
 
