@@ -30,7 +30,10 @@ def need(var, default=None):
 def _release():
     gc.collect()
     import torch
-    torch.cuda.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
 
 
 @pytest.fixture(scope="module")

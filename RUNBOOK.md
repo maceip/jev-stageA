@@ -13,7 +13,7 @@ Two placements of the **same 4B SecJev model** are tested — individually and t
 Each defense is tested in two modes: **stop** (abort the run on a flag) and **redact** (remove the flagged output / refuse only
 the flagged call, and continue).
 
-**Model Policy**: All evaluations standardize exclusively on **`gpt-6.1-astra`** (ChatGPT Astra 6.1 via the OpenAI API `https://api.openai.com/v1`). We do **not** use `Qwen` or `gpt-oss-20b`.
+**Model Policy**: All evaluations standardize exclusively on **`gpt-6-astra`** (`gpt-6.1-astra` in earlier notes; the live OpenAI `/v1/models` endpoint exposes `gpt-6-astra`, `gpt-5.4-mini`, and `gpt-5.5`). We do **not** use `Qwen` or `gpt-oss-20b`.
 
 ## 2. What has been done and what we know
 

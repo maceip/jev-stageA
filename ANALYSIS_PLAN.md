@@ -40,3 +40,6 @@ Pass rules and decision: plan doc, section 0, "Stage A rerun: rules fixed before
 
 ## Freezing
 - SHA-256 of every harness file and of this plan recorded in FROZEN.txt before the first scored run. Any code change after that triggers a full rerun of affected arms.
+
+## Dated Model-Name Note (2026-11-01)
+- On the OpenAI API key used in Run 3, the ChatGPT Astra 6.x model ID exposed by `/v1/models` is `gpt-6-astra` (alongside `gpt-5.4-mini` and `gpt-5.5`), whereas `gpt-6.1-astra` returns 404. CLI defaults in `run_agent.py`, `adaptive.py`, `score.py`, and `make_paraphrases.py` therefore default to `gpt-6-astra` (overridable via `--model` / `--attacker-model` / `--judge-model`).
