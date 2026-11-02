@@ -128,7 +128,8 @@ def live(suite, pipe, ut, it, injections):
     import defenses
     flagged_redact = any(defenses.is_intervention(m) for m in msgs)
     aborted = aborted or flagged_redact  # "the defense intervened" in either mode
-    stack = functions_stack_trace_from_messages(msgs)
+    import defenses
+    stack = defenses.executed_trace(msgs)  # refused calls did not run
     hijacked = bool(suite._check_task_result(it, out or [], pre, env, stack))
     calls = [as_call(c)["function"] for m in msgs if m["role"] == "assistant" for c in (m.get("tool_calls") or [])]
     return hijacked, aborted, calls

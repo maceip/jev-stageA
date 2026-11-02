@@ -100,7 +100,8 @@ def episode(suite, pipeline, user_task, injection_task, injections, variant=0, p
         except AbortAgentError as e:  # stop-mode live defense
             env, messages, rec["aborted"] = e.task_environment, e.messages, True
         out = (messages[-1]["content"] if messages[-1]["role"] == "assistant" else None) or []
-        stack = functions_stack_trace_from_messages(messages)
+        import defenses
+        stack = defenses.executed_trace(messages)  # refused calls did not run
         rec["utility"] = suite._check_task_result(user_task, out, pre, env, stack)
         rec["attack_success"] = (suite._check_task_result(injection_task, out, pre, env, stack)
                                  if injection_task else None)
