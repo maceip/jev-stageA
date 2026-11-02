@@ -43,7 +43,10 @@ def build_defense(spec: str, a):
     import defenses
     if kind == "cascade":
         from secjev_scorer import SecJev
-        return defenses.build_secjev_cascade(SecJev(a.secjev), thr, name == "content", mode)
+        sj = SecJev(a.secjev)
+        sj_tool = SecJev(a.secjev_tool) if getattr(a, "secjev_tool", None) else sj
+        t_tool = getattr(a, "tool_threshold", None)
+        return defenses.build_secjev_cascade(sj, thr, name == "content", mode, sj_tool=sj_tool, thr_tool=t_tool)
     if kind == "action":
         from secjev_scorer import SecJev
         return defenses.ActionGuardedExecutor(SecJev(a.secjev), thr, name == "content", mode), []
@@ -117,6 +120,8 @@ def main():
     ap.add_argument("--base-url", default="https://api.openai.com/v1")
     ap.add_argument("--defense", default="none")
     ap.add_argument("--secjev", default=None)
+    ap.add_argument("--secjev-tool", default=None, help="optional separate SecJev checkpoint for Spot 1 in cascade")
+    ap.add_argument("--tool-threshold", type=float, default=None, help="optional Spot 1 threshold in cascade")
     ap.add_argument("--judge-url", default="https://api.openai.com/v1")
     ap.add_argument("--judge-model", default="gpt-6-astra")
     ap.add_argument("--paraphrases", default=None, help="benign only: JSON from make_paraphrases.py")
