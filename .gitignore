@@ -18,3 +18,4 @@ env/
 /results/
 *.log
 *.tmp
+ft/ckpt/adapter_model.safetensors
