@@ -28,9 +28,13 @@ class SecJev:
             torch.backends.cuda.matmul.allow_tf32 = tf32
             torch.backends.cudnn.allow_tf32 = tf32
         ckpt = Checkpoint(model_dir)
-        ckpt.meta.base = str(WORK / "base")
-        ckpt.meta.base_revision = None
-        self.tok, self.model = ckpt.load(device, LoadOptions(dtype=torch.float32, merge=False, attn="sdpa"))
+        if device == "mps" and os.environ.get("KEV_BACKEND", "mlx") == "mlx":
+            opts = LoadOptions(backend="mlx")
+        else:
+            ckpt.meta.base = str(WORK / "base")
+            ckpt.meta.base_revision = None
+            opts = LoadOptions(dtype=torch.float32, merge=False, attn="sdpa")
+        self.tok, self.model = ckpt.load(device, opts)
         self.device = device
         self._lock = _GPU_LOCK  # shared lock prevents concurrent Triton autotuning / multi-model OOM
 
