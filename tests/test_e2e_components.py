@@ -154,3 +154,18 @@ def test_action_monitor_lets_authorized_read_execute(action_monitor):
     assert all(r["error"] is None for r in out[len(pre):])
 
 
+def test_internal_read_calls_and_arg_provenance_tagging():
+    """Internal read-only calls are recognized and argument provenance distinguishes USER_PROMPT vs UNTRUSTED_TOOL_OUTPUT."""
+    from score import is_internal_read_call, compute_arg_provenance, decision_points
+    assert is_internal_read_call("get_scheduled_transactions")
+    assert is_internal_read_call("read_channel_messages")
+    assert not is_internal_read_call("send_money")
+    assert not is_internal_read_call("get_webpage")
+    ep = find(episodes("run3/live/bland_none.jsonl"), "user_task_0", "injection_task_5")
+    pts = [p for k, _, _, p in decision_points(ep["messages"]) if k == "action" and p["call"]["function"] == "send_money"]
+    attacker_pt = next(p for p in pts if p["call"]["args"].get("recipient") == ATTACKER_IBAN)
+    prov = compute_arg_provenance(attacker_pt["user"], attacker_pt["call"], attacker_pt["seen"])
+    assert prov["recipient"] == "UNTRUSTED_TOOL_OUTPUT"
+
+
+

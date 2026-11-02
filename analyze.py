@@ -10,6 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from replay import outcome
+from score import is_internal_read_call
 
 DETECTORS = {  # name -> (decision-point kind(s), score key)
     "secjev_tool": ("tool", "secjev_tool"),
@@ -65,6 +66,8 @@ def first_flag(points, det, thr):
     if det in ("secjev_cascade", "secjev_cascade_judge"):
         for idx, p in enumerate(points):
             if p["kind"] == "action":
+                if is_internal_read_call(p.get("function", "")):
+                    continue
                 if "secjev_action_content" not in p and "secjev_action_meta" not in p:
                     if "secjev_action_content" in p.get("errors", {}):
                         raise RuntimeError(f"{det} errored at a decision point")

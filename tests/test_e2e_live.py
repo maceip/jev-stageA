@@ -14,7 +14,12 @@ def test_build_defense_constructs_real_elements(spec):
     from agentdojo.agent_pipeline import ToolsExecutor
     assert isinstance(ex, ToolsExecutor) and len(post) == (1 if spec.startswith("cascade") else 0)
     del ex, post
-    import gc, torch; gc.collect(); torch.cuda.empty_cache()
+    import gc, torch
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
 
 
 def test_default_model_names_exist_on_the_api():

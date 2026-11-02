@@ -11,11 +11,21 @@ from kev.model import rows_of  # noqa: E402
 MAX_TOKENS = 8192
 
 
+def default_device() -> str:
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 class SecJev:
-    def __init__(self, model_dir: str, device: str = "cuda"):
+    def __init__(self, model_dir: str, device: str | None = None):
+        device = device or default_device()
         tf32 = os.environ.get("SECJEV_TF32") == "1"  # off = authors' reference numerics
-        torch.backends.cuda.matmul.allow_tf32 = tf32
-        torch.backends.cudnn.allow_tf32 = tf32
+        if torch.cuda.is_available():
+            torch.backends.cuda.matmul.allow_tf32 = tf32
+            torch.backends.cudnn.allow_tf32 = tf32
         ckpt = Checkpoint(model_dir)
         ckpt.meta.base = str(WORK / "base")
         ckpt.meta.base_revision = None
