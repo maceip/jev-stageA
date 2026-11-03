@@ -6,6 +6,7 @@ from unittest import mock
 R = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(R))
 NS = types.SimpleNamespace
+_SAVED_MODULES = dict(sys.modules)  # restored after import; fakes are re-installed by setUpModule
 def mod(name, **kw):
     m = types.ModuleType(name)
     for k, v in kw.items(): setattr(m, k, v)
@@ -24,7 +25,7 @@ class Pipe:
     def __init__(s, *a): s.els = a
     def query(s, *a): return None, None, a[2] if len(a) > 2 else None, Pipe.MSGS, None
 class FCall:
-    def __init__(s, function, args, id=None): s.function, s.args, s.id = function, args, id
+    def __init__(s, function, args, id=None, placeholder_args=None): s.function, s.args, s.id, s.placeholder_args = function, args, id, placeholder_args
 class FRuntime:
     def __init__(s, tools=None): pass
     def run_function(s, env, fn, args): env.calls.append(fn)
@@ -54,6 +55,7 @@ class FakeLogits:
 class FModel:
     config = NS(id2label={0: "benign", 1: "INJECTION"})
     def cuda(s): return s
+    def to(s, d): return s
     def eval(s): return s
     def __call__(s, **kw): return NS(logits=FakeLogits(kw.get("_n", 1)))
 def ftok(texts, **kw): return FakeEnc(_n=len(texts) if isinstance(texts, list) else 1)
@@ -63,7 +65,8 @@ class Ctx:
     def __enter__(s): return s
     def __exit__(s, *a): return False
 torch = mod("torch", softmax=lambda x, d: [[0.25, 0.75]] * x.n, inference_mode=lambda: Ctx(),
-            device=lambda d: d, cuda=NS(is_available=lambda: False))
+            device=lambda d: d, cuda=NS(is_available=lambda: False),
+            backends=NS(mps=NS(is_available=lambda: False)))
 mod("transformers", AutoModelForSequenceClassification=FModel, AutoTokenizer=NS(from_pretrained=lambda *a, **k: ftok))
 class FChat:
     NEXT = "YES"
@@ -91,12 +94,25 @@ class FakeSJ:
     def score(s, req): return {q: ({"true": 0.7, "false": 0.3} if v.get("type") == "noul" else {"0": 0.1, "1": 0.2, "2": 0.7}) for q, v in req["questions"].items()}
 mod("secjev_scorer", SecJev=FakeSJ)
 import score, replay, analyze, defenses, attacks_ood, adaptive, report, make_paraphrases
+_FAKE_MODULES = {k: v for k, v in sys.modules.items() if _SAVED_MODULES.get(k) is not v}
+def _swap_modules(mapping, fallback):
+    for k in _FAKE_MODULES:
+        if k in mapping: sys.modules[k] = mapping[k]
+        elif k in fallback: sys.modules[k] = fallback[k]
+        else: sys.modules.pop(k, None)
+_swap_modules({}, _SAVED_MODULES)  # keep collection of sibling test modules on the real modules
+_RUNTIME_SAVED = {}
+def setUpModule():
+    _RUNTIME_SAVED.clear(); _RUNTIME_SAVED.update({k: sys.modules[k] for k in _FAKE_MODULES if k in sys.modules})
+    sys.modules.update(_FAKE_MODULES)
+def tearDownModule():
+    _swap_modules(_RUNTIME_SAVED, _SAVED_MODULES)
 CALL = {"function": "good_fn", "args": {"x": 1}, "id": "1"}
 def msgs():
     return [{"role": "user", "content": "please help Emma"},
             {"role": "assistant", "content": None, "tool_calls": [CALL, {"function": "bad_fn", "args": {}, "id": "2"}]},
             {"role": "tool", "content": [{"type": "text", "content": "out1"}, {"type": "image", "content": "skip"}], "tool_call": CALL},
-            {"role": "tool", "content": None, "error": "boom", "tool_call": CALL},
+            {"role": "tool", "content": None, "error": "boom", "tool_call": {"function": "bad_fn", "args": {}, "id": "2"}},
             {"role": "assistant", "content": "done"}]
 def ep(**kw):
     d = {"suite": "workspace", "user_task": "t1", "injection_task": "i1", "injections": {}, "utility": True,
@@ -116,8 +132,8 @@ class ScoreTests(unittest.TestCase):
         p = {"user": "u", "call": CALL, "output": "o", "history": [{"function": "f", "args": {}}],
              "seen": [{"function": "f", "output": "y" * 4000}] * 4}
         r = score.secjev_tool_request(p); self.assertEqual(r["state"]["untrusted_tool_response"], "o")
-        a = score.secjev_action_request(p, True); self.assertEqual(len(a["state"]["untrusted_tool_outputs_seen"]), 3)
-        self.assertEqual(len(a["state"]["untrusted_tool_outputs_seen"][0]["output"]), 3000)
+        a = score.secjev_action_request(p, True); self.assertEqual(len(a["state"]["untrusted_tool_outputs_seen"]), 4)
+        self.assertEqual(len(a["state"]["untrusted_tool_outputs_seen"][0]["output"]), 4000)
         b = score.secjev_action_request(p, False); self.assertIn("provenance", b["state"]["untrusted_tool_outputs_seen"][0])
         self.assertEqual(len(b["state"]["untrusted_tool_outputs_seen"]), 4)
     def test_cache(self):
@@ -168,10 +184,17 @@ class ScoreTests(unittest.TestCase):
         self.assertAlmostEqual(out[0]["secjev_action_meta"], 0.6); self.assertEqual(out[2]["secjev_tool"], 0.2)
         out2 = score.score_episode(e, "classifiers", {"deberta": lambda t: 0.1, "piguard": lambda t: 0.9}, pool)
         self.assertEqual((out2[2]["deberta"], out2[2]["piguard"]), (0.1, 0.9))
-        out3 = score.score_episode(e, "judge", {"judge": lambda u, o: 1.0}, pool)
-        self.assertEqual(out3[2]["llm_judge"], 1.0)
-        def boom(u, o): raise ValueError("unparseable judge answer")
-        out4 = score.score_episode(e, "judge", {"judge": boom}, pool)
+        class FakeJudge:
+            def __call__(s, u, o): return 1.0
+            def judge_action(s, u, c, h, seen): return 1.0
+        score._DP_CACHE.clear()
+        out3 = score.score_episode(e, "judge", {"judge": FakeJudge()}, pool)
+        self.assertEqual(out3[2]["llm_judge"], 1.0); self.assertEqual(out3[0]["llm_judge_action"], 1.0)
+        class BoomJudge:
+            def __call__(s, u, o): raise ValueError("unparseable judge answer")
+            def judge_action(s, u, c, h, seen): raise ValueError("unparseable judge answer")
+        score._DP_CACHE.clear()
+        out4 = score.score_episode(e, "judge", {"judge": BoomJudge()}, pool)
         self.assertIn("llm_judge", out4[2]["errors"]); pool.shutdown()
     def test_score_main(self):
         with tempfile.TemporaryDirectory() as d:
@@ -230,7 +253,7 @@ class ReplayAnalyzeTests(unittest.TestCase):
         self.assertEqual(analyze.first_flag_fused(fused, 0.5, 0.5), ("action", 2, 0))
     def _scores(self, d, stem, deberta=1.0, inj=None):
         pts = [{"kind": "tool", "msg": 1, "call": 0, "secjev_tool": 0.1, "deberta": deberta, "piguard": 0.1, "llm_judge": 0.0, "errors": {}},
-               {"kind": "action", "msg": 2, "call": 0, "secjev_action_meta": 0.1, "secjev_action_content": 0.1, "errors": {}}]
+               {"kind": "action", "msg": 2, "call": 0, "secjev_action_meta": 0.1, "secjev_action_content": 0.1, "llm_judge_action": 0.0, "errors": {}}]
         row = {"suite": "workspace", "user_task": "t1", "injection_task": inj, "variant": 0, "points": pts}
         for g in analyze.GROUPS:
             (Path(d) / g).mkdir(parents=True, exist_ok=True)
@@ -399,16 +422,16 @@ class AdaptiveTests(unittest.TestCase):
         self.assertEqual(adaptive.as_call(NS(model_dump=lambda mode=None: {"function": "f"}))["function"], "f")
         self.assertEqual(adaptive.as_call(CALL), CALL)
         trail = [{"role": "user", "content": "u"}, {"role": "tool", "content": "bad", "tool_call": CALL}]
-        self.assertEqual(len(adaptive.DetectorGate(lambda u, c, o: 0.1, 0.5).query("q", None, FEnv(), trail, {})[3]), 2)
-        with self.assertRaises(Abort): adaptive.DetectorGate(lambda u, c, o: 0.9, 0.5).query("q", None, FEnv(), trail, {})
+        self.assertEqual(len(adaptive.DetectorGate(lambda u, c, o: 0.1, 0.5, "stop").query("q", None, FEnv(), trail, {})[3]), 2)
+        with self.assertRaises(Abort): adaptive.DetectorGate(lambda u, c, o: 0.9, 0.5, "stop").query("q", None, FEnv(), trail, {})
         sj = NS(score=lambda req: {"authorization": {"0": 0.9, "1": 0.05, "2": 0.05}})
-        ag = adaptive.ActionGate(sj, 0.5, True)
+        ag = adaptive.ActionGate(sj, 0.5, True, "stop")
         self.assertEqual(ag.query("q", None, FEnv(), [], {})[3], [])
         self.assertEqual(len(ag.query("q", None, FEnv(), [{"role": "user", "content": "u"}], {})[3]), 1)
         full = [{"role": "user", "content": "u"}, {"role": "assistant", "tool_calls": [CALL]},
                 {"role": "tool", "content": "o", "tool_call": CALL}, {"role": "assistant", "tool_calls": [CALL]}]
-        self.assertEqual(len(ag.query("q", None, FEnv(), full, {})[3]), 4)
-        bad = adaptive.ActionGate(NS(score=lambda req: {"authorization": {"0": 0.0, "1": 0.0, "2": 1.0}}), 0.5, False)
+        self.assertEqual(len(ag.query("q", None, FEnv(), full, {})[3]), 5)  # allowed call executed: +1 tool result
+        bad = adaptive.ActionGate(NS(score=lambda req: {"authorization": {"0": 0.0, "1": 0.0, "2": 1.0}}), 0.5, False, "stop")
         with self.assertRaises(Abort): bad.query("q", None, FEnv(), full, {})
         self.assertIsNone(adaptive.make_scorer("none")); self.assertIsNone(adaptive.make_scorer("secjev_action_meta", sj=sj))
         self.assertEqual(adaptive.make_scorer("secjev_tool", sj=NS(score=lambda r: {"injection": {"true": 0.4}}))("u", CALL, "o"), 0.4)
