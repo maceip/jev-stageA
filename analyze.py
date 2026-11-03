@@ -122,7 +122,7 @@ def load_scores(score_dir, stem):
     chunk/history settings, function and error conflicts are never silently resolved by glob order.
     """
     merged, present, positions = {}, {}, {}
-    semantic_keys = {"function"}
+    semantic_keys = {"function", "llm_judge_action"}
     for _, key in DETECTORS.values():
         semantic_keys.update((key, key + "_probs", key + "_chunks", key + "_dropped_history"))
     for group in GROUPS:

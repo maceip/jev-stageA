@@ -39,7 +39,7 @@ def executed_calls(messages, cut):
             results.append(messages[j])
             j += 1
         for k, c in enumerate(m.get("tool_calls") or []):
-            if c.get("id") not in ran:  # proposed but never executed in the recording (e.g. run ended)
+            if c.get("id") is not None and c.get("id") not in ran:  # proposed but never executed (e.g. run ended); id-less legacy calls match by function/args below
                 continue
             if cut is not None:
                 kind, ci, ck = cut

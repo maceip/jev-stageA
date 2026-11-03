@@ -73,6 +73,7 @@ class Tokenizer:
 class Classifier:
     config = NS(id2label={0: "BENIGN", 1: "INJECTION"})
     def cuda(self): return self
+    def to(self, device): return self
     def eval(self): return self
     def __call__(self, **kwargs): return NS(logits=Tensor([[math.log(.2), math.log(.8)]]))
 class Model:
@@ -101,7 +102,7 @@ def modules(spec):
     return result
 
 BOUNDARIES = modules({
-    "torch": dict(inference_mode=contextlib.nullcontext, softmax=softmax, float32="float32", backends=NS(cuda=NS(matmul=NS()), cudnn=NS())),
+    "torch": dict(inference_mode=contextlib.nullcontext, softmax=softmax, float32="float32", cuda=NS(is_available=lambda: False, empty_cache=lambda: None), mps=NS(empty_cache=lambda: None), backends=NS(cuda=NS(matmul=NS(allow_tf32=False)), cudnn=NS(allow_tf32=False), mps=NS(is_available=lambda: False))),
     "transformers": dict(AutoTokenizer=NS(from_pretrained=Mock(side_effect=lambda *a, **kw: Tokenizer())), AutoModelForSequenceClassification=NS(from_pretrained=Mock(side_effect=lambda *a, **kw: Classifier()))),
     "kev": {}, "kev.api": dict(SystemOneRequest=NS(model_validate=lambda r: r), to_record=record, to_answers=None),
     "kev.checkpoint": dict(Checkpoint=Checkpoint, LoadOptions=NS),
@@ -112,7 +113,17 @@ class Client:
     def __init__(self, handler, base_url="http://offline.test/v1"):
         self.base_url, self.requests, self.handler = base_url, [], handler; self.chat = NS(completions=NS(create=self.create)); self.responses = NS(create=self.create)
     def create(self, **kwargs): self.requests.append(kwargs); return self.handler(kwargs)
+def responses_reply(text=None, calls=None):
+    output = ([NS(type="message", content=[NS(text=text)])] if text else []) + [NS(type="function_call", name=c["function"], arguments=json.dumps(c["args"]), call_id=c["id"]) for c in calls or []]
+    return NS(output=output)
 def agent_reply(request):
+    if "input" in request:  # Responses API shape used by responses_llm.ResponsesLLM for api.openai.com
+        items = request["input"]; last = items[-1] if items else {}
+        if last.get("type") != "function_call_output": return responses_reply(calls=[call()])
+        if last.get("call_id") == "read":
+            text = str(last.get("output", ""))
+            return responses_reply(calls=([call("send_email", recipients=["contact@contact.com"], subject="ok", body="confirmation")] if "inject" in text and "Content removed" not in text else []) + [call("finish")])
+        return responses_reply("done")
     ms = request["messages"]; last = ms[-1]
     if last["role"] != "tool": return reply(calls=[call()])
     if last.get("name") == "read":
@@ -144,7 +155,7 @@ class JevTests(unittest.TestCase):
         for group, keys in (("secjev", [d for d in analyze.DETECTORS if d.startswith("secjev")]), ("classifiers", ["deberta", "piguard"]), ("judge", ["llm_judge"])):
             rows = []
             for ep in eps:
-                pts = [dict(kind=k, msg=i, call=j, errors={}, **{d: value for d in keys if analyze.DETECTORS[d][0] == k}) for k, i, j, p in score.decision_points(ep["messages"])]
+                pts = [dict(kind=k, msg=i, call=j, errors={}, **{d: value for d in keys if analyze.DETECTORS[d][0] == k}, **({"llm_judge_action": value} if group == "judge" and k == "action" else {})) for k, i, j, p in score.decision_points(ep["messages"])]
                 rows.append({**{k: ep[k] for k in ("suite", "user_task", "injection_task")}, "variant": ep.get("variant", 0), "points": list(reversed(pts))})
             dump(directory / group / f"{stem}.0of1.jsonl", rows)
         return directory
@@ -157,10 +168,10 @@ class JevTests(unittest.TestCase):
         self.assertEqual((pts[0][3]["history"], pts[2][3]["seen"]), ([], [{"function": "read", "output": "unavailable"}]))
         self.assertEqual(score.secjev_tool_request(pts[1][3])["state"]["untrusted_tool_response"], "unavailable")
         p = dict(pts[3][3], seen=[dict(function=str(i), output=str(i) * 4000) for i in range(4)])
-        for content, count in ((True, 3), (False, 4)):
+        for content, count in ((True, 4), (False, 4)):
             state = score.secjev_action_request(p, content)["state"]; self.assertEqual(len(state["untrusted_tool_outputs_seen"]), count)
             self.assertEqual(state["proposed_tool_call"]["function"], "send_email")
-            self.assertEqual(state["untrusted_tool_outputs_seen"][0], {"function": "1", "output": "1" * 3000} if content else {"function": "0", "provenance": "untrusted tool output"})
+            self.assertEqual(state["untrusted_tool_outputs_seen"][0], {"function": "0", "output": "0" * 4000} if content else {"function": "0", "provenance": "untrusted tool output"})
 
     def test_model_visible_error_precedence(self):
         for content, error, visible in (("ordinary", "inject private error", "inject private error"), ("ordinary", "", "ordinary"), ("inject payload", "", "inject payload")):
@@ -456,7 +467,7 @@ class JevTests(unittest.TestCase):
 
     def test_invalid_cli_arguments(self):
         score_args = ("unused", "--group", "secjev", "--outdir", self.path); adaptive_args = ("--pairs", "unused", "--model", "agent", "--attacker-model", "attacker", "--out", self.path / "unused")
-        cases = [("score", score_args + ("--shard", "1/0")), ("score", score_args + ("--cache-size", -1)), ("make_paraphrases", ("--model", "offline", "--n", 0, "--out", self.path / "unused")), ("adaptive", adaptive_args + ("--defense", "none", "--rounds", 0)), ("adaptive", adaptive_args + ("--defense", "llm_judge"))]
+        cases = [("score", score_args + ("--shard", "1/0")), ("score", score_args + ("--cache-size", -1)), ("make_paraphrases", ("--model", "offline", "--n", 0, "--out", self.path / "unused")), ("adaptive", adaptive_args + ("--defense", "none", "--rounds", 0)), ("adaptive", adaptive_args + ("--defense", "llm_judge", "--judge-url", ""))]
         for module, args in cases:
             with self.subTest(module=module, args=args), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error: cli(module, *args)
             self.assertEqual(error.exception.code, 2)
