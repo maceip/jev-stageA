@@ -17,6 +17,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 AGENT, ATTACKER = "gpt-5.4-mini", "gpt-5.5"
+ATTACKER_IBAN = "US133000000121212121212"
 
 
 def need(var, default=None):
