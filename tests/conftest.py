@@ -70,3 +70,47 @@ def find(eps, user_task, injection_task):
     return next(e for e in eps if e["user_task"] == user_task and e["injection_task"] == injection_task)
 
 
+# ---------------------------------------------------------------- fake/real module isolation
+# test_jev.py imports stubs.py, whose install() replaces torch/agentdojo/kev/...
+# in sys.modules with test doubles; the production modules imported afterwards
+# stay bound to those doubles. The e2e tests in this directory need the real
+# packages and real-bound production modules, so when both suites run in one
+# pytest process the managed sys.modules entries are swapped per test file.
+_MANAGED_TOP = {"torch", "transformers", "yaml", "openai", "tenacity", "agentdojo", "kev"}
+_MANAGED_EXACT = {"score", "replay", "analyze", "defenses", "adaptive", "attacks_ood",
+                   "report", "make_paraphrases", "secjev_scorer", "verify_corpus", "responses_llm"}
+_module_cache = {}
+_module_mode = None
+
+
+def _managed(name):
+    return name.split(".")[0] in _MANAGED_TOP or name in _MANAGED_EXACT
+
+
+def _activate(mode):
+    global _module_mode
+    if mode == _module_mode:
+        return
+    if _module_mode is None and "stubs" not in sys.modules:
+        _module_mode = mode  # doubles were never installed; nothing to swap
+        return
+    current = _module_mode or "fake"  # collection imported stubs first
+    if current == mode:
+        _module_mode = mode
+        return
+    _module_cache[current] = {k: v for k, v in sys.modules.items() if _managed(k)}
+    for k in [k for k in sys.modules if _managed(k)]:
+        del sys.modules[k]
+    sys.modules.update(_module_cache.get(mode, {}))
+    _module_mode = mode
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    name = Path(str(item.fspath)).name
+    if name == "test_jev.py":
+        _activate("fake")
+    elif name.startswith("test_e2e"):
+        _activate("real")
+
+

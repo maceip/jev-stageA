@@ -295,6 +295,9 @@ class _HFModel:
     def cuda(self):
         return self
 
+    def to(self, *args, **kwargs):
+        return self
+
     def eval(self):
         return self
 
@@ -803,12 +806,18 @@ def install():
 
     torch_module = _module("torch")
     torch_module.inference_mode = inference_mode
+    torch_module.no_grad = inference_mode
     torch_module.softmax = softmax
     torch_module.float32 = float
     torch_module.Tensor = _Tensor
+    torch_module.cuda = types.SimpleNamespace(
+        is_available=lambda: False, empty_cache=lambda: None)
+    torch_module.mps = types.SimpleNamespace(
+        is_available=lambda: False, empty_cache=lambda: None)
     torch_module.backends = types.SimpleNamespace(
         cuda=types.SimpleNamespace(matmul=types.SimpleNamespace(allow_tf32=False)),
-        cudnn=types.SimpleNamespace(allow_tf32=False))
+        cudnn=types.SimpleNamespace(allow_tf32=False),
+        mps=types.SimpleNamespace(is_available=lambda: False))
 
     transformers_module = _module("transformers")
     transformers_module.AutoTokenizer = type("AutoTokenizer", (), {
@@ -902,7 +911,7 @@ BASE = {"kind": "action", "msg": 1, "call": 0, "function": "get_unread_emails",
         "errors": {}}
 SCORES = {"secjev_tool": 0.9, "secjev_action_meta": 0.8,
           "secjev_action_content": 0.7, "deberta": 0.6, "piguard": 0.5,
-          "llm_judge": 0.4}
+          "llm_judge": 0.4, "llm_judge_action": 0.4}
 PTS = [dict(BASE, **SCORES),
        dict(BASE, kind="tool", msg=2, secjev_tool=0.95, llm_judge=0.9)]
 GROUPS = ("secjev", "classifiers", "judge")
@@ -980,12 +989,15 @@ REPORT_RES = {
                       "benign_utility_native": (1.0, 0.5, 1.0),
                       "benign_utility_u95": (1.0, 0.5, 1.0)} for d in
                   ("secjev_tool", "deberta", "piguard", "llm_judge",
-                   "secjev_action_meta", "secjev_action_content")},
+                   "secjev_action_meta", "secjev_action_content",
+                   "secjev_cascade", "secjev_cascade_judge")},
     "attacks": {"ood_llmail": {
         "n": 1, "undefended": {"asr": (0.0, 0.0, 1.0), "utility": (1.0, 0.5, 1.0)},
-        **{f"{d}@native": {"asr": (0.0, 0.0, 1.0), "utility": (1.0, 0.5, 1.0)}
+        **{f"{d}@{mode}": {"asr": (0.0, 0.0, 1.0), "utility": (1.0, 0.5, 1.0)}
            for d in ("secjev_tool", "deberta", "piguard", "llm_judge",
-                     "secjev_action_meta", "secjev_action_content")}}}}
+                     "secjev_action_meta", "secjev_action_content",
+                     "secjev_cascade", "secjev_cascade_judge")
+           for mode in ("native", "u95")}}}}
 
 
 class GrowingScorer:
@@ -1084,7 +1096,7 @@ CANDIDATE_CASES = (
 )
 
 # Tokens make_paraphrases.required() must preserve.
-REQUIRED_TOKENS = ("bob@example.com", "2024-01-02", "report.md", "'quoted text'")
+REQUIRED_TOKENS = ("bob@example.com", "2024-01-02", "report.md", "quoted text")
 
 # Points used by the cascade tests: a tainted tool read plus a risky call.
 TAINTED_RISKY = [RISKY_POINT, dict(BASE, kind="tool", msg=2, secjev_tool=0.9)]
