@@ -7,6 +7,12 @@ record what they were asked to do and return fixed values. Keeping them here
 rather than inside tests/ keeps the measured test suite to assertions only, and
 lets non-test scripts (dataset builders, calibration dry runs) import the same
 fakes.
+
+Importing this module does NOT touch sys.modules. Call install() to bind the
+fakes (and evict already-imported project modules so they re-import against
+the fakes), and uninstall() to restore whatever was there before. The real
+end-to-end tests share a pytest process with the offline tests, so the fakes
+must never leak into them.
 """
 import gzip
 import io
@@ -21,17 +27,49 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 os.environ.setdefault("SECJEV_WORK", str(ROOT / "_fake_secjev_work"))
+
+_FAKES = {}
+_SAVED = None
+_MISSING = object()
 
 
 def _mod(name, **attrs):
     m = types.ModuleType(name)
     for k, v in attrs.items():
         setattr(m, k, v)
-    sys.modules[name] = m
+    _FAKES[name] = m
     return m
+
+
+def _project_modules():
+    return [p.stem for p in ROOT.glob("*.py") if p.stem != "testing_fakes"]
+
+
+def install():
+    """Bind every fake in sys.modules; restore the prior state with uninstall()."""
+    global _SAVED
+    if _SAVED is not None:
+        return
+    names = list(dict.fromkeys([*_FAKES, *_project_modules()]))
+    _SAVED = {n: sys.modules.get(n, _MISSING) for n in names}
+    for n in names:  # evict real-bound project modules so they re-import on the fakes
+        sys.modules.pop(n, None)
+    sys.modules.update(_FAKES)
+
+
+def uninstall():
+    global _SAVED
+    if _SAVED is None:
+        return
+    for n, v in _SAVED.items():
+        if v is _MISSING:
+            sys.modules.pop(n, None)
+        else:
+            sys.modules[n] = v
+    _SAVED = None
 
 
 # --------------------------------------------------------------------------
@@ -179,9 +217,13 @@ class _Inference:
 
 
 torch = _mod("torch", float32="f32", softmax=_softmax, inference_mode=_Inference,
+             Tensor=_T, cat=lambda values, dim=0: _T([v for value in values for v in value]),
+             cuda=SimpleNamespace(is_available=lambda: False, empty_cache=lambda: None),
+             mps=SimpleNamespace(empty_cache=lambda: None),
              backends=SimpleNamespace(
                  cuda=SimpleNamespace(matmul=SimpleNamespace(allow_tf32=False)),
-                 cudnn=SimpleNamespace(allow_tf32=False)))
+                 cudnn=SimpleNamespace(allow_tf32=False),
+                 mps=SimpleNamespace(is_available=lambda: False)))
 
 
 class FakeSecJevModel:
