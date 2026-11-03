@@ -1,6 +1,6 @@
-# Layered IPI Defense Agent: Project Plan
+# Weaponizing JEV for Defenders
 
-Oct 31, 2026 · @Ryan MacArthur
+Research design for turning JEV-style typed decision models (Kev/JEV, SecJev) into layered defenses for tool-using LLM agents. Section 0 reports the completed Stage A evaluation shipped in jev-stageA. Sections 1–7 specify the forward layered system — multi-CaMeL capability tracking, CounterSteer activation steering, a RepE probe circuit breaker (Sentinel), a SecJev decision service, and an effect-authorization gate (EffectMatch). Only the SecJev layers are implemented today; the remaining layers are specified designs with integration points defined in [defense-api.md](defense-api.md).
 
 ## 0. First: prove a JEV-style model helps
 
@@ -35,7 +35,7 @@ Nothing below gets built until this passes. No cited paper shows the combined ar
 
 ### Stage A results (run Oct 31, 2026)
 
-**Verdict: strict fail on criterion 1, pass on the rest. SecJev is a working, agent-independent injection detector, but it does not beat the best existing detector (an LLM judge) on gpt-oss-20b, so by the rule above this gate fails.** Your decision whether that rule should stand (see Recommendation).
+**Verdict: strict fail on criterion 1, pass on the rest. SecJev is a working, agent-independent injection detector, but SecJev does not beat the best existing detector (an LLM judge) on gpt-oss-20b, so by the rule above the Stage A gate fails.**
 
 Setup: AgentDojo v1.2.2, two agent models (gpt-oss-20b, Qwen3-30B-A3B), 97 normal tasks plus 6 attack sets (about 5,600 attacked runs per model). SecJev-4B unchanged, verified against its published scores (98.36% / 99.53% / 100%). Defenses abort the run on a flag; outcomes for every defense come from exact replay of the recorded runs (111/111 validation, 2 cells recomputed independently). 95% Wilson intervals throughout. SecJev was trained on every built-in AgentDojo attack, so five of the six attack sets are new text written for this test, including 20 real LLMail-Inject human attacks.
 
@@ -74,7 +74,7 @@ Setup: AgentDojo v1.2.2, two agent models (gpt-oss-20b, Qwen3-30B-A3B), 97 norma
 **What this says about the JEV hypothesis**
 
 - **As a tool-output detector, SecJev works and is portable.** Near-zero attack success on unseen attack text, on both agents, with the smallest normal-task cost of any classifier tested. The LLM judge matches it on gpt-oss but fails on Qwen (blocks 79% of normal tasks); SecJev's behaviour does not depend on the agent model and costs one 4B forward pass instead of a full LLM call.
-- **The action-monitor placement (your hypothesis) has the right shape.** Under attack it keeps 40–57% of tasks completing, versus 7–14% for every tool-output detector, because it stops only the bad action instead of aborting whenever injected text appears. Adaptive attack success against it is low (1.7–5%).
+- **The action-monitor placement has the right shape.** Under attack the action monitor keeps 40–57% of tasks completing, versus 7–14% for every tool-output detector, because the action monitor stops only the unauthorized action instead of aborting whenever injected text appears. Adaptive attack success against the action monitor is low (1.7–5%).
 - **But zero-shot, the action monitor is not precise enough.** It costs about 17 points of normal-task completion at the default threshold; tuned to 95% normal tasks, attack success rises to 10–19% on the standard set. SecJev was never trained on this question.
 
 **Caveats**
@@ -85,9 +85,9 @@ Setup: AgentDojo v1.2.2, two agent models (gpt-oss-20b, Qwen3-30B-A3B), 97 norma
 - The action-monitor arms gave the adaptive attacker block/no-block feedback only; tool-detector arms also exposed detection scores. Attacker and judge use the agent's own model.
 - About 3% of gpt-oss runs ended in malformed tool calls and are excluded for every defense alike. PromptGuard-2 not tested (gated).
 
-**Recommendation.** Don't start the full build. If you accept that tying the LLM judge while being far cheaper and agent-independent is enough, the next experiment is narrow: train SecJev on action-authorization questions (built from these traces, held-out suites for test) and rerun the action-monitor arms, then Stage B on top of multi-CaMeL. If the strict rule stands, stop here.
+**Recommendation.** The full build does not start on Stage A evidence. The narrow next experiment is training SecJev on action-authorization questions (built from Stage A traces, held-out suites for test) and rerunning the action-monitor arms, then Stage B on top of multi-CaMeL. The action-authorization fine-tune (SecJev-4B-Action-Monitor-C1) has since been trained and evaluated; [evaluation.md](evaluation.md) reports the C1 results, including the C1 monitor's remaining adaptive-attack weakness.
 
-Cost: about $36 of Lambda compute across four GPUs. Code, raw runs, scores and tables: `dad/jev-stageA` (`data/results/*.md`).
+Code, raw runs, scores and tables: the jev-stageA repository (`data/results/*.md`).
 
 ### Stage A rerun: rules fixed before it runs
 
@@ -114,8 +114,6 @@ The first run cannot decide the build: the attacks were too weak. Against SecJev
 | 5 | Under 1% of runs fail from agent errors |
 
 **Decision:** all pass → start the full build. Rule 1 fails but 2–4 pass → SecJev is kept only as a cheap optional labeler; no build. Rule 2 or 3 fails → stop.
-
-Budget: up to about $1,500 of the remaining \~$3,960.
 
 ## 1. Scope
 
@@ -288,7 +286,7 @@ tests/            e2e, integration, property (no mock directory exists, by polic
 
 ## 7. Open decisions
 
-**Blocking decision:** the Stage A gate in section 0 (stop, or accept a tie with the LLM judge and train the action monitor). The three items below are still undecided; they only matter if the full build goes ahead.
+**Stage A outcome:** the strict gate in section 0 failed, and the action-authorization fine-tune has been trained and evaluated (see [evaluation.md](evaluation.md)). The three items below remain open research decisions for the layered build.
 
 - Primary deployment model for QLLM: gpt-oss-20b (deepest CounterSteer evidence) vs Qwen3-30B.
 - Whether non-CaMeL agent mode ships at all, or exists only for evaluation.

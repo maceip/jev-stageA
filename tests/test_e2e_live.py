@@ -3,14 +3,14 @@ import copy, json, os, re, subprocess, sys
 
 import pytest
 
-from conftest import ROOT, AGENT, ATTACKER, ATTACKER_IBAN, need, episodes, find, as_live
+from conftest import ROOT, AGENT, ATTACKER, need, episodes, find, as_live
 
 # ---------------------------------------------------------------- wiring
 @pytest.mark.parametrize("spec", ["none", "cascade:content:0.5:stop"])
 def test_build_defense_constructs_real_elements(spec):
     import run_agent, types
     need("SECJEV_WORK")
-    ex, post = run_agent.build_defense(spec, types.SimpleNamespace(secjev=need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1")))
+    ex, post = run_agent.build_defense(spec, types.SimpleNamespace(secjev=need("SECJEV_ACTION_CKPT", str(ROOT / "checkpoints/SecJev-4B-Action-Monitor-C1"))))
     from agentdojo.agent_pipeline import ToolsExecutor
     assert isinstance(ex, ToolsExecutor) and len(post) == (1 if spec.startswith("cascade") else 0)
     del ex, post
@@ -43,7 +43,7 @@ def test_live_run_agent_with_defense(tmp_path):
     need("OPENAI_API_KEY"); need("SECJEV_WORK")
     out = tmp_path / "live.jsonl"
     _run(["run_agent.py", "--attack", "ood:bland_note", "--suites", "banking", "--limit", "2", "--model", AGENT,
-          "--defense", "action:content:0.35:redact", "--secjev", need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1"),
+          "--defense", "action:content:0.35:redact", "--secjev", need("SECJEV_ACTION_CKPT", str(ROOT / "checkpoints/SecJev-4B-Action-Monitor-C1")),
           "--workers", "2", "--out", str(out)])
     recs = [json.loads(l) for l in open(out)]
     assert len(recs) == 2 and all(r["error"] is None for r in recs), [r["error"] for r in recs]
@@ -55,7 +55,7 @@ def test_live_adaptive_round(tmp_path, defense):
     sj = []
     if defense != "none":
         need("SECJEV_WORK")
-        sj = ["--secjev", need("SECJEV_ACTION_CKPT", "~/ckpt/C1_e1")]
+        sj = ["--secjev", need("SECJEV_ACTION_CKPT", str(ROOT / "checkpoints/SecJev-4B-Action-Monitor-C1"))]
     pairs, out = tmp_path / "p.json", tmp_path / "a.jsonl"
     pairs.write_text(json.dumps([["banking", "user_task_0", "injection_task_5"]]))
     _run(["adaptive.py", "--pairs", str(pairs), "--defense", defense, *sj,
