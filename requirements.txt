@@ -1,0 +1,19 @@
+# jev-stageA runtime requirements.
+# SecJev checkpoint stack (pinned by the upstream SecJev-4B release):
+torch==2.6.0
+transformers==5.17.0
+peft==0.21.0
+triton==3.2.0; sys_platform == "linux"
+flash-linear-attention==0.4.2
+fla-core==0.4.2
+accelerate
+datasets
+pydantic>=2.9
+huggingface-hub
+safetensors
+# Agent, judge, and test clients:
+openai
+sentencepiece
+pytest
+# AgentDojo is installed separately at the pinned commit used for every reported number:
+#   pip install "git+https://github.com/ethz-spylab/agentdojo@089ed468cf3ed0322acc66b0211f26d9d90dbf60"

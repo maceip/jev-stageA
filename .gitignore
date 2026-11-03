@@ -19,3 +19,12 @@ env/
 *.log
 *.tmp
 ft/ckpt/adapter_model.safetensors
+
+# Secrets and local checkpoints (weights live on Hugging Face: MetaPublic)
+.env
+checkpoints/
+secjev-4b-work/
+*.safetensors
+ft/ckpt/tokenizer.json
+ft/ckpt/chat_template.jinja
+ft/ckpt/tokenizer_config.json

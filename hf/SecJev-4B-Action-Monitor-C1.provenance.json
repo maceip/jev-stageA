@@ -1,0 +1,20 @@
+{
+  "name": "SecJev-4B-Action-Monitor-C1",
+  "description": "SecJev-4B fine-tuned (variant C1, epoch 1) to judge whether a proposed agent tool call is authorized by the user's request, given the tool outputs the agent has seen (content view).",
+  "upstream_checkpoint": "SecJev-4B v1.2.0 (UESTC1010/SecJev, GitHub release v1.2.0); upstream records preserved in upstream-provenance.json and upstream-secjev-4b/",
+  "base_model": "Qwen/Qwen3.5-4B-Base",
+  "base_revision": "1001bb4d826a52d1f399e183466143f4da7b741b",
+  "kev_source_commit": "90990a5fac2995b9faa3190f7d437e84f2067768",
+  "training": {
+    "code": "ft_action.py in the jev-stageA repository",
+    "variant": "C1: content view, lr 3e-5, no SecJev-Corpus replay, unauthorized-class weight 3, 1 epoch selected",
+    "data": "Action-authorization questions built from recorded AgentDojo v1.2.2 runs (build_action_data.py). Train: workspace+travel suites (9,974 questions, 694 unauthorized). Dev: 915. Held-out test: banking+slack (7,588), never used for checkpoint or threshold selection.",
+    "threshold_reported": "0.35 on P(unauthorized) + 0.5 * P(partially), tuned on workspace+travel normal tasks only"
+  },
+  "changed_files_vs_upstream": ["adapter_model.safetensors", "head.pt", "adapter_config.json"],
+  "hashes": {
+    "adapter_model.safetensors": "184fbde48a39ca6a8c3f227518581a24e7af2b478db1dac58e028e455284494c",
+    "head.pt": "93ec77f5536d29dcd468b21ff519e5c2885ddbe0d685ff05f9ab50d1ce892a51"
+  },
+  "license": "SecJev Use and Distribution Agreement v1.0 (LICENSE) plus applicable upstream terms (UPSTREAM.md, THIRD_PARTY_NOTICES.md). This is a modified release and is not the original SecJev-4B."
+}
