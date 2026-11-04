@@ -58,3 +58,34 @@ empty attempt, bench stdout logs, and the partial spot2_full log
 (epoch-0 + step-10 lines are quoted above/in session record).
 No CLEF FT ever ran on the droplet; the verified backbone copy
 died with it (local identical source retained).
+
+## CLEF seed1 FT (jev-retrain droplet, 2026-11-04) — verified, upload pending
+
+New droplet `jev-retrain` (615711309, gpu-mi355x1-288gb-spot,
+168.144.60.186, created 2026-11-04T05:35:29Z). CLEF pipeline:
+GPU encode of 146,984 frozen-v0.3 rows at 0.043 s/row (HF torch on
+ROCm), then JointSchemaHead training, 3 epochs. First attempt
+OOM-killed 14:28:49Z at 256 GB anon-RSS (full train set materialized
+in RAM); patched streaming rerun (RSS ~5 GB) finished 18:24:03Z.
+Dev epoch-0 AUC 0.7516 (TPR@0.99 0.0) -> epoch-3 dev AUC 0.9899,
+TPR@0.5 0.9911 / FPR@0.5 0.2183, TPR@0.99 0.9583 / FPR@0.99 0.0507;
+script-run test (banking+slack) AUC 0.9897. Caveats: dev/test are
+92% positive (1,695-1,694 negatives of ~22k); FPR@0.5 remains 0.22.
+
+Verification (this session): head + config + provenance downloaded;
+droplet==local SHA-256 (head `8ca78d0c127755948f…`); 122 tensors,
+121,762,820 params, BF16; differs from base head; assembled onto
+local LiteRT base and fresh-process LiteRT scoring succeeded
+(3 synthetic-spoof rows: pos 0.936, pos 0.093 (miss @0.5), neg 0.010).
+Droplet ckpt_out contains ONLY head/ + provenance_ft.json (cache-only
+assembly); full runnable dir is assembled locally at staging time.
+HF upload completed 2026-11-04 19:05 UTC on direct user instruction
+(personal account, user-approved naming): macmacmacmac/CLEF-Screen,
+commit 2b605e886d8a, public, 28 files. HF-side LFS SHA-256 match the
+droplet artifacts (head 8ca78d0c…, tflite 43a638f2…). The Tuesday-v2
+frozen-chain publication gate (tuesday_gates.require_frozen_chain)
+was bypassed on explicit user instruction; the card and
+redo-provenance.json disclose that no frozen_chain_manifest.json or
+independent replication exists yet. Seed2 CLEF rerun in progress on
+the droplet; remaining-queue Tasks A-C (SecJev seed2, adaptive,
+ultraspeed) crashed on missing SECJEV_WORK and produced nothing.
