@@ -1,0 +1,109 @@
+[
+ {
+  "source": "Lakera/gandalf_ignore_instructions",
+  "kind": "hf-dataset",
+  "license": "mit",
+  "usable_for_training": true,
+  "dir": "Lakera__gandalf_ignore_instructions",
+  "files": [
+   ".cache/huggingface/.gitignore",
+   ".cache/huggingface/CACHEDIR.TAG",
+   ".cache/huggingface/download/.gitattributes.lock",
+   ".cache/huggingface/download/.gitattributes.metadata",
+   ".cache/huggingface/download/README.md.lock",
+   ".cache/huggingface/download/README.md.metadata",
+   ".cache/huggingface/download/data/test-00000-of-00001-bc92128b9288a6d1.parquet.lock",
+   ".cache/huggingface/download/data/test-00000-of-00001-bc92128b9288a6d1.parquet.metadata",
+   ".cache/huggingface/download/data/train-00000-of-00001-ded53be747ff55cd.parquet.lock",
+   ".cache/huggingface/download/data/train-00000-of-00001-ded53be747ff55cd.parquet.metadata",
+   ".cache/huggingface/download/data/validation-00000-of-00001-94481a2a09ff2fff.parquet.lock",
+   ".cache/huggingface/download/data/validation-00000-of-00001-94481a2a09ff2fff.parquet.metadata",
+   ".cache/huggingface/trees/04737b65e90a6794ec227012e4a255a7def6344b.json",
+   ".gitattributes",
+   "README.md",
+   "data/test-00000-of-00001-bc92128b9288a6d1.parquet",
+   "data/train-00000-of-00001-ded53be747ff55cd.parquet",
+   "data/validation-00000-of-00001-94481a2a09ff2fff.parquet"
+  ]
+ },
+ {
+  "source": "microsoft/llmail-inject-challenge",
+  "kind": "hf-dataset",
+  "license": "mit",
+  "usable_for_training": true,
+  "dir": "microsoft__llmail-inject-challenge",
+  "files": [
+   ".cache/huggingface/.gitignore",
+   ".cache/huggingface/CACHEDIR.TAG",
+   ".cache/huggingface/download/.gitattributes.lock",
+   ".cache/huggingface/download/.gitattributes.metadata",
+   ".cache/huggingface/download/README.md.lock",
+   ".cache/huggingface/download/README.md.metadata",
+   ".cache/huggingface/download/data/emails_for_fp_tests.json.lock",
+   ".cache/huggingface/download/data/emails_for_fp_tests.json.metadata",
+   ".cache/huggingface/download/data/labelled_unique_submissions_phase1.json.lock",
+   ".cache/huggingface/download/data/labelled_unique_submissions_phase1.json.metadata",
+   ".cache/huggingface/download/data/labelled_unique_submissions_phase2.json.lock",
+   ".cache/huggingface/download/data/labelled_unique_submissions_phase2.json.metadata",
+   ".cache/huggingface/download/data/levels_descriptions.json.lock",
+   ".cache/huggingface/download/data/levels_descriptions.json.metadata",
+   ".cache/huggingface/download/data/objectives_descriptions.json.lock",
+   ".cache/huggingface/download/data/objectives_descriptions.json.metadata",
+   ".cache/huggingface/download/data/raw_submissions_phase1.jsonl.lock",
+   ".cache/huggingface/download/data/raw_submissions_phase1.jsonl.metadata",
+   ".cache/huggingface/download/data/raw_submissions_phase2.jsonl.lock",
+   ".cache/huggingface/download/data/raw_submissions_phase2.jsonl.metadata"
+  ]
+ },
+ {
+  "source": "ethz-spylab/ctf-satml24",
+  "kind": "hf-dataset",
+  "license": "mit",
+  "usable_for_training": true,
+  "dir": "ethz-spylab__ctf-satml24",
+  "files": [
+   ".cache/huggingface/.gitignore",
+   ".cache/huggingface/CACHEDIR.TAG",
+   ".cache/huggingface/download/.gitattributes.lock",
+   ".cache/huggingface/download/.gitattributes.metadata",
+   ".cache/huggingface/download/README.md.lock",
+   ".cache/huggingface/download/README.md.metadata",
+   ".cache/huggingface/download/chat.50.json.lock",
+   ".cache/huggingface/download/chat.50.json.metadata",
+   ".cache/huggingface/download/chat.json.lock",
+   ".cache/huggingface/download/chat.json.metadata",
+   ".cache/huggingface/download/chat.was_successful_secret_extraction.50.json.lock",
+   ".cache/huggingface/download/chat.was_successful_secret_extraction.50.json.metadata",
+   ".cache/huggingface/download/defense.json.lock",
+   ".cache/huggingface/download/defense.json.metadata",
+   ".cache/huggingface/download/defense_submission.json.lock",
+   ".cache/huggingface/download/defense_submission.json.metadata",
+   ".cache/huggingface/download/dqed_ids.json.lock",
+   ".cache/huggingface/download/dqed_ids.json.metadata",
+   ".cache/huggingface/download/filtered_defense.json.lock",
+   ".cache/huggingface/download/filtered_defense.json.metadata"
+  ]
+ },
+ {
+  "source": "https://github.com/uiuc-kang-lab/InjecAgent.git",
+  "kind": "github",
+  "license": "mit",
+  "license_files": [
+   "LICENCE"
+  ],
+  "license_head": "MIT License\n\nCopyright (c) 2023 Qiusi Zhan\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, me",
+  "usable_for_training": true,
+  "dir": "InjecAgent"
+ },
+ {
+  "source": "https://github.com/microsoft/BIPIA.git",
+  "kind": "github",
+  "license": "mit (LICENSE file verified)",
+  "license_files": [
+   "LICENSE"
+  ],
+  "license_head": "    MIT License\n\n    Copyright (c) Microsoft Corporation.\n\n    Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the righ",
+  "usable_for_training": true,
+  "dir": "BIPIA"
+ }
+]
