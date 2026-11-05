@@ -1,0 +1,18 @@
+{
+  "checkpoint": "checkpoints/clef-v04-ft",
+  "method": "fresh-process LiteRT load + strict head load + 6 bench rows end-to-end",
+  "result": "LOAD_CHECK_PASS",
+  "scores": {
+    "pos": [
+      0.9754,
+      0.9946,
+      0.9928
+    ],
+    "neg": [
+      0.2529,
+      0.0131,
+      0.0007
+    ]
+  },
+  "log": "ft/clef_v04_evidence/load_check.txt"
+}

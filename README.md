@@ -14,21 +14,28 @@ two model families are supported: secjev-4b (kev format, loaded by `secjev_score
 
 ## results, short version
 
+![Can Small Security Models Stop Prompt Injection — And Is Fine-Tuning Worth It?](docs/redo-v2/jev_human_questions_chart.png)
+
 - the secjev-4b tool output check works. on attack text outside secjev training data, attack success fell from 6–26% with no defense to 0–0.7% with the check, on both open-weight agents tested.
-- the fine-tuned c1 tool call check keeps more work done under attack: 75.5% of tasks completed at 0.8% hijacked in redact mode, against 28.5% completed at 0.0% hijacked for an llm judge. no defense: 78.3% completed, 34.1% hijacked. held-out suites: banking and slack.
+- the fine-tuned c1 tool call check (`ft/ckpt`, epoch 1, evaluated live in `run3/`) keeps more work done under attack: 75.5% of tasks completed at 0.8% hijacked in redact mode, against 28.5% completed at 0.0% hijacked for an llm judge. no defense: 78.3% completed, 34.1% hijacked. held-out suites: banking and slack.
 - both checks together gained nothing in live runs: 2 of 249 hijacked, same as the tool call check alone, with task completion under attack down to 72 of 249 against 194 of 249.
 - against an attacker that retries up to 10 rounds per target, the c1 tool call check is weak: 53–58% hijacked, against 64% with no defense and 25% for an llm judge.
 - the pass rules fixed before the rerun were not met. full numbers and rules: `docs/evaluation.md` and `docs/analysis-plan.md`.
-- redo and clef fine-tunes report dev auc up to 0.99 on small dev sets. no frozen test result exists for redo weights yet. read `docs/redo-v2/hf-uploads.md` before citing redo numbers.
+- redo and clef fine-tunes on frozen banking and slack test splits (`docs/redo-v2/replication-report.json` and `docs/redo-v2/hf-uploads.md`):
+  - `CLEF-Screen-V2` (9b clef-flash head fine-tuned on 1:1 balanced data, 16,322 train rows) reaches 0.9833 test auc on 21,965 frozen banking+slack rows (94.0% tpr at 5.4% fpr @ 0.5; 88.2% tpr at 2.0% fpr @ 0.9), cutting false alarms 7x vs the untrained head (76.1% tpr at 36.9% fpr, 0.7516 auc) and 4x vs skewed 92%-positive training (`CLEF-Screen` v0.3: 99.2% tpr at 21.6% fpr @ 0.5, 0.9897 auc). passes the full tuesday-v2 frozen-chain gate (`docs/redo-v2/frozen_chain_manifest.json`).
+  - offline frozen-test spot-2 lora + head fine-tuning on tool-call authorization (7,192 frozen banking+slack test rows, separate from the live c1 checkpoint above) reaches 0.8802 test auc on seed 1 (`secjev_v03_fla_seed1` in `ft/droplet_harvest_20261105/replication/recomputed.json`, 73.1% tpr at 14.1% fpr vs 85.9% tpr at 43.1% fpr for zero-shot `SecJev-4B` base at the shared threshold, 0.8146 auc) and 0.8661 test auc on published seed 2 (`macmacmacmac/SecJev-4B-Spot2-V3`, 54.4% tpr at 7.2% fpr @ 0.5). `macmacmacmac/CLEF-DualScreen` (small head-only fine-tune, train=569/dev=149/test=220) logged 0.9829 filter / 0.9846 guard dev auc; its model card reports 1.0000 filter / 0.7731 guard test auc (60.0% fpr @ 0.35), with no local per-row test score file in the repo inventory (recorded as an open gap in `docs/redo-v2/replication-report.json`).
 
 ## weights
 
-public hugging face repos under the account `macmacmacmac`:
+seven public hugging face repos under the account `macmacmacmac` (all weights hash-verified against local copies in `docs/redo-v2/replication-report.json`):
 
-- `macmacmacmac/SecJev-4B-Spot2-Redo` — tool call check, redo fine-tune
-- `macmacmacmac/SecJev-4B-Spot1-Redo` — tool output check, redo fine-tune
-- `macmacmacmac/SecJev-4B-Joint-Redo` — both questions, one checkpoint
-- `macmacmacmac/CLEF-Screen` — clef-flash fine-tuned head, runnable litert directory
+- `macmacmacmac/CLEF-Screen-V2` — clef-flash 9b tool-output filter head trained on 1:1 balanced data (0.9833 frozen test auc, 5.4% fpr @ 0.5 / 2.0% @ 0.9)
+- `macmacmacmac/CLEF-Screen` — clef-flash 9b tool-output filter head trained on v0.3 split (0.9897 frozen test auc, 21.6% fpr @ 0.5)
+- `macmacmacmac/CLEF-DualScreen` — clef-flash 9b small dual-task head (0.9829 filter / 0.9846 guard dev auc; card reports 1.0000 / 0.7731 test auc, per-row test file gap noted in `docs/redo-v2/replication-report.json`)
+- `macmacmacmac/SecJev-4B-Spot2-V3` — secjev-4b tool-call authorization lora+head fine-tune on full frozen spot-2 v0.2 split, seed 2 (0.8661 full-test auc on 7,192 rows)
+- `macmacmacmac/SecJev-4B-Spot2-Redo` — secjev-4b tool-call check, bench-split redo fine-tune (0.9911 dev auth auc)
+- `macmacmacmac/SecJev-4B-Spot1-Redo` — secjev-4b tool-output check, bench-split redo fine-tune (0.9327 dev inj auc)
+- `macmacmacmac/SecJev-4B-Joint-Redo` — secjev-4b joint check, bench-split redo fine-tune (0.9898 dev auth / 0.9314 dev inj auc)
 
 the original secjev-4b release is at github `UESTC1010/SecJev` release v1.2.0. the c1 tool call checkpoint from the first evaluation is staged and hash-checked on the maintainer machine and is not on hugging face yet. `publish_weights.py` assembles and uploads the c1 pair. there is no metapublic hugging face organization; older docs that name metapublic are wrong.
 

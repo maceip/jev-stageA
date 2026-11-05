@@ -1,0 +1,12 @@
+{
+  "model": "macmacmacmac/CLEF-Screen-V2",
+  "run_name": "clef_v04",
+  "head_sha256": "c7375d6f2044ab67880dcee327283fc6ef16e15055fe2d39354852eb48bb7b2a",
+  "head_tensors": 122,
+  "head_params": 121762820,
+  "head_dtype": "BF16",
+  "backbone_tflite_sha256": "43a638f2976f8bd8e885bdd7d41b1a342bb583c41c81f4528b1379ad4dee823b",
+  "local_checkpoint": "checkpoints/clef-v04-ft",
+  "hf_commit": "8b2d1db687e3b45f79f9d9f9cb089a9d4d1da5f0",
+  "droplet_checkpoint": "/root/work/checkpoints/clef-flash-LiteRT-ft-v04 (jev-retrain, destroyed after harvest)"
+}

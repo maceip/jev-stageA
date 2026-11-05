@@ -1,0 +1,104 @@
+{
+  "dev_baseline": {
+    "event": "eval",
+    "split": "dev",
+    "epoch": 0,
+    "step": 0,
+    "loss": 0.6314,
+    "tool_output_filter": {
+      "n": 21977,
+      "pos": 20282,
+      "neg": 1695,
+      "auc": 0.7516,
+      "tpr@0.5": 0.7605,
+      "fpr@0.5": 0.3687,
+      "tpr@0.9": 0.3445,
+      "fpr@0.9": 0.1493,
+      "tpr@0.99": 0.0,
+      "fpr@0.99": 0.0
+    },
+    "action_authorization_guard": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.35": 0.0,
+      "fpr@0.35": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0
+    },
+    "elapsed_min": 8.46,
+    "ts": 1793858877.13
+  },
+  "dev_best": {
+    "event": "eval",
+    "split": "dev_best",
+    "epoch": 3,
+    "step": 3047,
+    "loss": 0.1934,
+    "tool_output_filter": {
+      "n": 21977,
+      "pos": 20282,
+      "neg": 1695,
+      "auc": 0.984,
+      "tpr@0.5": 0.9391,
+      "fpr@0.5": 0.0501,
+      "tpr@0.9": 0.8745,
+      "fpr@0.9": 0.0206,
+      "tpr@0.99": 0.6972,
+      "fpr@0.99": 0.0029
+    },
+    "action_authorization_guard": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.35": 0.0,
+      "fpr@0.35": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0
+    }
+  },
+  "test_banking_slack": {
+    "event": "eval",
+    "split": "test_banking_slack",
+    "epoch": 3,
+    "step": 3047,
+    "loss": 0.1888,
+    "tool_output_filter": {
+      "n": 21965,
+      "pos": 20271,
+      "neg": 1694,
+      "auc": 0.9833,
+      "tpr@0.5": 0.9402,
+      "fpr@0.5": 0.0543,
+      "tpr@0.9": 0.8821,
+      "fpr@0.9": 0.0201,
+      "tpr@0.99": 0.7055,
+      "fpr@0.99": 0.0041
+    },
+    "action_authorization_guard": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.35": 0.0,
+      "fpr@0.35": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0
+    },
+    "elapsed_min": 75.4,
+    "checkpoint": {
+      "path": "/root/work/checkpoints/clef-flash-LiteRT-ft-v04",
+      "epoch": 3,
+      "step": 3047
+    },
+    "ts": 1793862893.37
+  }
+}

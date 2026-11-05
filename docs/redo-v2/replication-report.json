@@ -1,0 +1,283 @@
+{
+  "repos": {
+    "SecJev-4B-Spot2-Redo": {
+      "commit": "af70db84594cebe86e2691186794fd356e082dfe",
+      "private": false,
+      "weights": {
+        "adapter_model.safetensors": {
+          "hf_lfs_sha256": "c04f11dd7afc8fa92f26c1c2b190bf4f447d78cb29eb2c5e4cb2c899692c2637",
+          "local_matches": [
+            "ft/gpu_secjev_spot2/adapter_model.safetensors"
+          ]
+        }
+      }
+    },
+    "SecJev-4B-Spot1-Redo": {
+      "commit": "cc6367b4e25abdf9fbca149a6cd88cab8fc5d875",
+      "private": false,
+      "weights": {
+        "adapter_model.safetensors": {
+          "hf_lfs_sha256": "7329ca6cdc831cd32e2e8ec9266763c5255ba9cfda35a8d8536f2e03234a85ab",
+          "local_matches": [
+            "ft/gpu_secjev_spot1/adapter_model.safetensors"
+          ]
+        }
+      }
+    },
+    "SecJev-4B-Joint-Redo": {
+      "commit": "381e6c45ababc4ce12d577a041ee34d2add22aba",
+      "private": false,
+      "weights": {
+        "adapter_model.safetensors": {
+          "hf_lfs_sha256": "6d816736b0fbb90d45b8f74d48b27b19a13e43c818da3b477a7b9db7b261a989",
+          "local_matches": [
+            "ft/gpu_secjev_joint/adapter_model.safetensors"
+          ]
+        }
+      }
+    },
+    "CLEF-Screen": {
+      "commit": "2b605e886d8aee70cb3942218870f3aac88f8e45",
+      "private": false,
+      "weights": {
+        "head/joint_head.safetensors": {
+          "hf_lfs_sha256": "8ca78d0c127755948fb285c90caeefcf6e61a2b5f2f3cc726ffae41ca231ab11",
+          "local_matches": [
+            "ft/droplet_harvest_20261105/full_clef/epoch3/head/joint_head.safetensors"
+          ]
+        }
+      }
+    },
+    "SecJev-4B-Spot2-V3": {
+      "commit": "c9ddbd5a30ae2d5f08379c90738a90f9f5e29dc3",
+      "private": false,
+      "weights": {
+        "adapter_model.safetensors": {
+          "hf_lfs_sha256": "2e4003b947c352d809cf5963c69275cd598be2ee2a07a76b33b02f3a9785bbf9",
+          "local_matches": [
+            "ft/droplet_harvest_20261105/ft/secjev_v03_fla_seed2/epoch3/adapter_model.safetensors"
+          ]
+        }
+      }
+    },
+    "CLEF-DualScreen": {
+      "commit": "073de96a5dc20612d3dc1ea8d23c2b789d21f412",
+      "private": false,
+      "weights": {
+        "head/joint_head.safetensors": {
+          "hf_lfs_sha256": "c783389e32f949132db18aa37345411dba3737e5699c579c2bae7d3980899e1a",
+          "local_matches": [
+            "ft/droplet_harvest_20261105/clef-flash-LiteRT-proper-ft/head/joint_head.safetensors",
+            "ft/droplet_harvest_20261105/clef_proper_run/epoch3/head/joint_head.safetensors"
+          ]
+        }
+      }
+    },
+    "CLEF-Screen-V2": {
+      "commit": "8b2d1db687e3b45f79f9d9f9cb089a9d4d1da5f0",
+      "private": false,
+      "weights": {
+        "head/joint_head.safetensors": {
+          "hf_lfs_sha256": "c7375d6f2044ab67880dcee327283fc6ef16e15055fe2d39354852eb48bb7b2a",
+          "local_matches": [
+            "checkpoints/clef-v04-ft/head/joint_head.safetensors"
+          ]
+        }
+      }
+    }
+  },
+  "score_recomputes": [
+    {
+      "repo": "CLEF-Screen-V2",
+      "split": "dev",
+      "score_file": "ft/clef_v04_evidence/dev_scores.jsonl",
+      "recomputed": {
+        "n": 21977,
+        "pos": 20282,
+        "neg": 1695,
+        "auc": 0.984,
+        "tpr@0.5": 0.9391,
+        "fpr@0.5": 0.0501
+      },
+      "published_auc": 0.984,
+      "matches_published": true
+    },
+    {
+      "repo": "CLEF-Screen-V2",
+      "split": "test",
+      "score_file": "ft/clef_v04_evidence/test_scores.jsonl",
+      "recomputed": {
+        "n": 21965,
+        "pos": 20271,
+        "neg": 1694,
+        "auc": 0.9833,
+        "tpr@0.5": 0.9402,
+        "fpr@0.5": 0.0543
+      },
+      "published_auc": 0.9833,
+      "matches_published": true
+    },
+    {
+      "repo": "CLEF-Screen",
+      "split": "dev",
+      "score_file": "ft/droplet_harvest_20261105/full_clef/dev_scores.jsonl",
+      "recomputed": {
+        "n": 21977,
+        "pos": 20282,
+        "neg": 1695,
+        "auc": 0.9899,
+        "tpr@0.5": 0.9911,
+        "fpr@0.5": 0.2183
+      },
+      "published_auc": 0.9899,
+      "matches_published": true
+    },
+    {
+      "repo": "CLEF-Screen",
+      "split": "test",
+      "score_file": "ft/droplet_harvest_20261105/full_clef/test_scores.jsonl",
+      "recomputed": {
+        "n": 21965,
+        "pos": 20271,
+        "neg": 1694,
+        "auc": 0.9897,
+        "tpr@0.5": 0.9915,
+        "fpr@0.5": 0.2161
+      },
+      "published_auc": 0.9897,
+      "matches_published": true
+    },
+    {
+      "repo": "SecJev-4B-Spot2-V3",
+      "split": "full_test",
+      "score_file": "ft/droplet_harvest_20261105/ft/secjev_v03_fla_seed2/test_scores.jsonl",
+      "recomputed": {
+        "n": 7192,
+        "pos": 1654,
+        "neg": 5538,
+        "auc": 0.8661,
+        "tpr@0.5": 0.5441,
+        "fpr@0.5": 0.0715
+      },
+      "published_auc": 0.8661,
+      "matches_published": true
+    },
+    {
+      "repo": "SecJev-4B-Spot2-Redo",
+      "split": "bench_draw_guard",
+      "score_file": "ft/bench_results_droplet/secjev_spot2.scores.action_authz_guard.json",
+      "recomputed": {
+        "n": 800,
+        "pos": 400,
+        "neg": 400,
+        "auc": 0.8824,
+        "tpr@0.5": 0.6,
+        "fpr@0.5": 0.0775
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "SecJev-4B-Spot2-Redo",
+      "split": "bench_draw_filter",
+      "score_file": "ft/bench_results_droplet/secjev_spot2.scores.tool_output_filter.json",
+      "recomputed": {
+        "n": 782,
+        "pos": 396,
+        "neg": 386,
+        "auc": 0.647,
+        "tpr@0.5": 0.8056,
+        "fpr@0.5": 0.4845
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "SecJev-4B-Spot1-Redo",
+      "split": "bench_draw_filter",
+      "score_file": "ft/bench_results_droplet/secjev_spot1.scores.tool_output_filter.json",
+      "recomputed": {
+        "n": 782,
+        "pos": 396,
+        "neg": 386,
+        "auc": 0.7277,
+        "tpr@0.5": 0.9394,
+        "fpr@0.5": 0.3808
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "SecJev-4B-Spot1-Redo",
+      "split": "bench_draw_guard",
+      "score_file": "ft/bench_results_droplet/secjev_spot1.scores.action_authz_guard.json",
+      "recomputed": {
+        "n": 800,
+        "pos": 400,
+        "neg": 400,
+        "auc": 0.8416,
+        "tpr@0.5": 0.795,
+        "fpr@0.5": 0.24
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "SecJev-4B-Joint-Redo",
+      "split": "bench_draw_guard",
+      "score_file": "ft/bench_results_droplet/secjev_joint.scores.action_authz_guard.json",
+      "recomputed": {
+        "n": 800,
+        "pos": 400,
+        "neg": 400,
+        "auc": 0.8748,
+        "tpr@0.5": 0.6325,
+        "fpr@0.5": 0.095
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "SecJev-4B-Joint-Redo",
+      "split": "bench_draw_filter",
+      "score_file": "ft/bench_results_droplet/secjev_joint.scores.tool_output_filter.json",
+      "recomputed": {
+        "n": 782,
+        "pos": 396,
+        "neg": 386,
+        "auc": 0.7261,
+        "tpr@0.5": 0.9268,
+        "fpr@0.5": 0.3782
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "baseline_untrained",
+      "split": "bench_draw_guard",
+      "score_file": "ft/bench_results_droplet/secjev_base.scores.action_authz_guard.json",
+      "recomputed": {
+        "n": 800,
+        "pos": 400,
+        "neg": 400,
+        "auc": 0.8299,
+        "tpr@0.5": 0.7575,
+        "fpr@0.5": 0.2275
+      },
+      "published_auc": null
+    },
+    {
+      "repo": "baseline_untrained",
+      "split": "bench_draw_filter",
+      "score_file": "ft/bench_results_droplet/secjev_base.scores.tool_output_filter.json",
+      "recomputed": {
+        "n": 782,
+        "pos": 396,
+        "neg": 386,
+        "auc": 0.6436,
+        "tpr@0.5": 0.7576,
+        "fpr@0.5": 0.4508
+      },
+      "published_auc": null
+    }
+  ],
+  "gaps": [
+    "CLEF-DualScreen: published test AUCs (filter 1.0000 n=100, guard 0.7731 n=120) came from a local LiteRT rescore whose per-row score file is not in the local inventory; head identity is proven by hash-match above, metric recompute from per-row scores remains an open gap.",
+    "SecJev Redo trio: published AUCs are full-dev rescores; local per-row files are the predeclared bench draws (recomputed above with draw scope). Dev-threshold transfer failure for Spot2 is documented on the V3 card."
+  ],
+  "label_audit": "docs/redo-v2/label-audit-outcome-agent.json (blind AI adjudication, NOT human; agreement 0.8822)"
+}

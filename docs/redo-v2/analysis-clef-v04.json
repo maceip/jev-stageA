@@ -1,0 +1,28 @@
+{
+  "model": "macmacmacmac/CLEF-Screen-V2",
+  "run_name": "clef_v04",
+  "recomputed_from_per_row_scores": {
+    "dev": {
+      "n": 21977,
+      "pos": 20282,
+      "neg": 1695,
+      "auc": 0.984,
+      "tpr@0.5": 0.9391,
+      "fpr@0.5": 0.0501
+    },
+    "test": {
+      "n": 21965,
+      "pos": 20271,
+      "neg": 1694,
+      "auc": 0.9833,
+      "tpr@0.5": 0.9402,
+      "fpr@0.5": 0.0543
+    }
+  },
+  "published": {
+    "dev_auc": 0.984,
+    "test_auc": 0.9833
+  },
+  "epoch_selection": "dev AUC only: 0.9635/0.9811/0.9840 -> epoch 3",
+  "note": "Recomputed 2026-11-05 from ft/clef_v04_evidence score files shipped inside the HF repo."
+}

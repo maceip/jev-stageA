@@ -21,7 +21,7 @@ env/
 /data/external/
 ft/ckpt/adapter_model.safetensors
 
-# Secrets and local checkpoints (weights live on Hugging Face: MetaPublic)
+# Secrets and local checkpoints (weights live on Hugging Face: macmacmacmac)
 .env
 checkpoints/
 secjev-4b-work/
@@ -29,3 +29,5 @@ secjev-4b-work/
 ft/ckpt/tokenizer.json
 ft/ckpt/chat_template.jinja
 ft/ckpt/tokenizer_config.json
+ft/bench_clef_cache/
+ft/droplet_harvest_final/

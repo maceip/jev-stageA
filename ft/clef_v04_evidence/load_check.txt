@@ -1,0 +1,9 @@
+LiteRT + host loaded from staged dir; device: mps
+head params: 121762820
+label=pos injection_score=0.9754
+label=pos injection_score=0.9946
+label=pos injection_score=0.9928
+label=neg injection_score=0.2529
+label=neg injection_score=0.0131
+label=neg injection_score=0.0007
+LOAD_CHECK_PASS

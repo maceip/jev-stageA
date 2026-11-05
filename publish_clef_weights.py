@@ -49,8 +49,8 @@ is a complete CLEF LiteRT checkpoint directory with the fine-tuned head.
 
 ## Training
 
-- Compute: DigitalOcean GPU droplet `jev-train-1` (NVIDIA H100 80GB), {wall}.
-- Method: `ft_clef_bench.py`, {epochs} epoch(s), lr {lr}, batch {batch},
+- Compute: {compute}, {wall}.
+- Method: `{method}`, {epochs} epoch(s), lr {lr}, batch {batch},
   pos_weight {pos_weight}. Training details and hashes: `redo-provenance.json`;
   full log: `redo-training-log.jsonl` when present.
 - Head dtype in this repo: BF16 (deployment contract). {dtype_note}
@@ -114,6 +114,9 @@ def main() -> None:
     ap.add_argument("--ckpt", required=True, help="assembled clef-flash-LiteRT-ft dir (downloaded from droplet)")
     ap.add_argument("--staging", default="/tmp/hf-clef-redo")
     ap.add_argument("--repo", default="macmacmacmac/CLEF-Flash-Redo")
+    ap.add_argument("--compute", default="DigitalOcean GPU droplet `jev-train-1` (NVIDIA H100 80GB)")
+    ap.add_argument("--method", default="ft_clef_bench.py")
+    ap.add_argument("--host-label", default="jev-train-1 (DigitalOcean gpu-h100x1-80gb, 159.65.192.220)")
     ap.add_argument("--wall", default="see redo-provenance.json")
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--lr", type=float, default=1e-4)
@@ -129,11 +132,12 @@ def main() -> None:
     if a.training_log:
         shutil.copy2(a.training_log, stage / "redo-training-log.jsonl")
     (stage / "redo-provenance.json").write_text(json.dumps(
-        {"host": "jev-train-1 (DigitalOcean gpu-h100x1-80gb, 159.65.192.220)",
+        {"host": a.host_label, "method": a.method,
          "wall": a.wall, "epochs": a.epochs, "lr": a.lr, "batch": a.batch,
          "pos_weight": a.pos_weight, "checks": checks}, indent=2) + "\n")
     (stage / "README.md").write_text(CARD.format(
-        repo_name=a.repo.split("/")[-1], wall=a.wall, epochs=a.epochs, lr=a.lr,
+        repo_name=a.repo.split("/")[-1], compute=a.compute, method=a.method,
+        wall=a.wall, epochs=a.epochs, lr=a.lr,
         batch=a.batch, pos_weight=a.pos_weight, eval_note=a.eval_note,
         dtype_note=("Converted from the F32 training artifact in staging; both hashes are in redo-provenance.json."
                     if checks["bf16_converted_in_staging"] else "Trained head was already BF16; no conversion.")))
@@ -150,7 +154,7 @@ def main() -> None:
     api = HfApi(token=token)
     api.create_repo(a.repo, repo_type="model", exist_ok=True, private=False)
     api.upload_folder(folder_path=str(stage), repo_id=a.repo, repo_type="model",
-                      commit_message="CLEF redo FT checkpoint (JointSchemaHead) from jev-train-1 H100 run")
+                      commit_message="CLEF redo FT checkpoint (JointSchemaHead)")
     print("uploaded https://huggingface.co/" + a.repo)
 
 

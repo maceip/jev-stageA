@@ -1,0 +1,33 @@
+{
+  "subject": "macmacmacmac/CLEF-Screen-V2 (run clef_v04)",
+  "artifacts": {
+    "dataset_manifest": {
+      "path": "data/external/redo_v2_out/clef_v04_fixed/manifest_v04.json",
+      "sha256": "e9c5cfffc8c5ce549829d0c6c46ac59f00cc0e8670cf0d349d5afd51a864352d"
+    },
+    "training_log": {
+      "path": "ft/clef_v04_evidence/log.jsonl",
+      "sha256": "12f5823804d172675b93d53c77cc74232b061ff2a143e8c83b97165e0f1fbf87"
+    },
+    "checkpoint_manifest": {
+      "path": "docs/redo-v2/checkpoint-manifest-clef-v04.json",
+      "sha256": "8b43aca2b098314d2edf19ed4ad3ac660f4c472d581f718d3ba65d00e752f1fa"
+    },
+    "frozen_score_file": {
+      "path": "ft/clef_v04_evidence/test_scores.jsonl",
+      "sha256": "bcb229964f74d332532c050ada68c4578d3423766b198d4f7b7f241a86008d48"
+    },
+    "analysis_output": {
+      "path": "docs/redo-v2/analysis-clef-v04.json",
+      "sha256": "28c3b63747d784187458dbd9aca174f7555ca65b232469a3880b007715a0ceda"
+    },
+    "replication_report": {
+      "path": "docs/redo-v2/replication-report.json",
+      "sha256": "f1edd011ef36afab453b28182b6aa54f87fed9f6905ea2689bb1f1081c99e523"
+    },
+    "load_check_record": {
+      "path": "ft/clef_v04_evidence/load_check.json",
+      "sha256": "3735b8776b853ae5adf14421342112690ca3384518b4809dbd195c5f351710f9"
+    }
+  }
+}

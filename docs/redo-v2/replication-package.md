@@ -13,6 +13,10 @@ without the full chain does not ship.
       `artifact-hashes.json` (`build_artifact_hashes.py`).
 - [ ] Dataset audit (`dataset-audit.json`) + human label-audit outcome
       (450-row blind packet; agreement rate reported, disagreements listed).
+      PARTIAL 2026-11-05: blind AI adjudication done (agreement 0.8822,
+      53 disagreements listed, `label-audit-outcome-agent.json`); HUMAN
+      adjudication still outstanding — 17 high-confidence disagreements
+      are the priority review list.
 - [ ] SecJev: `ft/redo_secjev_run1/log.jsonl` (dev AUC per epoch),
       selected epoch + selection rule, checkpoint SHA-256, load-check
       record (fresh process, deployment scorer).
@@ -27,9 +31,19 @@ without the full chain does not ship.
 - [ ] Ultrafast: eval-only (no fine-tuning). Live browser arm blocked
       until browser-harness daemon/Chrome remote debugging is up
       (`uv run browser-harness --doctor` FAIL on 2026-11-03).
-- [ ] Independent replication: second run of analysis from frozen
-      score files by a clean checkout at the recovery ref's descendant
-      commit; byte-identical metrics or explained deltas.
+- [x] Independent replication: second run of analysis from frozen
+      score files; byte-identical metrics or explained deltas.
+      DONE 2026-11-05 (`build_replication_package.py`,
+      `replication-report.json`): all 7 HF weight files hash-match local
+      copies; CLEF-Screen-V2, CLEF-Screen, SecJev Spot2-V3 headline AUCs
+      recomputed exactly from per-row scores. Explained deltas/gaps:
+      SecJev Redo trio local scores are bench draws (not full-dev);
+      CLEF-DualScreen has no local per-row test score file. Clean-checkout
+      commit pinning was not used; rerun is script + frozen files.
+- [x] Frozen-chain gate: `frozen_chain_manifest.json` written for the
+      CLEF-Screen-V2 chain; `tuesday_gates.require_frozen_chain()` passes
+      (2026-11-05). Droplet `jev-retrain` destroyed after harvest
+      (verified 404); see `hf-uploads.md` Phase 7 section.
 - [ ] Corrected publication text: v1 errors named explicitly
       (head-only training, 121.8M not 60.8M params, epoch mislabel,
       threshold failures, deployment-load failure). Publication

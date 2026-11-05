@@ -131,3 +131,69 @@ was aborted by its owner at step ~15,600/19,293 on 2026-11-04 and
 its output directory deleted; only its epoch-boundary head remains
 on the droplet, unpublished. Droplet cache (599 GB) pruned by peer;
 disk back to 595 G free.
+
+## CLEF v04 fixed-data FT (jev-retrain) — uploaded 2026-11-05
+
+macmacmacmac/CLEF-Screen-V2, commit 8b2d1db687e3 (initial upload
+e4ba6c4fe0d7, then stray __pycache__ removed), public, 29 files.
+Fixed-data retrain: train rebuilt 1:1 balanced (16,322 rows;
+8,232 pos / 8,090 neg; SHA-256 e3916d4946cbe6e4…) replacing the
+92%-positive frozen-v0.3 train; +86 technique-catalog rows, +184
+synthetic tool-spoof rows; pos_weight 1.0 (was 3.0); frozen dev/test
+untouched. ft_clef.py --cache-only, 3 epochs, lr 3e-5, batch 16,
+seed 20261101, TRAIN_EXIT=0 2026-11-05T05:59Z. Epoch 3 selected on
+dev AUC only (0.9635/0.9811/0.9840; untrained-head baseline 0.7516).
+Dev AUC 0.9840 (TPR@0.5 0.939 / FPR@0.5 0.050); frozen test once:
+AUC 0.9833 (TPR@0.5 0.940 / FPR@0.5 0.054); independently recomputed
+from the shipped per-row score files, exact match. Head
+droplet==local==HF-LFS SHA-256 c7375d6f2044ab67…; backbone == local
+base 43a638f2976f…; 122 tensors, 121,762,820 params, BF16 native.
+Fresh-process LiteRT load-check of the staged artifact passed
+(end-to-end scoring, 6 bench rows). Filter task only (guard n=0);
+dev/test ~92% positive (~1,700 negatives) caveat on the card.
+Uploaded on user direction ahead of the Tuesday-v2 frozen-chain
+gate (disclosed in redo-provenance.json). Vs CLEF-Screen seed1 (dev
+AUC 0.9899, FPR@0.5 ~0.22), v04 trades 0.006 dev AUC for ~4x lower
+FPR@0.5 — the balanced-data fix worked as intended.
+
+## Phase 7 replication + label audit + droplet shutdown — 2026-11-05
+
+Replication (`build_replication_package.py` ->
+`docs/redo-v2/replication-report.json`): every published weight file
+in all 7 repos above hash-matches a local byte-identical copy against
+live HF LFS metadata. Headline AUCs recomputed exactly from per-row
+score files: CLEF-Screen-V2 dev 0.9840 / test 0.9833, CLEF-Screen dev
+0.9899 / test 0.9897, SecJev-4B-Spot2-V3 full test 0.8661 (7,192 rows).
+SecJev Redo trio recomputed on predeclared bench draws (published
+full-dev rescores remain the headline; bench-draw numbers and the
+untrained-baseline draws are in the report with draw scope stated).
+Open gap, recorded in the report: CLEF-DualScreen test AUCs have no
+local per-row score file (head identity proven by hash only).
+Tuesday-v2 frozen-chain gate now PASSES for the CLEF-Screen-V2 chain
+(`docs/redo-v2/frozen_chain_manifest.json`: dataset manifest ->
+training log -> checkpoint manifest -> frozen test scores -> analysis
+-> replication report -> load-check record, all hash-verified).
+Load-check rerun on the local v04 checkpoint reproduced the pre-upload
+scores exactly (`ft/clef_v04_evidence/load_check.txt`).
+
+Label audit (`docs/redo-v2/label-audit-outcome-agent.json`): 450-row
+blind packet adjudicated by 9 blind AI subagents (50 rows each, key
+opened only after all verdicts were written) — NOT human adjudication;
+the human gate remains open. Agreement with gold 0.8822 (Wilson 95%
+[0.8492, 0.9088]) vs 0.5511 for the earlier deterministic
+imperative-marker pre-pass. Per kind: direct_prompt_injection 0.9733,
+action_authorization_guard 0.9067, tool_output_filter 0.7667. 53
+disagreements listed with reasons (17 high-confidence — priority list
+for human review). Blind packet text was capped at 1500 chars; rows
+whose decisive content fell beyond the cap were judged low-confidence
+and are marked. Filled packet:
+`data/external/redo_v2_out/label_audit_filled_agent.jsonl`.
+
+Droplet `jev-retrain` (615711309, gpu-mi355x1-288gb-spot) destroyed
+2026-11-05 via DO API after harvest; deletion verified (GET returns
+404). Harvest: `ft/clef_v04_evidence/` +
+`ft/droplet_harvest_final/small/` (496 evidence files) on top of the
+earlier `ft/droplet_harvest_20261105/`. The 251 GB v04 encode cache
+and unselected epoch heads were not harvested (regenerable /
+unselected; every published weight was already local). No GPU droplet
+remains on the account for this project; unrelated droplets untouched.

@@ -9,10 +9,11 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pip install "git+https://github.com/ethz-spylab/agentdojo@089ed468cf3ed0322acc66b0211f26d9d90dbf60"
 
-hf download MetaPublic/SecJev-4B --local-dir checkpoints/SecJev-4B
-hf download MetaPublic/SecJev-4B-Action-Monitor-C1 --local-dir checkpoints/SecJev-4B-Action-Monitor-C1
+hf download macmacmacmac/SecJev-4B-Spot1-Redo --local-dir checkpoints/SecJev-4B-Spot1-Redo
+hf download macmacmacmac/SecJev-4B-Spot2-V3 --local-dir checkpoints/SecJev-4B-Spot2-V3
+hf download macmacmacmac/CLEF-Screen-V2 --local-dir checkpoints/CLEF-Screen-V2
 export SECJEV_WORK="$PWD/secjev-4b-work"
-python checkpoints/SecJev-4B/bootstrap.py --inference-only
+python checkpoints/SecJev-4B-Spot2-V3/bootstrap.py --inference-only
 export SECJEV_TF32=1 OPENAI_API_KEY=...
 ```
 
@@ -96,13 +97,16 @@ Three run generations produced the reported numbers:
 |---|---|---|
 | Run 1 (`data/`) | gpt-oss-20b, Qwen3-30B-A3B (local vLLM) | 97 normal tasks + 6 attack sets per agent; tables in `data/results/` |
 | Run 3 (`run3/`) | `gpt-6-astra`, `gpt-5.4-mini` (OpenAI API) | Standard + bland-note + LLMail sets, live stop/redact arms, adaptive arms, score archives (`scores_*.tgz`) |
-| Fine-tune (`ft/`) | Recorded runs from runs 1 and 3 | Action-authorization train/dev/test JSONL (`ft_*.jsonl`), per-variant replay scorings (`ft/evals/`), C1 checkpoint metadata (`ft/ckpt/CHECKPOINT.md`) |
+| Fine-tune (`ft/`) | Recorded runs from runs 1 and 3 | Action-authorization train/dev/test JSONL (`ft_*.jsonl`), per-variant replay scorings (`ft/evals/`), C1 checkpoint metadata (`ft/ckpt/CHECKPOINT.md`), and frozen-test replication packages (`docs/redo-v2/replication-report.json`, `docs/redo-v2/frozen_chain_manifest.json`) |
 
-Key Run 3 findings (full tables in the repository README research summary and `data/results/`):
+Key Run 3 & frozen fine-tune findings (full tables in the repository README, `docs/redo-v2/hf-uploads.md`, and `docs/redo-v2/replication-report.json`):
 
 - Static attacks never hijacked `gpt-6-astra` (0/~2,800 across standard, bland-note, and LLMail sets). `gpt-5.4-mini` × bland-note (9.3% hijacked overall; 34.1% on banking+slack) is the configuration that separates defenses.
 - Stop mode, banking+slack, thresholds tuned on workspace+travel: SecJev tool at 0.99 → 2.8% hijacked, 94.6% normal; LLM judge → 0.0% hijacked, 83.8% normal; zero-shot action monitor → 6.4% hijacked, 73.0% normal, 55.4% completion under attack.
 - Fine-tuned C1 content monitor at 0.35 (live): stop 1.6% hijacked / 89.9% normal; redact 0.8% hijacked / 90.5% normal / 75.5% completion under attack.
+- Frozen banking+slack fine-tune benchmarks (`docs/redo-v2/replication-report.json`):
+  - Tool-output filter (`CLEF-Flash` 9B head on $n=21,965$ frozen test rows): untrained head hits `0.7516` AUC (`76.1%` TPR / `36.9%` FPR @ `0.5`); skewed 92%-positive v0.3 (`CLEF-Screen`) hits `0.9897` AUC (`99.2%` TPR / `21.6%` FPR @ `0.5`); 1:1 balanced v0.4 (`CLEF-Screen-V2`) hits **`0.9833` AUC** (**`94.0%` TPR / `5.4%` FPR @ `0.5`**; **`88.2%` TPR / `2.0%` FPR @ `0.9`**), passing the full Tuesday-v2 frozen-chain gate (`docs/redo-v2/frozen_chain_manifest.json`).
+  - Action-authorization guard ($n=7,192$ frozen test rows): LoRA+head fine-tuning (`SecJev-4B-Spot2` Seed 1) improves test AUC from `0.8146` (zero-shot base, `85.9%` TPR / `43.1%` FPR at shared threshold) to **`0.8802`** (`73.1%` TPR / `14.1%` FPR, McNemar $p < 10^{-15}$), with Seed 2 (`SecJev-4B-Spot2-V3`) at **`0.8661` AUC** (`54.4%` TPR / `7.2%` FPR @ `0.5`). Head-only tuning on a frozen 9B backbone (`CLEF-DualScreen`, $n=120$ test) drops to `0.7731` guard test AUC (`60.0%` FPR @ `0.35`).
 - Adaptive (10 rounds, 100 banking+slack targets): undefended 64%, LLM judge 25%, SecJev tool at 0.5 31%, zero-shot action monitor 34%, C1 monitor 53–58%. The adaptive result is the main open weakness and the primary target for RepE/steering follow-up work.
 
 ## Reproducing SecJev-4B published accuracy
