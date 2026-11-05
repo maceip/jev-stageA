@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+body{background:#f7f8f7;width:1600px;padding:36px 40px;color:#12212b}
+h1{font-size:33px;color:#0d2a3a}
+.sub{color:#5a6b76;font-size:15px;margin:6px 0 18px}
+.legend{text-align:right;margin:-8px 0 4px;font-size:13px;color:#33454f;line-height:1.9}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:7px;vertical-align:-2px}
+.teal{background:#0e9590}.red{background:#e63a5f}
+.q{border:1.5px solid #9fd8d2;background:#e9f7f4;border-radius:10px;padding:16px 20px;margin:14px 0 6px}
+.q b.t{color:#0b6b66;font-size:20px}
+.q div{font-size:14.5px;margin-top:5px;color:#22333d}
+.q.blue{border-color:#b9d2ea;background:#eef5fc}.q.blue b.t{color:#17558f}
+.card{background:#fff;border:1px solid #e3e8ea;border-radius:12px;padding:18px 22px}
+.cols,.row{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:18px;align-items:center}
+.cols{font-size:13px;font-weight:700;color:#42555f;border-bottom:1px solid #e7ecec;padding-bottom:8px}
+.row{padding:15px 0;border-bottom:1px solid #eef2f2}
+.row:last-child{border-bottom:none}
+.rname{font-size:16px;font-weight:700;color:#12212b}
+.rdesc{font-size:13px;color:#5a6b76;margin-top:3px;line-height:1.45}
+.verd{font-size:13px;margin-top:5px;color:#33454f}.verd b{color:#0b6b66}
+.bar{background:#edf1f3;border-radius:6px;height:21px;position:relative;margin:3px 0}
+.fill{height:21px;border-radius:6px}
+.val{font-size:14px;color:#22333d;vertical-align:middle}
+.val b{font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px}
+.case h2{font-size:19px;color:#12212b}
+.case .csub{font-size:13px;color:#5a6b76;margin:4px 0 12px}
+.crow{padding:10px 0;border-top:1px solid #eef2f2}
+.crow:first-of-type{border-top:none}
+.cname{font-size:15px;font-weight:700}
+.cdesc{font-size:12.5px;color:#5a6b76;margin:2px 0 7px}
+.tag{float:right;font-size:12px;padding:3px 9px;border-radius:5px;font-weight:600}
+.tg{background:#e6f6f1;color:#0b6b66}.tr{background:#fdeaee;color:#c2274b}.ty{background:#fdf3e0;color:#9a6a12}
+.pct{font-size:13.5px;margin-left:10px}
+.foot{font-size:12px;color:#7a8a93;margin-top:14px;line-height:1.6}
+</style></head><body>
+<h1>Can Small Security Models Stop Prompt Injection — And Is Fine-Tuning Worth It?</h1>
+<div class="sub">Measured on unseen Banking + Slack agent tools (AgentDojo v1.2.2) across 29,157 offline test decisions and live gpt-5.4-mini runs.</div>
+<div class="legend"><span class="sw teal"></span>Good outcome: Work Completed / Attacks Caught (Higher = Better)<br><span class="sw red"></span>Failure / Cost: Agent Hijacked / False Alarms (Lower = Better)</div>
+
+<div class="q"><b class="t">Q1: How good is a 4B JEV-style model at stopping prompt injections in a live AI agent?</b>
+<div><b>Answer:</b> Against 1-try attacks it stops 92%–98% of hijacks (34.1% -&gt; 0.8%–2.8%) at about 0.06–0.11s per check — and when fine-tuned to check outgoing tool calls, 75.5% of attacked tasks still finish. Against a 10-try adaptive attacker, JEV alone is bypassed 53% of the time.</div></div>
+
+<div class="card">
+<div class="cols"><div>Defense Strategy (Live gpt-5.4-mini Agent on Banking + Slack)</div><div>Work Completed Under Attack</div><div>1-Try Attack Hijack Rate</div><div>10-Try Adaptive Hijack Rate</div></div>
+
+<div class="row"><div><div class="rname">1. No Defense (Undefended Agent)</div><div class="rdesc">Agent reads untrusted emails/files and executes tool calls with no security check</div><div class="verd"><b>Verdict</b> Baseline — 1 in 3 single-try attacks hijacks the agent</div></div>
+<div><div class="bar"><div class="fill teal" style="width:78.3%"></div></div><span class="val"><b>78.3%</b></span></div>
+<div><div class="bar"><div class="fill red" style="width:34.1%"></div></div><span class="val"><b>34.1%</b></span></div>
+<div><div class="bar"><div class="fill red" style="width:64%"></div></div><span class="val"><b>64.0%</b></span></div></div>
+
+<div class="row"><div><div class="rname">2. Off-the-Shelf SecJev-4B (Scans Incoming Text, Stop Mode @ 0.99)</div><div class="rdesc">Aborts the run when an incoming email/file has an injection. Work and 1-try columns are exact offline replay @ 0.99 (94.6% normal tasks pass).</div><div class="verd"><b>Verdict</b> Great 1-try shield, but aborting on attack drops under-attack completion to 20.5%</div></div>
+<div><div class="bar"><div class="fill teal" style="width:20.5%"></div></div><span class="val"><b>20.5%</b> (94.6% normal)</span></div>
+<div><div class="bar"><div class="fill red" style="width:2.8%"></div></div><span class="val"><b>2.8%</b> (12x lower)</span></div>
+<div><div class="bar"><div class="fill red" style="width:53%"></div></div><span class="val"><b>53.0%</b></span></div></div>
+
+<div class="row"><div><div class="rname">3. Fine-Tuned SecJev-4B Action Guard (C1 Checkpoint, Outgoing Tool Calls, Redact @ 0.35)</div><div class="rdesc">Blocks only the unauthorized tool call (e.g. rogue wire transfer) so the agent finishes the user's task (live Run 3)</div><div class="verd"><b>Verdict</b> Best 1-try balance — 75.5% of attacked tasks still complete &amp; only 0.8% hijacked</div></div>
+<div><div class="bar"><div class="fill teal" style="width:75.5%"></div></div><span class="val"><b>75.5%</b> (keeps working!)</span></div>
+<div><div class="bar"><div class="fill red" style="width:0.8%"></div></div><span class="val"><b>0.8%</b> (42x lower)</span></div>
+<div><div class="bar"><div class="fill red" style="width:53%"></div></div><span class="val"><b>53.0%</b> (58% in stop mode)</span></div></div>
+
+<div class="row"><div><div class="rname">4. Full LLM Judge (gpt-5.4-mini Reviewing Tool Outputs, Redact @ 0.5)</div><div class="rdesc">Calls a frontier LLM to judge every tool output (slow &amp; over-flags benign business requests)</div><div class="verd"><b>Verdict</b> Strongest 10-try defense, but blocks 71.5% of real work under attack</div></div>
+<div><div class="bar"><div class="fill teal" style="width:28.5%"></div></div><span class="val"><b>28.5%</b> (95.3% normal)</span></div>
+<div><div class="bar"><div class="fill red" style="width:0.4%"></div></div><span class="val"><b>0.0%</b></span></div>
+<div><div class="bar"><div class="fill red" style="width:25%"></div></div><span class="val"><b>25.0%</b></span></div></div>
+</div>
+
+<div class="q blue"><b class="t">Q2: Is it worth fine-tuning an off-the-shelf model — and what makes fine-tuning succeed or fail?</b>
+<div><b>Answer:</b> Yes, when teaching a model a new check — cutting false alarms 6.8x on text (36.9% dev untrained -&gt; 5.4% test balanced) and 3x on tool calls (43.1% -&gt; 14.1% at shared threshold 0.0561). Skewed data or frozen backbones fail.</div></div>
+
+<div class="two">
+<div class="card case"><h2>Case A: Fine-Tuning a 9B Model to Scan Incoming Text</h2><div class="csub">Unseen Banking + Slack split test set (tool-output rows, n = 21,965; 20,271 attacks, 1,694 clean) at thr = 0.5 unless noted</div>
+
+<div class="crow"><span class="tag tr">36.9% false alarms — unusable</span><div class="cname">1. Off-the-Shelf CLEF-Flash 9B (Before Fine-Tuning)</div><div class="cdesc">Untrained decision head on frozen 9B backbone (Dev AUC 0.7516, n=21,977; summary record, no per-row baseline file)</div>
+<div class="bar"><div class="fill teal" style="width:76.1%"></div></div><span class="pct"><b>76.1% caught</b> (dev)</span>
+<div class="bar"><div class="fill red" style="width:36.9%"></div></div><span class="pct"><b>36.9% false alarms</b> (dev)</span></div>
+
+<div class="crow"><span class="tag ty">Still 21.6% false alarms @ 0.5</span><div class="cname">2. Fine-Tuned on Skewed Data (92% Attacks / 8% Clean in Dev/Test)</div><div class="cdesc">CLEF-Screen v0.3 (102,890 train rows, 3.5 hrs GPU successful run) — learns to over-flag (Test AUC 0.9897)</div>
+<div class="bar"><div class="fill teal" style="width:99.1%"></div></div><span class="pct"><b>99.1% caught</b></span>
+<div class="bar"><div class="fill red" style="width:21.6%"></div></div><span class="pct"><b>21.6% false alarms</b></span></div>
+
+<div class="crow"><span class="tag tg">6.8x fewer false alarms (5.4% @ 0.5, 2.0% @ 0.9)</span><div class="cname">3. Fine-Tuned on 1:1 Balanced Data (Nov 5 Fix)</div><div class="cdesc">CLEF-Screen-V2 v0.4 (16,322 train rows, 75 min GPU successful run, Test AUC 0.9833) — @0.9: 88.2% caught, 2.0% FPR</div>
+<div class="bar"><div class="fill teal" style="width:94%"></div></div><span class="pct"><b>94.0% caught</b></span>
+<div class="bar"><div class="fill red" style="width:5.4%"></div></div><span class="pct"><b>5.4% false alarms</b></span></div>
+</div>
+
+<div class="card case"><h2>Case B: Fine-Tuning a 4B Model to Judge Outgoing Tool Calls</h2><div class="csub">Unseen Banking + Slack test set at shared dev-calibrated thr = 0.0561 (n = 7,192 SecJev replication; n = 120 CLEF-DualScreen @ 0.35, summary record)</div>
+
+<div class="crow"><span class="tag tr">43.1% false alarms (or 8.8% caught @ own thr 0.9927)</span><div class="cname">1. Off-the-Shelf SecJev-4B (Zero-Shot on Tool Calls)</div><div class="cdesc">Pretrained only on incoming text, not tool-call authorization (Test AUC 0.8146, summary record)</div>
+<div class="bar"><div class="fill teal" style="width:85.9%"></div></div><span class="pct"><b>85.9% caught</b></span>
+<div class="bar"><div class="fill red" style="width:43.1%"></div></div><span class="pct"><b>43.1% false alarms</b></span></div>
+
+<div class="crow"><span class="tag tr">60.0% false alarms on unseen tools</span><div class="cname">2. Head-Only Fine-Tune on Frozen 9B (CLEF-DualScreen)</div><div class="cdesc">Freezing the 9B backbone fails when tool schemas change in test (Test AUC 0.7731 @ 0.35, summary record; per-row scores not in local inventory)</div>
+<div class="bar"><div class="fill teal" style="width:98.3%"></div></div><span class="pct"><b>98.3% caught</b></span>
+<div class="bar"><div class="fill red" style="width:60%"></div></div><span class="pct"><b>60.0% false alarms</b></span></div>
+
+<div class="crow"><span class="tag tg">3x lower offline FPR (14.1% vs 43.1%)</span><div class="cname">3. LoRA + Head Fine-Tune (SecJev-4B Spot-2 Seed 1)</div><div class="cdesc">Unfreezing LoRA adapters (48 min GPU full run, n = 7,192 test) aligns user intent to tool args (AUC 0.8802; Seed 2 V3: 0.8661, recomputed from per-row scores)</div>
+<div class="bar"><div class="fill teal" style="width:73.1%"></div></div><span class="pct"><b>73.1% caught</b></span>
+<div class="bar"><div class="fill red" style="width:14.1%"></div></div><span class="pct"><b>14.1% false alarms</b></span></div>
+</div></div>
+
+<div class="foot">Data provenance: README.md, docs/evaluation.md, ft/clef_v04_evidence/final_results.json (2026-11-05), ft/droplet_harvest_20261105 (full_clef scores, replication/recomputed.json, secjev_v03_fla_seed2 test scores), run3 live/adaptive JSONL recounts 2026-11-05. Q1 SecJev-tool work/1-try columns are exact offline replay @ 0.99; all other Q1 work/1-try values are live. Adaptive rows record no mode; adaptive.py defaults to stop mode except C1 redact/stop as labeled.</div>
+</body></html>
