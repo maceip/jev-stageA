@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{
+  font-family:"JetBrains Mono";
+  src:url("fonts/jetbrains-mono-variable-latin.woff2") format("woff2");
+  font-weight:100 800;
+  font-display:block;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#0D1117;color:#E6EDF3}
+body{
+  width:1600px;height:1000px;padding:36px 40px 28px;
+  font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,monospace;
+}
+h1{font-size:28px;font-weight:650;letter-spacing:-0.03em;color:#E6EDF3}
+.sub{margin-top:8px;color:#8B949E;font-size:14px;line-height:1.45}
+.wrap{display:grid;grid-template-columns:1fr 420px;gap:28px;margin-top:22px;align-items:start}
+svg{display:block;width:100%;height:820px}
+.panel{border:1px solid #21262D;background:#010409;padding:18px 18px 8px}
+.panel h2{font-size:12px;color:#8B949E;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px}
+.card{border-top:1px solid #21262D;padding:14px 0 16px}
+.card:first-of-type{border-top:none}
+.card .name{font-size:15px;font-weight:650}
+.card .task{margin-top:6px;color:#8B949E;font-size:12px;line-height:1.45}
+.card .big{margin-top:10px;font-size:22px;font-weight:650;letter-spacing:-0.03em}
+.card .frac{margin-top:4px;color:#8B949E;font-size:12px}
+.accent{color:#C8F54A}
+.muted{color:#8B949E}
+.foot{margin-top:14px;color:#6E7681;font-size:12px;line-height:1.5}
+</style></head>
+<body>
+<h1>caught rate vs false alarms @ 0.5</h1>
+<div class="sub">higher is better on the vertical axis. left is better on the horizontal axis. bubble area is the test size n. the three points are not the same task and not the same rows.</div>
+<div class="wrap">
+<svg id="plot" viewBox="0 0 1080 820" width="1080" height="820"></svg>
+<div class="panel" id="readout"></div>
+</div>
+<script>
+// Positions are computed from these counts. Caught = tp/pos. False alarms = fp/neg. Threshold is 0.5.
+const models = [
+  {
+    id: "clef",
+    name: "CLEF-Screen-V2",
+    task: "tool-output scan",
+    n: 21965, pos: 20271, neg: 1694, tp: 19058, fp: 92,
+    auc: 0.9833,
+    accent: true
+  },
+  {
+    id: "secjev",
+    name: "SecJev-4B-Spot2-V3 seed 2",
+    task: "tool-call authorization",
+    n: 7192, pos: 1654, neg: 5538, tp: 900, fp: 396,
+    auc: 0.8661,
+    accent: false
+  },
+  {
+    id: "typesafe",
+    name: "TypeSafe ultrafast jev-1.14.0",
+    task: "tool-output scan, zero-shot",
+    n: 1000, pos: 500, neg: 500, tp: 456, fp: 72,
+    auc: 0.8989,
+    accent: false
+  }
+];
+
+const plot = {x: 78, y: 24, w: 760, h: 700};
+const xMax = 20;   // false-alarm percent
+const yMax = 100;  // caught percent
+const rAt1000 = 18;
+
+function pct(num, den){ return 100 * num / den; }
+function xy(fprPct, tprPct){
+  return {
+    cx: plot.x + (fprPct / xMax) * plot.w,
+    cy: plot.y + (1 - tprPct / yMax) * plot.h
+  };
+}
+function radius(n){ return rAt1000 * Math.sqrt(n / 1000); }
+
+const svg = document.getElementById("plot");
+const ns = "http://www.w3.org/2000/svg";
+function el(name, attrs, text){
+  const n = document.createElementNS(ns, name);
+  for (const [k,v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  svg.appendChild(n);
+  return n;
+}
+
+el("rect", {x:0, y:0, width:1080, height:820, fill:"#0D1117"});
+el("rect", {x:plot.x, y:plot.y, width:plot.w, height:plot.h, fill:"#010409", stroke:"#21262D"});
+
+for (const t of [0,5,10,15,20]){
+  const x = xy(t, 0).cx;
+  el("line", {x1:x, y1:plot.y, x2:x, y2:plot.y+plot.h, stroke:"#21262D"});
+  el("text", {x:x, y:plot.y+plot.h+22, fill:"#8B949E", "font-size":"13", "text-anchor":"middle", "font-family":"JetBrains Mono"}, t.toFixed(0));
+}
+for (const t of [0,25,50,75,100]){
+  const y = xy(0, t).cy;
+  el("line", {x1:plot.x, y1:y, x2:plot.x+plot.w, y2:y, stroke:"#21262D"});
+  el("text", {x:plot.x-12, y:y+4, fill:"#8B949E", "font-size":"13", "text-anchor":"end", "font-family":"JetBrains Mono"}, t.toFixed(0));
+}
+el("text", {x:plot.x+plot.w/2, y:798, fill:"#8B949E", "font-size":"13", "text-anchor":"middle", "font-family":"JetBrains Mono"}, "false alarms @ 0.5  (%)   left is better");
+el("text", {x:22, y:plot.y+plot.h/2, fill:"#8B949E", "font-size":"13", "text-anchor":"middle", "font-family":"JetBrains Mono", transform:`rotate(-90 22 ${plot.y+plot.h/2})`}, "caught @ 0.5  (%)   higher is better");
+
+const readout = document.getElementById("readout");
+readout.innerHTML = "<h2>same threshold, different tests</h2>";
+
+for (const m of models){
+  const tpr = pct(m.tp, m.pos);
+  const fpr = pct(m.fp, m.neg);
+  const p = xy(fpr, tpr);
+  const r = radius(m.n);
+  const fill = m.accent ? "#C8F54A" : "#8B949E";
+  const opacity = m.accent ? "0.95" : "0.45";
+  el("circle", {cx:p.cx, cy:p.cy, r:r, fill:fill, "fill-opacity":opacity});
+  if (!m.accent) el("circle", {cx:p.cx, cy:p.cy, r:r, fill:"none", stroke:"#8B949E", "stroke-width":"1.5"});
+
+  const label = `${tpr.toFixed(1)}% caught · ${fpr.toFixed(1)}% fa`;
+  const name = m.accent ? "CLEF-Screen-V2" : (m.id === "secjev" ? "SecJev-4B seed 2" : "TypeSafe ultrafast");
+  // CLEF and SecJev sit on the left, so the name goes to the right of the bubble.
+  // TypeSafe sits on the right, so the name goes to the left.
+  const anchor = m.id === "typesafe" ? "end" : "start";
+  const lx = m.id === "typesafe" ? p.cx - r - 12 : p.cx + r + 12;
+  const color = m.accent ? "#C8F54A" : "#C9D1D9";
+  el("text", {x:lx, y:p.cy-6, fill:color, "font-size":"15", "font-weight":"650", "text-anchor":anchor, "font-family":"JetBrains Mono"}, name);
+  el("text", {x:lx, y:p.cy+14, fill:"#8B949E", "font-size":"12", "text-anchor":anchor, "font-family":"JetBrains Mono"}, label);
+  el("text", {x:lx, y:p.cy+32, fill:"#6E7681", "font-size":"12", "text-anchor":anchor, "font-family":"JetBrains Mono"}, `n=${m.n.toLocaleString("en-US")} · auc ${m.auc.toFixed(4)}`);
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="name ${m.accent ? "accent" : "muted"}">${m.name}</div>
+    <div class="task">${m.task}<br>n=${m.n.toLocaleString("en-US")} · ${m.pos.toLocaleString("en-US")} attacks / ${m.neg.toLocaleString("en-US")} clean · threshold 0.5</div>
+    <div class="big ${m.accent ? "accent" : ""}">${tpr.toFixed(1)}% caught · ${fpr.toFixed(1)}% false alarms</div>
+    <div class="frac">${m.tp.toLocaleString("en-US")}/${m.pos.toLocaleString("en-US")} caught · ${m.fp.toLocaleString("en-US")}/${m.neg.toLocaleString("en-US")} false alarms · auc ${m.auc.toFixed(4)}</div>`;
+  readout.appendChild(card);
+}
+const foot = document.createElement("div");
+foot.className = "foot";
+foot.textContent = "counts recomputed 2026-11-05 from ft/clef_v04_evidence/test_scores.jsonl, ft/droplet_harvest_20261105/ft/secjev_v03_fla_seed2/test_scores.jsonl, and docs/redo-v2/ultrafast_scores.jsonl. bubble area scales with n.";
+readout.appendChild(foot);
+</script>
+</body></html>
