@@ -1,0 +1,44 @@
+{"event": "frozen_data_loaded", "data_dir": "/root/work/clef_proper", "counts": {"train": 569, "dev": 149, "test": 220}, "capped": false, "ts": 1793828091.71}
+{"event": "start", "device": "cuda", "train_raw": 569, "dev_raw": 149, "test_raw": 220, "lr": 0.0001, "epochs": 3, "batch": 16, "pos_weight": 3.0, "ts": 1793828091.71}
+{"event": "cache_only_mode", "litert_graphs": 0, "note": "hidden states pre-encoded with pinned PyTorch clef-flash on CUDA", "ts": 1793828092.46}
+{"event": "model_loaded", "trainable_params": 121762820, "state_dict_params": 121762820, "source": "runtime_state_dict", "ts": 1793828092.46}
+{"event": "prep_dev", "done": 20, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 40, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 60, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 80, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 100, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 120, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 140, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.46}
+{"event": "prep_dev", "done": 149, "of": 149, "elapsed_min": 0.0, "ts": 1793828092.47}
+{"event": "frozen_data_loaded", "data_dir": "/root/work/clef_proper", "counts": {"train": 569, "dev": 149, "test": 220}, "capped": false, "ts": 1793828123.56}
+{"event": "start", "device": "cuda", "train_raw": 569, "dev_raw": 149, "test_raw": 220, "lr": 0.0001, "epochs": 3, "batch": 16, "pos_weight": 3.0, "ts": 1793828123.56}
+{"event": "cache_only_mode", "litert_graphs": 0, "note": "hidden states pre-encoded with pinned PyTorch clef-flash on CUDA", "ts": 1793828124.31}
+{"event": "model_loaded", "trainable_params": 121762820, "state_dict_params": 121762820, "source": "runtime_state_dict", "ts": 1793828124.31}
+{"event": "prep_dev", "done": 20, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.33}
+{"event": "prep_dev", "done": 40, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.35}
+{"event": "prep_dev", "done": 60, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.37}
+{"event": "prep_dev", "done": 80, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.39}
+{"event": "prep_dev", "done": 100, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.41}
+{"event": "prep_dev", "done": 120, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.43}
+{"event": "prep_dev", "done": 140, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.45}
+{"event": "prep_dev", "done": 149, "of": 149, "elapsed_min": 0.0, "ts": 1793828124.46}
+{"event": "eval", "split": "dev", "epoch": 0, "step": 0, "loss": 0.4123, "tool_output_filter": {"n": 65, "pos": 35, "neg": 30, "auc": 0.9781, "tpr@0.5": 0.9143, "fpr@0.5": 0.0667, "tpr@0.9": 0.6857, "fpr@0.9": 0.0333, "tpr@0.99": 0.0, "fpr@0.99": 0.0}, "action_authorization_guard": {"n": 84, "pos": 39, "neg": 45, "auc": 0.9704, "tpr@0.35": 0.8974, "fpr@0.35": 0.0, "tpr@0.5": 0.8462, "fpr@0.5": 0.0, "tpr@0.9": 0.0, "fpr@0.9": 0.0}, "elapsed_min": 0.08, "ts": 1793828129.33}
+{"event": "eval", "split": "dev", "epoch": 1, "step": 36, "loss": 0.2666, "tool_output_filter": {"n": 65, "pos": 35, "neg": 30, "auc": 0.9819, "tpr@0.5": 0.9429, "fpr@0.5": 0.0667, "tpr@0.9": 0.8857, "fpr@0.9": 0.0333, "tpr@0.99": 0.7143, "fpr@0.99": 0.0333}, "action_authorization_guard": {"n": 84, "pos": 39, "neg": 45, "auc": 0.9726, "tpr@0.35": 1.0, "fpr@0.35": 0.3778, "tpr@0.5": 0.9487, "fpr@0.5": 0.2444, "tpr@0.9": 0.8462, "fpr@0.9": 0.0}, "elapsed_min": 0.55, "ts": 1793828157.3}
+{"event": "saved_best", "epoch": 1, "step": 36, "comb_auc": 0.9772, "ts": 1793828157.49}
+{"event": "step", "epoch": 2, "step": 72, "of": 108, "encoded_train": 568, "train_total": 568, "loss": 0.4582, "lr": 3.63e-05, "elapsed_min": 0.93, "ts": 1793828179.85}
+{"event": "eval", "split": "dev", "epoch": 2, "step": 72, "loss": 0.2031, "tool_output_filter": {"n": 65, "pos": 35, "neg": 30, "auc": 0.9838, "tpr@0.5": 0.9429, "fpr@0.5": 0.0667, "tpr@0.9": 0.8571, "fpr@0.9": 0.0333, "tpr@0.99": 0.6571, "fpr@0.99": 0.0333}, "action_authorization_guard": {"n": 84, "pos": 39, "neg": 45, "auc": 0.9818, "tpr@0.35": 0.9744, "fpr@0.35": 0.2667, "tpr@0.5": 0.9487, "fpr@0.5": 0.1111, "tpr@0.9": 0.8718, "fpr@0.9": 0.0}, "elapsed_min": 0.99, "ts": 1793828183.92}
+{"event": "saved_best", "epoch": 2, "step": 72, "comb_auc": 0.9828, "ts": 1793828184.16}
+{"event": "step", "epoch": 3, "step": 108, "of": 108, "encoded_train": 568, "train_total": 568, "loss": 0.008, "lr": 1e-05, "elapsed_min": 1.37, "ts": 1793828206.4}
+{"event": "eval", "split": "dev", "epoch": 3, "step": 108, "loss": 0.1566, "tool_output_filter": {"n": 65, "pos": 35, "neg": 30, "auc": 0.9829, "tpr@0.5": 0.9714, "fpr@0.5": 0.0667, "tpr@0.9": 0.8857, "fpr@0.9": 0.0333, "tpr@0.99": 0.6857, "fpr@0.99": 0.0333}, "action_authorization_guard": {"n": 84, "pos": 39, "neg": 45, "auc": 0.9846, "tpr@0.35": 0.9744, "fpr@0.35": 0.0889, "tpr@0.5": 0.9231, "fpr@0.5": 0.0889, "tpr@0.9": 0.8974, "fpr@0.9": 0.0}, "elapsed_min": 1.44, "ts": 1793828210.45}
+{"event": "saved_best", "epoch": 3, "step": 108, "comb_auc": 0.9838, "ts": 1793828210.7}
+{"event": "prep_test", "done": 20, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.74}
+{"event": "prep_test", "done": 40, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.76}
+{"event": "prep_test", "done": 60, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.77}
+{"event": "prep_test", "done": 80, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.79}
+{"event": "prep_test", "done": 100, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.81}
+{"event": "prep_test", "done": 120, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.83}
+{"event": "prep_test", "done": 140, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.84}
+{"event": "prep_test", "done": 160, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.85}
+{"event": "prep_test", "done": 180, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.86}
+{"event": "prep_test", "done": 200, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.87}
+{"event": "prep_test", "done": 220, "of": 220, "elapsed_min": 1.44, "ts": 1793828210.88}

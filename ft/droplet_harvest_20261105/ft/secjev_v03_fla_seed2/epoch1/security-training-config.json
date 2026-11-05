@@ -1,0 +1,27 @@
+{
+  "epochs": 3,
+  "initialization": "Official jaredpalmer/kev-4b@485ace8703592fcf405488b262449990824cfed1, then SecJev-Corpus",
+  "optimizer": "fresh AdamW, no loaded optimizer moments; retained continuously through all epochs",
+  "global_question_batches": {
+    "1": 128,
+    "2": 192,
+    "3": 192
+  },
+  "steps_per_epoch": [
+    929,
+    619,
+    619
+  ],
+  "lr": "epoch1 peak2e-5 with5%warmup/cosine to2e-6; epochs2+3 peak1e-5 with5%warmup from2e-6/cosine to1e-6",
+  "objective": "per-scene mean cross entropy",
+  "weight_decay": 0.01,
+  "grad_clip": 1.0,
+  "world_size": 9,
+  "comparison": "same security recipe as 0.8B/2B, official Kev-4B warm start, nine GPUs with memory-bounded microbatches",
+  "train_questions_per_epoch": 118818,
+  "replay": 0,
+  "augmentation": false,
+  "no_truncation": true,
+  "context_limit": 8192,
+  "test_use": "all3finalepochs predeclared for audit; selection uses full development only"
+}

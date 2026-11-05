@@ -1,0 +1,57 @@
+{
+  "device": "cuda",
+  "pytorch_revision": "f0b7d3cd65296abfe459e6c228b618f5d8b26d2f",
+  "bundle": "/root/work/checkpoints/clef-flash-LiteRT",
+  "batch_tokens": 32768,
+  "strict_length": true,
+  "capped": false,
+  "splits": {
+    "train": {
+      "rows": 102890,
+      "encoded": 102890,
+      "already_cached": 0,
+      "overlong_refused": 0,
+      "seconds": 4433.8,
+      "seconds_per_row": 0.0431,
+      "batches": 3540,
+      "token_lengths": {
+        "min": 227,
+        "median": 483,
+        "max": 4096
+      },
+      "source": "/root/work/data/redo_v2_out/clef_frozen_v03/clef_train.jsonl"
+    },
+    "dev": {
+      "rows": 22047,
+      "encoded": 22047,
+      "already_cached": 0,
+      "overlong_refused": 0,
+      "seconds": 947.1,
+      "seconds_per_row": 0.043,
+      "batches": 758,
+      "token_lengths": {
+        "min": 227,
+        "median": 496,
+        "max": 4096
+      },
+      "source": "/root/work/data/redo_v2_out/clef_frozen_v03/clef_dev.jsonl"
+    },
+    "test": {
+      "rows": 22047,
+      "encoded": 22047,
+      "already_cached": 0,
+      "overlong_refused": 0,
+      "seconds": 941.0,
+      "seconds_per_row": 0.0427,
+      "batches": 758,
+      "token_lengths": {
+        "min": 227,
+        "median": 481,
+        "max": 4096
+      },
+      "source": "/root/work/data/redo_v2_out/clef_frozen_v03/clef_test.jsonl"
+    }
+  },
+  "total_seconds": 6325.2,
+  "cache_files": 146984
+}

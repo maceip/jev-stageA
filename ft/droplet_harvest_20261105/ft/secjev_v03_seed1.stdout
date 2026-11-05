@@ -1,0 +1,13 @@
+device cuda
+dtype fp32
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:  11%|█         | 45/426 [00:00<00:00, 440.34it/s]Loading weights:  36%|███▋      | 155/426 [00:00<00:00, 824.78it/s]Loading weights:  62%|██████▏   | 265/426 [00:00<00:00, 949.63it/s]Loading weights:  86%|████████▌ | 365/426 [00:00<00:00, 956.68it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 935.43it/s]
+/opt/amdgpu/share/libdrm/amdgpu.ids: No such file or directory
+trainable 33776128
+train encoded 6413 skipped_over_window 0
+dev encoded 1482 skipped_over_window 0
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+EVAL {"epoch": 0, "dev_n": 1482, "dev_pos": 85, "auc": 0.9226325318960799, "eval_seconds": 78.3, "eval_batched": true, "tpr@0.5": 0.7764705882352941, "fpr@0.5": 0.05941302791696493, "tpr@0.9": 0.2823529411764706, "fpr@0.9": 0.019327129563350035}
+/root/work/jev-stageA/ft_action.py:188: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  (loss / nq).backward(); tot += float(loss)

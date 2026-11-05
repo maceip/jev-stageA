@@ -1,0 +1,789 @@
+{
+ "what": "clef-flash on LiteRT: the contract between the graphs and a host",
+ "model": {
+  "repo": "Cloudflare/clef-flash",
+  "revision": "f0b7d3cd65296abfe459e6c228b618f5d8b26d2f",
+  "joint_schema_model_sha256": "0e304cf7c6500e8bb59bef7e2afd2c6373f82596dfb3b57d1aa93c175e2dc3a3",
+  "hidden_size": 4096,
+  "vocab_rows": 248320,
+  "tie_word_embeddings": "false (embed_tokens and lm_head are two tables)"
+ },
+ "host": {
+  "package": "host/clef_litert",
+  "version": "0.2.0",
+  "requirements": "host/requirements-host.txt (Python 3.14.6, macOS 27.0): numpy, tokenizers, pillow and ai-edge-litert (imported when a graph is compiled); no torch, no transformers",
+  "files_sha256": {
+   "__init__.py": "4bc079245c456d5ef34b21c3cfd6614e367d5173a2fbf95d95a778279d9e80a2",
+   "_erf.py": "cf6a894a8d65d069f64fb4f0f0175d969bd2947c31be89eb0992ab3435a4e66d",
+   "errors.py": "43893807154cfa7822cdaabf2eb8db3650b9ccc615e2b4231f9437f527e94744",
+   "head.py": "7fe0940018882ab7a83b12e78b884e194c332d5a7fcde9a93419f4bdec57f861",
+   "host.py": "b4e39b9f525f2f7fd83ad29c8cb301acfcda3780c4484f577a16fdcd5a50627a",
+   "pixels.py": "d87420187e422ff35299f5028236954fbbe63f6653e0d8a90a2ccfb0a500abf2",
+   "positions.py": "44a86a2843c550fab76d6e9754518e07e1f142ba252ebe6e584825a2870915d4",
+   "request.py": "991a3300bf9240d80b30a886f3d96cb77551840ed53d2af4221a5eaa0e118ab0",
+   "response.py": "5658ca395deef7ee20c68e8244f5b1dd42af7c8021c6a8138acd685d89d91445",
+   "runtime.py": "11ee9dc121b9c224a693d8c9eab244bde5b0bfb4baa10dcd9499167423f8ee7a",
+   "tables.py": "6db98e0069162a8a0d9bbc56111f3676d382b34e0b2a1c4a86794f287fe2a521"
+  },
+  "entry": "ClefLiteRT.from_dir(folder, accelerator='gpu' | 'cpu').decide(request, tile=448 | 256)",
+  "steps": "host/clef_litert/__init__.py docstring 1-6; ClefHost.decide(request, row_graph, tower)"
+ },
+ "folder": {
+  "layout": {
+   "row": "clef-flash_rowprefill_embeds_L{length}_fp16fc.tflite",
+   "tower": "clef-flash_vision_tower_g{tile}_fp16fc.tflite",
+   "tower_pos": "tables/vision_pos_g{tile}.safetensors",
+   "embed_tokens": "tables/embed_tokens.safetensors",
+   "lm_head": "tables/lm_head.safetensors",
+   "joint_head": "head/joint_head.safetensors",
+   "joint_head_config": "head/joint_head_config.json",
+   "tokenizer": "tokenizer/tokenizer.json"
+  },
+  "lengths": [
+   256,
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "tiles": [
+   256,
+   448
+  ],
+  "rule": "a request runs on the smallest present row graph that holds it; longer than the largest present one = RequestTooLong; one row graph compiled at a time, the towers stay compiled",
+  "accelerators": {
+   "gpu": "HardwareAccelerator.GPU, GpuOptions(enforce_f32=True) (Metal on a Mac)",
+   "cpu": "HardwareAccelerator.CPU, CpuOptions(num_threads=8) (XNNPACK), no weight cache file"
+  },
+  "not_supported": "the GPU's default precision (fp16 storage): the row graphs' norms overflow and the towers' rows are wrong (measured, not shipped)"
+ },
+ "row_graphs": [
+  {
+   "length": 256,
+   "file": "clef-flash_rowprefill_embeds_L256_fp16fc.tflite",
+   "bytes": 13847841008,
+   "sha256": "97d64beb2ec0a57e1e9f17a2c89096f6a44ed8b13c85216b9641d11f0195e6c7",
+   "source": "out/r2/clef_rowprefill_L256_v2_fp16fc.tflite",
+   "inputs": {
+    "embeds": [
+     1,
+     256,
+     4096
+    ],
+    "valid": [
+     1,
+     256
+    ],
+    "cos": [
+     1,
+     256,
+     64
+    ],
+    "sin": [
+     1,
+     256,
+     64
+    ]
+   },
+   "outputs": {
+    "hidden": [
+     1,
+     256,
+     4096
+    ]
+   }
+  },
+  {
+   "length": 512,
+   "file": "clef-flash_rowprefill_embeds_L512_fp16fc.tflite",
+   "bytes": 13850105024,
+   "sha256": "cbff9eab565f921b762875d7e92ff6aadccb4b87b1c1e2c536b48318f130f09e",
+   "source": "out/r2/clef_rowprefill_L512_v2_fp16fc.tflite",
+   "inputs": {
+    "embeds": [
+     1,
+     512,
+     4096
+    ],
+    "valid": [
+     1,
+     512
+    ],
+    "cos": [
+     1,
+     512,
+     64
+    ],
+    "sin": [
+     1,
+     512,
+     64
+    ]
+   },
+   "outputs": {
+    "hidden": [
+     1,
+     512,
+     4096
+    ]
+   }
+  },
+  {
+   "length": 1024,
+   "file": "clef-flash_rowprefill_embeds_L1024_fp16fc.tflite",
+   "bytes": 13856205536,
+   "sha256": "b8eff74efec3b2f3d2b289d62f5a5f66721f0926e88790f791fe8b4170834dc5",
+   "source": "out/r2/clef_rowprefill_L1024_v2_fp16fc.tflite",
+   "inputs": {
+    "embeds": [
+     1,
+     1024,
+     4096
+    ],
+    "valid": [
+     1,
+     1024
+    ],
+    "cos": [
+     1,
+     1024,
+     64
+    ],
+    "sin": [
+     1,
+     1024,
+     64
+    ]
+   },
+   "outputs": {
+    "hidden": [
+     1,
+     1024,
+     4096
+    ]
+   }
+  },
+  {
+   "length": 2048,
+   "file": "clef-flash_rowprefill_embeds_L2048_fp16fc.tflite",
+   "bytes": 13874698016,
+   "sha256": "6ecdbb68d48a9406aaf0c3c9d789c631abe23c605484f9f34746944cb87ff7a3",
+   "source": "out/r2/clef_rowprefill_L2048_v2_fp16fc.tflite",
+   "inputs": {
+    "embeds": [
+     1,
+     2048,
+     4096
+    ],
+    "valid": [
+     1,
+     2048
+    ],
+    "cos": [
+     1,
+     2048,
+     64
+    ],
+    "sin": [
+     1,
+     2048,
+     64
+    ]
+   },
+   "outputs": {
+    "hidden": [
+     1,
+     2048,
+     4096
+    ]
+   }
+  },
+  {
+   "length": 4096,
+   "file": "clef-flash_rowprefill_embeds_L4096_fp16fc.tflite",
+   "bytes": 13936871792,
+   "sha256": "43a638f2976f8bd8e885bdd7d41b1a342bb583c41c81f4528b1379ad4dee823b",
+   "source": "out/r2/clef_rowprefill_L4096_v2_fp16fc.tflite",
+   "inputs": {
+    "embeds": [
+     1,
+     4096,
+     4096
+    ],
+    "valid": [
+     1,
+     4096
+    ],
+    "cos": [
+     1,
+     4096,
+     64
+    ],
+    "sin": [
+     1,
+     4096,
+     64
+    ]
+   },
+   "outputs": {
+    "hidden": [
+     1,
+     4096,
+     4096
+    ]
+   }
+  }
+ ],
+ "tower_graphs": [
+  {
+   "tile": 256,
+   "file": "clef-flash_vision_tower_g256_fp16fc.tflite",
+   "bytes": 907587008,
+   "sha256": "c4272400890fa479b6d51792dd51e5e93cb74291a0fca90f94b38a248e57e994",
+   "source": "out/r3/clef_tower_g256_v2_fp16fc.tflite",
+   "inputs": {
+    "patches": [
+     1,
+     256,
+     1536
+    ],
+    "pos": [
+     1,
+     256,
+     1152
+    ]
+   },
+   "outputs": {
+    "rows": [
+     1,
+     64,
+     4096
+    ]
+   },
+   "position_rows": {
+    "file": "tables/vision_pos_g256.safetensors",
+    "key": "pos",
+    "dtype": "F32",
+    "shape": [
+     256,
+     1152
+    ],
+    "sha256": "ecd2eba829853f233b9f71f05da81c459e0ecb5ba7fbf5f5986bf42857c5efe9",
+    "source": "cache/r3/consts_g256.npz pos_embeds"
+   }
+  },
+  {
+   "tile": 448,
+   "file": "clef-flash_vision_tower_g448_fp16fc.tflite",
+   "bytes": 907891136,
+   "sha256": "f18f8d2eefc7241bcfacf93fee9a8c725c1ad9696c63e215ee5aa5167b2308a6",
+   "source": "out/r3/clef_tower_g448_v2_fp16fc.tflite",
+   "inputs": {
+    "patches": [
+     1,
+     784,
+     1536
+    ],
+    "pos": [
+     1,
+     784,
+     1152
+    ]
+   },
+   "outputs": {
+    "rows": [
+     1,
+     196,
+     4096
+    ]
+   },
+   "position_rows": {
+    "file": "tables/vision_pos_g448.safetensors",
+    "key": "pos",
+    "dtype": "F32",
+    "shape": [
+     784,
+     1152
+    ],
+    "sha256": "65f76c320150de7d3e53c6fa0ff7ffd048079153a8d6e114b6d48141c6f9ae26",
+    "source": "cache/r3/consts_g448.npz pos_embeds"
+   }
+  }
+ ],
+ "files": {
+  "tokenizer/tokenizer.json": {
+   "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+   "bytes": 19989325,
+   "source": "the repository's own file, unchanged"
+  },
+  "head/joint_head.safetensors": {
+   "sha256": "19cdcec8c81dc9212be320fff47462ab342fbc1278be4368fb3da71241cf5ba0",
+   "bytes": 243538016,
+   "source": "the repository's own file, unchanged (122 BF16 tensors)"
+  },
+  "head/joint_head_config.json": {
+   "sha256": "77efe959a38b5b17b241543e129e695f3c77465ece55a25985279bd8176279a0",
+   "bytes": 119,
+   "content": {
+    "hidden_size": 4096,
+    "width": 1024,
+    "routing_layers": 2,
+    "layers": 4,
+    "heads": 16,
+    "feedforward": 4096
+   }
+  },
+  "tables/embed_tokens.safetensors": {
+   "sha256": "48586a2af482671b5ca781a761957e296295a7fd0950af241705cb01ad2079fc",
+   "bytes": 2034237544,
+   "key": "embed_tokens.weight",
+   "dtype": "BF16",
+   "shape": [
+    248320,
+    4096
+   ],
+   "metadata": null,
+   "source": {
+    "file": "model-00001-of-00004.safetensors",
+    "key": "model.language_model.embed_tokens.weight",
+    "byte_range": [
+     2034242120,
+     4068479560
+    ],
+    "data_sha256": "d87d444a38822588c6c1ed07dec4404ccd8d526f57d58565cbbbf60acc758afe"
+   },
+   "made_by": "conversion/r5a_tables.py (clef_litert.copy_bf16_tensor): the checkpoint's bytes, new name",
+   "role": "the row graph's embeds: the rows of the ids, widened to float32 by the host"
+  },
+  "tables/lm_head.safetensors": {
+   "sha256": "106ec926c62c1aac2c8ab808833db89012a9132c53f767fa7609ec69e377d4ab",
+   "bytes": 2034237536,
+   "key": "lm_head.weight",
+   "dtype": "BF16",
+   "shape": [
+    248320,
+    4096
+   ],
+   "metadata": null,
+   "source": {
+    "file": "model-00001-of-00004.safetensors",
+    "key": "lm_head.weight",
+    "byte_range": [
+     4680,
+     2034242120
+    ],
+    "data_sha256": "6d6ff4dbf261f833246d32e7c6088f87f4ab40ddb58516d90c931aa6ae61d5e7"
+   },
+   "made_by": "conversion/r5a_tables.py (clef_litert.copy_bf16_tensor): the checkpoint's bytes, new name",
+   "role": "the joint head's lexical vectors: the mean of the rows of each option span's ids"
+  }
+ },
+ "token_ids": {
+  "vision_start": 248053,
+  "vision_end": 248054,
+  "image_pad": 248056,
+  "processor_pad": 248044
+ },
+ "request": {
+  "shape": "SystemOne-compatible request shape: {model: str, state: any JSON, questions: {id: {type, instructions, criteria}}, images: [one picture] (optional)}",
+  "question_types": {
+   "noul": 0,
+   "choice": 1,
+   "score": 2
+  },
+  "checks": "the author's systemone() checks, in order (request.validate_request), then the host's",
+  "refusals": {
+   "MissingModelOrState": "model is not a string or state is absent: 'model and state are required'",
+   "NoQuestions": "questions is not a non-empty object: 'at least one question is required'",
+   "BadQuestionType": "type not noul / choice / score: '<id>: type must be noul, choice, or score'",
+   "EmptyCriteria": "choice or score without criteria: '<id>: criteria must not be empty'",
+   "SchemaTooLong": "prefix + picture + schema + suffix > max_length (16384), encode_record's message",
+   "EmptyRecord": "no ids or no questions, encode_record's message",
+   "UnsupportedMedia": "host only: more than one picture, videos, media_kwargs, an unreadable picture or URL, a tile other than 256 / 448",
+   "RequestTooLong": "host only: more than 4096 tokens (refused, never truncated)",
+   "base": "every refusal is clef_litert.RequestError, a ValueError"
+  }
+ },
+ "ids": {
+  "encode": "tokenizers.Tokenizer.from_file(tokenizer.json).encode(piece, add_special_tokens=False), pieces concatenated (the author's encode_record)",
+  "prefix": "<|im_start|>system\nRead the complete state and schema. Decide every field jointly. Each answer must be exactly one of that field's allowed options.<|im_end|>\n<|im_start|>user\nSTATE:\n",
+  "prefix_ids": 36,
+  "suffix": "\n<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\nJOINT SCHEMA DECISIONS:",
+  "suffix_ids": 18,
+  "schema_header": "\n\nSCHEMA FIELDS:\n",
+  "question_piece": "\\nFIELD {i}\\nID: {id}\\nTYPE: {type}\\nINSTRUCTION: [render(instructions or id)]\\nALLOWED OPTIONS:\\n + per option 'OPTION {j}: [render({option_id, description})]\\n' + 'END FIELD\\n' ([..] = the spans)",
+  "render": "a string as is, else json.dumps(ensure_ascii=False, separators=(',', ':'), sort_keys=True)",
+  "option_order": "noul (true, false); choice: ids sorted as strings; score: levels 0..n-1",
+  "noul_default_criteria": {
+   "true": "The proposition is true or the answer is yes.",
+   "false": "The proposition is false or the answer is no."
+  },
+  "picture_block": "<|vision_start|> + N x <|image_pad|> + <|vision_end|> + '\\n' right after the prefix (token_offset = the <|vision_start|> index)",
+  "state_cut": "to max_length 16384 exactly as encode_record (the row graphs refuse past 4096 first)",
+  "usage_input_tokens": "len(ids)"
+ },
+ "row_graph": {
+  "signature": "serving_default",
+  "inputs": [
+   {
+    "name": "embeds",
+    "dtype": "float32",
+    "shape": [
+     1,
+     "L",
+     4096
+    ],
+    "meaning": "the bf16 embed_tokens rows of the ids widened to float32; the picture rows at the <|image_pad|> positions; 0 after the record"
+   },
+   {
+    "name": "valid",
+    "dtype": "float32",
+    "shape": [
+     1,
+     "L"
+    ],
+    "meaning": "1 on the record, 0 after it"
+   },
+   {
+    "name": "cos",
+    "dtype": "float32",
+    "shape": [
+     1,
+     "L",
+     64
+    ],
+    "meaning": "M-RoPE cos of the record's position planes (positions.py)"
+   },
+   {
+    "name": "sin",
+    "dtype": "float32",
+    "shape": [
+     1,
+     "L",
+     64
+    ],
+    "meaning": "M-RoPE sin"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "hidden",
+    "dtype": "float32",
+    "shape": [
+     1,
+     "L",
+     4096
+    ],
+    "meaning": "after the final RMSNorm, every position; the host reads rows 0..T-1"
+   }
+  ],
+  "buckets": [
+   256,
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "bucket_rule": "the smallest L >= T; T > 4096 refused (RequestTooLong)",
+  "padding": "right; embeds 0, valid 0; pad positions continue max + 1, + 2, ... on all three planes",
+  "files": [
+   "clef-flash_rowprefill_embeds_L256_fp16fc.tflite",
+   "clef-flash_rowprefill_embeds_L512_fp16fc.tflite",
+   "clef-flash_rowprefill_embeds_L1024_fp16fc.tflite",
+   "clef-flash_rowprefill_embeds_L2048_fp16fc.tflite",
+   "clef-flash_rowprefill_embeds_L4096_fp16fc.tflite"
+  ]
+ },
+ "positions": {
+  "planes": "text-only (i, i, i); picture of H x W merged tokens at token_offset P: i <= P -> (i, i, i), k-th picture token -> (P+1, P+1 + k // W, P+1 + k % W), i >= P+N+1 -> i - (N - max(H, W))",
+  "rope": {
+   "theta": 10000000.0,
+   "rotary_dim": 64,
+   "mrope_section": [
+    11,
+    11,
+    10
+   ],
+   "interleave": "j % 3 == 1 and j < 33 -> h, j % 3 == 2 and j < 30 -> w, else t",
+   "tables": "angle = float32(inv_freq * pos); cos / sin of cat(angle, angle) in float64, rounded to float32"
+  }
+ },
+ "picture": {
+  "tiles": {
+   "256": {
+    "merged_grid": [
+     8,
+     8
+    ],
+    "picture_tokens": 64,
+    "patches": [
+     256,
+     1536
+    ]
+   },
+   "448": {
+    "merged_grid": [
+     14,
+     14
+    ],
+    "picture_tokens": 196,
+    "patches": [
+     784,
+     1536
+    ]
+   }
+  },
+  "default_tile": 448,
+  "preprocess": "PIL open -> convert('RGB') -> resize((tile, tile), BICUBIC) -> /255 -> (x - 0.5) / 0.5 (float64) -> float32 -> merge-block-major patches (C, T=2, 16, 16)",
+  "tower_graph": "patches [1, 4 G^2, 1536] and the position rows pos [1, 4 G^2, 1152] float32 in -> picture rows [1, G^2, 4096] float32 out (tower_graphs)",
+  "not_read": "the author's native resolution, more than one picture, videos, media_kwargs, URLs"
+ },
+ "head": {
+  "weights": "joint_head.safetensors (BF16 -> float32)",
+  "config": {
+   "hidden_size": 4096,
+   "width": 1024,
+   "routing_layers": 2,
+   "layers": 4,
+   "heads": 16,
+   "feedforward": 4096
+  },
+  "tensors": 122,
+  "parameters": 121762820,
+  "compute": "NumPy float32 (head.py docstring); GELU exact (erf in float64, FreeBSD s_erf.c)",
+  "lexical": "mean of the lm_head.safetensors rows of each option span's ids (not normalized)"
+ },
+ "response": {
+  "probabilities": "per question float32 softmax in NumPy's order (exp(z - max), float32 sum, float32 division), then Python floats",
+  "answer": "the author's systemone_answer (round(x, 4); choice = first maximum in criteria order; score = Python's left-to-right sum of level * p)",
+  "body": {
+   "model": "request.model",
+   "answers": "{question id: answer} in request order",
+   "usage": {
+    "input_tokens": "len(ids)",
+    "output_tokens": 0
+   }
+  }
+ },
+ "status": "the graphs, the host package and the folder of this repository",
+ "checks": {
+  "reference": "the provider's own code (joint_schema_model.py systemone() at the revision above) in float32 on the CPU: 243 runs of fixtures/ (text, and pictures at the 256 / 448 px tiles), fixtures/reference_probs.json",
+  "line": "on every question that is not a near-tie (top-2 margin <= 0.02) the most likely option is the reference's; every probability within 0.02; the mean over runs of each run's mean |dp| <= 0.002",
+  "end_to_end": {
+   "gpu": {
+    "complete": true,
+    "line": {
+     "runs": 243,
+     "argmax_equal_non_near_tie": "545/545",
+     "near_tie": "5/5",
+     "max_abs_dp": 0.0016525983810424805,
+     "mean_of_run_means": 7.334260193875453e-06,
+     "pass": true
+    },
+    "red_arms": "3/3",
+    "pass": true
+   },
+   "cpu": {
+    "complete": true,
+    "line": {
+     "runs": 69,
+     "argmax_equal_non_near_tie": "207/207",
+     "near_tie": "3/3",
+     "max_abs_dp": 0.0016247034072875977,
+     "mean_of_run_means": 1.3047657266541098e-05,
+     "pass": true
+    },
+    "red_arms": "3/3",
+    "pass": true
+   }
+  },
+  "example": {
+   "gpu": true,
+   "cpu": true
+  },
+  "delegation_as_compiled": {
+   "cpu:clef-flash_rowprefill_embeds_L1024_fp16fc.tflite": {
+    "compile_seconds": 82.362,
+    "fully_accelerated": false,
+    "one_partition_all_nodes": false,
+    "replacing": [
+     {
+      "delegated": 18112,
+      "total": 18160,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 97
+     }
+    ]
+   },
+   "cpu:clef-flash_rowprefill_embeds_L2048_fp16fc.tflite": {
+    "compile_seconds": 94.098,
+    "fully_accelerated": false,
+    "one_partition_all_nodes": false,
+    "replacing": [
+     {
+      "delegated": 31552,
+      "total": 31600,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 97
+     }
+    ]
+   },
+   "cpu:clef-flash_rowprefill_embeds_L256_fp16fc.tflite": {
+    "compile_seconds": 3.553,
+    "fully_accelerated": false,
+    "one_partition_all_nodes": false,
+    "replacing": [
+     {
+      "delegated": 8056,
+      "total": 8080,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 49
+     }
+    ]
+   },
+   "cpu:clef-flash_rowprefill_embeds_L4096_fp16fc.tflite": {
+    "compile_seconds": 107.976,
+    "fully_accelerated": false,
+    "one_partition_all_nodes": false,
+    "replacing": [
+     {
+      "delegated": 58432,
+      "total": 58480,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 97
+     }
+    ]
+   },
+   "cpu:clef-flash_rowprefill_embeds_L512_fp16fc.tflite": {
+    "compile_seconds": 81.079,
+    "fully_accelerated": false,
+    "one_partition_all_nodes": false,
+    "replacing": [
+     {
+      "delegated": 11392,
+      "total": 11440,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 97
+     }
+    ]
+   },
+   "cpu:clef-flash_vision_tower_g256_fp16fc.tflite": {
+    "compile_seconds": 0.247,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 1940,
+      "total": 1940,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 1
+     }
+    ]
+   },
+   "cpu:clef-flash_vision_tower_g448_fp16fc.tflite": {
+    "compile_seconds": 0.401,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 1940,
+      "total": 1940,
+      "delegate": "TfLiteXNNPackDelegate",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_rowprefill_embeds_L1024_fp16fc.tflite": {
+    "compile_seconds": 138.695,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 18160,
+      "total": 18160,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_rowprefill_embeds_L2048_fp16fc.tflite": {
+    "compile_seconds": 146.108,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 31600,
+      "total": 31600,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_rowprefill_embeds_L256_fp16fc.tflite": {
+    "compile_seconds": 172.478,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 8080,
+      "total": 8080,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_rowprefill_embeds_L4096_fp16fc.tflite": {
+    "compile_seconds": 187.062,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 58480,
+      "total": 58480,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_rowprefill_embeds_L512_fp16fc.tflite": {
+    "compile_seconds": 135.683,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 11440,
+      "total": 11440,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_vision_tower_g256_fp16fc.tflite": {
+    "compile_seconds": 4.983,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 1940,
+      "total": 1940,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   },
+   "gpu:clef-flash_vision_tower_g448_fp16fc.tflite": {
+    "compile_seconds": 4.709,
+    "fully_accelerated": true,
+    "one_partition_all_nodes": true,
+    "replacing": [
+     {
+      "delegated": 1940,
+      "total": 1940,
+      "delegate": "LITERT_METAL",
+      "partitions": 1
+     }
+    ]
+   }
+  }
+ }
+}

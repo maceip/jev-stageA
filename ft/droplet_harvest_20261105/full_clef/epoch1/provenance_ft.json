@@ -1,0 +1,40 @@
+{
+  "epoch": 1,
+  "step": 6431,
+  "dev_eval": {
+    "event": "eval",
+    "split": "dev",
+    "epoch": 1,
+    "step": 6431,
+    "loss": 0.0907,
+    "tool_output_filter": {
+      "n": 21977,
+      "pos": 20282,
+      "neg": 1695,
+      "auc": 0.9818,
+      "tpr@0.5": 0.992,
+      "fpr@0.5": 0.3009,
+      "tpr@0.9": 0.9778,
+      "fpr@0.9": 0.1593,
+      "tpr@0.99": 0.8842,
+      "fpr@0.99": 0.0336
+    },
+    "action_authorization_guard": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.35": 0.0,
+      "fpr@0.35": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0
+    },
+    "elapsed_min": 72.2,
+    "ts": 1793808288.64
+  },
+  "lr": 3e-05,
+  "pos_weight": 3.0,
+  "seed": 20261101
+}

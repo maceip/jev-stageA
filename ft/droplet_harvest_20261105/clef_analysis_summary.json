@@ -1,0 +1,108 @@
+{
+  "clef_final": {
+    "dev_baseline": {
+      "event": "eval",
+      "split": "dev",
+      "epoch": 0,
+      "step": 0,
+      "loss": 0.6314,
+      "tool_output_filter": {
+        "n": 21977,
+        "pos": 20282,
+        "neg": 1695,
+        "auc": 0.7516,
+        "tpr@0.5": 0.7605,
+        "fpr@0.5": 0.3687,
+        "tpr@0.9": 0.3445,
+        "fpr@0.9": 0.1493,
+        "tpr@0.99": 0.0,
+        "fpr@0.99": 0.0
+      },
+      "action_authorization_guard": {
+        "n": 0,
+        "pos": 0,
+        "neg": 0,
+        "auc": 0.0,
+        "tpr@0.35": 0.0,
+        "fpr@0.35": 0.0,
+        "tpr@0.5": 0.0,
+        "fpr@0.5": 0.0,
+        "tpr@0.9": 0.0,
+        "fpr@0.9": 0.0
+      },
+      "elapsed_min": 8.99,
+      "ts": 1793804496.1
+    },
+    "dev_best": {
+      "event": "eval",
+      "split": "dev_best",
+      "epoch": 3,
+      "step": 19251,
+      "loss": 0.0777,
+      "tool_output_filter": {
+        "n": 21977,
+        "pos": 20282,
+        "neg": 1695,
+        "auc": 0.9899,
+        "tpr@0.5": 0.9911,
+        "fpr@0.5": 0.2183,
+        "tpr@0.9": 0.9819,
+        "fpr@0.9": 0.1209,
+        "tpr@0.99": 0.9583,
+        "fpr@0.99": 0.0507
+      },
+      "action_authorization_guard": {
+        "n": 0,
+        "pos": 0,
+        "neg": 0,
+        "auc": 0.0,
+        "tpr@0.35": 0.0,
+        "fpr@0.35": 0.0,
+        "tpr@0.5": 0.0,
+        "fpr@0.5": 0.0,
+        "tpr@0.9": 0.0,
+        "fpr@0.9": 0.0
+      }
+    },
+    "test_banking_slack": {
+      "event": "eval",
+      "split": "test_banking_slack",
+      "epoch": 3,
+      "step": 19251,
+      "loss": 0.0779,
+      "tool_output_filter": {
+        "n": 21965,
+        "pos": 20271,
+        "neg": 1694,
+        "auc": 0.9897,
+        "tpr@0.5": 0.9915,
+        "fpr@0.5": 0.2161,
+        "tpr@0.9": 0.9819,
+        "fpr@0.9": 0.1234,
+        "tpr@0.99": 0.9574,
+        "fpr@0.99": 0.0537
+      },
+      "action_authorization_guard": {
+        "n": 0,
+        "pos": 0,
+        "neg": 0,
+        "auc": 0.0,
+        "tpr@0.35": 0.0,
+        "fpr@0.35": 0.0,
+        "tpr@0.5": 0.0,
+        "fpr@0.5": 0.0,
+        "tpr@0.9": 0.0,
+        "fpr@0.9": 0.0
+      },
+      "elapsed_min": 210.49,
+      "checkpoint": {
+        "path": "/root/work/checkpoints/clef-flash-LiteRT-ft-full",
+        "epoch": 3,
+        "step": 19251
+      },
+      "ts": 1793816585.6
+    }
+  },
+  "test_score_count": 21965,
+  "dev_score_count": 21977
+}

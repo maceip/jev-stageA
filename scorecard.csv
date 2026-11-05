@@ -1,0 +1,5 @@
+model,description,training_data,test_data,test_n,pos,neg,auc,tp,fp,fn,tn,tpr_pct,fpr_pct,fnr_pct,precision_pct,status
+CLEF,8.4B frozen backbone + 121M trained head,103K rows of llmail-inject (injection detection),22K held-out rows same suite same task type,21965,20271,1694,0.9897,20098,366,173,1328,99.1,21.6,0.9,98.2,COMPLETE
+SecJev run 1,4B full fine-tune (first training run),6.4K rows workspace+travel (authorization),7.2K rows banking+slack (held-out domains),7192,1654,5538,0.8802,976,390,678,5148,59.0,7.0,41.0,71.4,COMPLETE
+SecJev run 2,4B full fine-tune (same setup different random seed),same as run 1,same as run 1,7192,1654,5538,0.8661,900,396,754,5142,54.4,7.2,45.6,69.4,COMPLETE
+Ultraspeed (base zero-shot),4B base model no fine-tuning (baseline),none,same test set as SecJev,7192,1654,5538,0.8162,1240,1373,414,4165,75.0,24.8,25.0,47.5,COMPLETE
