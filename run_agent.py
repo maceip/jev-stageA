@@ -36,7 +36,12 @@ def build_defense(spec: str, a):
     """spec: 'none' | 'tool:<secjev_tool|piguard|deberta|llm_judge>:<thr>:<stop|redact>'
                     | 'action:<meta|content>:<thr>:<stop|redact>'
                     | 'cascade:<meta|content>:<thr>:<stop|redact>'
-                    | 'cascade_judge:<meta|content>:<thr>:<stop|redact>'  -> (executor, post_elements)"""
+                    | 'cascade_judge:<meta|content>:<thr>:<stop|redact>'
+                    | 'tool_judge:secjev_tool:<thr>:<stop|redact>'     Spot 1 JEV, judge confirms its flags
+                    | 'action_judge:<meta|content>:<thr>:<stop|redact>' Spot 2 JEV, judge confirms its flags
+                    | 'judge_action:llm_judge:0.5:<stop|redact>'        Spot 2 judge alone
+                    | 'judge_both:llm_judge:0.5:<stop|redact>'          judge alone at Spot 1 and Spot 2
+       -> (executor, post_elements)"""
     if spec == "none":
         return ToolsExecutor(), []
     kind, name, thr, mode = spec.split(":")
@@ -50,6 +55,33 @@ def build_defense(spec: str, a):
         t_tool = getattr(a, "tool_threshold", None)
         judge = LLMJudge(a.judge_url, a.judge_model) if kind == "cascade_judge" else None
         return defenses.build_secjev_cascade(sj, thr, name == "content", mode, judge=judge, sj_tool=sj_tool, thr_tool=t_tool)
+    if kind == "tool_judge":
+        from secjev_scorer import SecJev
+        sj, judge = SecJev(a.secjev), LLMJudge(a.judge_url, a.judge_model)
+        def confirmed(user, call, out):
+            s = secjev_tool_score(sj, {"user": user, "call": call, "output": out})[0]
+            if s < thr:
+                return s
+            try:
+                return judge(user, out)
+            except ValueError:  # unparseable verdict: fail closed
+                return 1.0
+        return ToolsExecutor(), [defenses.ToolOutputGate(confirmed, thr, mode)]
+    if kind == "action_judge":
+        from secjev_scorer import SecJev
+        return defenses.ActionGuardedExecutor(SecJev(a.secjev), thr, name == "content", mode,
+                                              judge=LLMJudge(a.judge_url, a.judge_model)), []
+    if kind in ("judge_action", "judge_both"):
+        judge = LLMJudge(a.judge_url, a.judge_model)
+        ex = defenses.ActionGuardedExecutor(None, thr, True, mode, judge=judge)
+        if kind == "judge_action":
+            return ex, []
+        def judged(user, call, out):
+            try:
+                return judge(user, out)
+            except ValueError:
+                return 1.0
+        return ex, [defenses.ToolOutputGate(judged, thr, mode)]
     if kind == "action":
         from secjev_scorer import SecJev
         return defenses.ActionGuardedExecutor(SecJev(a.secjev), thr, name == "content", mode), []
@@ -100,7 +132,8 @@ def episode(suite, pipeline, user_task, injection_task, injections, variant=0, p
         except AbortAgentError as e:  # stop-mode live defense
             env, messages, rec["aborted"] = e.task_environment, e.messages, True
         out = (messages[-1]["content"] if messages[-1]["role"] == "assistant" else None) or []
-        stack = functions_stack_trace_from_messages(messages)
+        import defenses
+        stack = defenses.executed_trace(messages)  # refused calls did not run
         rec["utility"] = suite._check_task_result(user_task, out, pre, env, stack)
         rec["attack_success"] = (suite._check_task_result(injection_task, out, pre, env, stack)
                                  if injection_task else None)

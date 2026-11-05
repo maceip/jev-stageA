@@ -1,0 +1,14 @@
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:  25%|██▍       | 106/426 [00:00<00:00, 1036.44it/s]Loading weights:  50%|████▉     | 212/426 [00:00<00:00, 1047.00it/s]Loading weights:  74%|███████▍  | 317/426 [00:00<00:00, 1001.28it/s]Loading weights:  98%|█████████▊| 418/426 [00:00<00:00, 953.94it/s] Loading weights: 100%|██████████| 426/426 [00:00<00:00, 990.13it/s]
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:  21%|██        | 89/426 [00:00<00:00, 851.08it/s]Loading weights:  46%|████▋     | 198/426 [00:00<00:00, 978.54it/s]Loading weights:  72%|███████▏  | 305/426 [00:00<00:00, 995.49it/s]Loading weights:  96%|█████████▋| 411/426 [00:00<00:00, 1009.44it/s]Loading weights: 100%|██████████| 426/426 [00:00<00:00, 990.12it/s] 
+249 episodes to run (0 already done)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+25/249 ok=25 err=0
+50/249 ok=50 err=0
+75/249 ok=75 err=0
+100/249 ok=100 err=0
+125/249 ok=125 err=0
+150/249 ok=150 err=0
+175/249 ok=175 err=0
+200/249 ok=200 err=0
+225/249 ok=225 err=0
+249/249 ok=247 err=2
