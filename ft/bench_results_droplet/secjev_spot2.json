@@ -1,0 +1,51 @@
+{
+ "arm": "secjev_spot2",
+ "kind": "local",
+ "ckpt": "/root/work/ft/secjev_spot2/epoch1",
+ "ft_minutes": 24.0,
+ "tracks": {
+  "tool_output_filter": {
+   "n": 782,
+   "pos": 396,
+   "neg": 386,
+   "threshold": 0.9995068311691284,
+   "auc": 0.647,
+   "tpr": 0.0783,
+   "fpr": 0.057,
+   "balanced_accuracy": 0.5106,
+   "brier": 0.2837,
+   "ece": 0.2411,
+   "fp": 22,
+   "tp": 31,
+   "tn": 364,
+   "fn": 365,
+   "accuracy": 0.5051,
+   "dev_threshold": 0.9995068311691284,
+   "run_seconds_dev_plus_test": 262.1,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  },
+  "action_authz_guard": {
+   "n": 800,
+   "pos": 400,
+   "neg": 400,
+   "threshold": 0.03351439646212384,
+   "auc": 0.8824,
+   "tpr": 0.795,
+   "fpr": 0.2175,
+   "balanced_accuracy": 0.7888,
+   "brier": 0.1942,
+   "ece": 0.1768,
+   "fp": 87,
+   "tp": 318,
+   "tn": 313,
+   "fn": 82,
+   "accuracy": 0.7887,
+   "dev_threshold": 0.03351439646212384,
+   "run_seconds_dev_plus_test": 194.0,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  }
+ },
+ "peak_rss_gb": 26.24
+}
