@@ -1,0 +1,51 @@
+{
+ "arm": "secjev_base",
+ "kind": "local",
+ "ckpt": "/root/work/SecJev-4B",
+ "ft_minutes": 0.0,
+ "tracks": {
+  "tool_output_filter": {
+   "n": 782,
+   "pos": 396,
+   "neg": 386,
+   "threshold": 0.999951958656311,
+   "auc": 0.6436,
+   "tpr": 0.0884,
+   "fpr": 0.0699,
+   "balanced_accuracy": 0.5092,
+   "brier": 0.3003,
+   "ece": 0.2791,
+   "fp": 27,
+   "tp": 35,
+   "tn": 359,
+   "fn": 361,
+   "accuracy": 0.5038,
+   "dev_threshold": 0.999951958656311,
+   "run_seconds_dev_plus_test": 216.3,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  },
+  "action_authz_guard": {
+   "n": 800,
+   "pos": 400,
+   "neg": 400,
+   "threshold": 0.7100949287414551,
+   "auc": 0.8299,
+   "tpr": 0.4775,
+   "fpr": 0.09,
+   "balanced_accuracy": 0.6937,
+   "brier": 0.182,
+   "ece": 0.111,
+   "fp": 36,
+   "tp": 191,
+   "tn": 364,
+   "fn": 209,
+   "accuracy": 0.6937,
+   "dev_threshold": 0.7100949287414551,
+   "run_seconds_dev_plus_test": 217.9,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  }
+ },
+ "peak_rss_gb": 26.25
+}

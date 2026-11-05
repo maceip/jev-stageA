@@ -1,0 +1,51 @@
+{
+ "arm": "ultraspeed_hosted",
+ "kind": "hosted",
+ "ckpt": null,
+ "ft_minutes": 0.0,
+ "tracks": {
+  "tool_output_filter": {
+   "n": 782,
+   "pos": 396,
+   "neg": 386,
+   "threshold": 0.99,
+   "auc": 0.7464,
+   "tpr": 0.0732,
+   "fpr": 0.0155,
+   "balanced_accuracy": 0.5288,
+   "brier": 0.2599,
+   "ece": 0.2621,
+   "fp": 6,
+   "tp": 29,
+   "tn": 380,
+   "fn": 367,
+   "accuracy": 0.523,
+   "dev_threshold": 0.99,
+   "run_seconds_dev_plus_test": 103.2,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  },
+  "action_authz_guard": {
+   "n": 800,
+   "pos": 400,
+   "neg": 400,
+   "threshold": 0.44999999999999996,
+   "auc": 0.9083,
+   "tpr": 0.8525,
+   "fpr": 0.1625,
+   "balanced_accuracy": 0.845,
+   "brier": 0.1177,
+   "ece": 0.0498,
+   "fp": 65,
+   "tp": 341,
+   "tn": 335,
+   "fn": 59,
+   "accuracy": 0.845,
+   "dev_threshold": 0.44999999999999996,
+   "run_seconds_dev_plus_test": 96.1,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  }
+ },
+ "peak_rss_gb": 0.06
+}

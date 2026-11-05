@@ -1,0 +1,52 @@
+{
+ "arm": "secjev_joint_llm",
+ "kind": "local+llm",
+ "ckpt": "/root/work/ft/secjev_joint/epoch1",
+ "ft_minutes": 34.4,
+ "tracks": {
+  "tool_output_filter": {
+   "n": 782,
+   "pos": 396,
+   "neg": 386,
+   "threshold": 0.999718964099884,
+   "auc": 0.725,
+   "tpr": 0.0758,
+   "fpr": 0.0233,
+   "balanced_accuracy": 0.5262,
+   "brier": 0.2079,
+   "ece": 0.1783,
+   "fp": 9,
+   "tp": 30,
+   "tn": 377,
+   "fn": 366,
+   "accuracy": 0.5205,
+   "dev_threshold": 0.999718964099884,
+   "run_seconds_dev_plus_test": 232.9,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  },
+  "action_authz_guard": {
+   "n": 800,
+   "pos": 400,
+   "neg": 400,
+   "threshold": 0.056640232796780765,
+   "auc": 0.8736,
+   "tpr": 0.785,
+   "fpr": 0.1975,
+   "balanced_accuracy": 0.7937,
+   "brier": 0.1976,
+   "ece": 0.1857,
+   "fp": 79,
+   "tp": 314,
+   "tn": 321,
+   "fn": 86,
+   "accuracy": 0.7937,
+   "dev_threshold": 0.056640232796780765,
+   "run_seconds_dev_plus_test": 215.5,
+   "skipped_dev": 0,
+   "skipped_test": 0
+  }
+ },
+ "peak_rss_gb": 26.24,
+ "llm_calls": 59
+}
