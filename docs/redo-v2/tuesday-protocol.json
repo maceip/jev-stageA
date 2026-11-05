@@ -1,0 +1,91 @@
+{
+  "protocol": "tuesday-v2-retrain",
+  "declared_at": "2026-11-03T21:45:00-08:00",
+  "status": "PREDECLARED BEFORE ANY RESULT",
+  "intent": "Fix and rerun every item in Tuesday-assessment.md on the largest provisionable DigitalOcean GPU droplet.",
+  "compute": {
+    "droplet_id": 615711309,
+    "name": "jev-retrain",
+    "size": "gpu-mi355x1-288gb-spot",
+    "region": "mem1",
+    "image": "gpu-amd-base",
+    "accelerator": "AMD Instinct MI355X VF / gfx950 / ROCm 7.15",
+    "torch": "2.10.0+rocm7.0",
+    "note": "8-GPU sizes were rejected by the account GPU quota; B300/H200/H100 sizes were not available in offered regions. Spot instance: all jobs checkpoint per epoch.",
+    "verified": "torch.cuda.is_available()=True, bf16 4096x4096x20 matmul 0.205s"
+  },
+  "data": {
+    "frozen_clef_v03": {
+      "train": 102890,
+      "dev": 22047,
+      "test": 22047,
+      "capped": false,
+      "manifest": "data/external/redo_v2_out/clef_frozen_v03/frozen_manifest_v03.json",
+      "excluded_kinds": ["direct_prompt_injection"],
+      "caveat": "tool_output_filter rows only; direct-injection rows need a different state schema"
+    },
+    "frozen_secjev_spot2_v02": {
+      "train": 6413,
+      "dev": 1482,
+      "test": 7192,
+      "manifest": "docs/redo-v2/frozen-manifest-spot2-v2.json"
+    }
+  },
+  "training": {
+    "secjev": {
+      "script": "ft_action.py",
+      "device": "cuda",
+      "dtype": "fp32",
+      "autocast": "bf16",
+      "epochs": 3,
+      "batch": 32,
+      "lr": 3e-05,
+      "seeds": [20261101, 20261103],
+      "checkpoint": "every epoch",
+      "selection": "dev-only, FULL dev split via eval_secjev_frozen.py; test untouched until frozen evaluation"
+    },
+    "clef": {
+      "script": "ft_clef.py",
+      "trained_object": "JointSchemaHead only on a FROZEN LiteRT backbone",
+      "device": "cuda",
+      "litert_accelerator": "cpu",
+      "truncation": "none (strict; overlong rows recorded and skipped)",
+      "epochs": 3,
+      "selection": "dev-only",
+      "export": "self-contained BF16 head + contract.json + real .tflite graphs"
+    }
+  },
+  "evaluation": {
+    "frozen_test_once": true,
+    "per_row_scores_required": true,
+    "baselines_on_identical_rows": ["keyword", "untrained_head", "hosted_ultraspeed"],
+    "matched_pairs": {
+      "required": true,
+      "delta_rule": "P(fire|positive) - P(fire|matched twin)",
+      "blind_if": "delta <= 0",
+      "weak_if": "delta < 0.30",
+      "caveat": "quasi-matched by source+length; exact literal twins are not available from these real corpora"
+    },
+    "statistics": ["wilson95", "cluster_bootstrap_ci", "mcnemar_exact", "ece", "brier"],
+    "honesty_probe": "scored separately, excluded from headline",
+    "free_lunch_gate": {
+      "max_untrained_auc": 0.80,
+      "on_fail": "FAIL BUILD - an eval set separable before training cannot support a publication claim"
+    },
+    "adaptive": "275-row output-bearing subset only, labelled as such",
+    "replication": "clean-checkout replay from frozen score files; byte-identical metrics or explained deltas"
+  },
+  "gates": {
+    "G0": "torch CUDA + real smoke train",
+    "G1": "complete pinned bundle + SHA-256 of every file",
+    "G2": "fresh-process deployment-scorer load + fixed probe score",
+    "G3": "full-corpus encode with measured s/row and written manifest; NO cap",
+    "G4": "multi-epoch dev-only-selected training, per-epoch logs",
+    "G5": "frozen test + baselines + matched pairs + CIs + honesty probes",
+    "G6": "hosted ultraspeed arm on identical rows",
+    "G7": "independent replication",
+    "G8": "corrected publication artifacts with explicit v1 errata"
+  },
+  "no_post_hoc_resizing": true,
+  "no_shortcuts": true
+}

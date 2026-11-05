@@ -24,9 +24,9 @@ Pass rules and decision: plan doc, section 0, "Stage A rerun: rules fixed before
 - Adaptive (rule 3): 200 targets (50 per suite, seed 0), up to 10 rounds, 3 repeats, attacker model A1 for both agents. Every arm receives the same feedback: the defense's verdict on the live run (blocked or not) and the outcome. No score oracle for any arm.
 
 ## Defenses (each in stop and redact mode)
-- **SecJev-4B at Spot 1 (`secjev_tool`)**: incoming tool-output prompt filter.
-- **SecJev-4B at Spot 2 (`secjev_action_meta`, `secjev_action_content`)**: outgoing tool-call action authorization filter.
-- **SecJev-4B at Both Spots Together (`secjev_cascade`)**: the same 4B SecJev model placed at both Spot 1 (incoming tool-output filter) and Spot 2 (outgoing tool-call filter), tested in both standard replay (`analyze.py`) and live 10-round adaptive red-team attacks (`adaptive.py`).
+- **SecJev-4B at Tool Output Filter (`secjev_tool`)**: incoming tool-output prompt filter.
+- **SecJev-4B at Action Authorization Guard (`secjev_action_meta`, `secjev_action_content`)**: outgoing tool-call action authorization filter.
+- **SecJev-4B at Both Gates Together (`secjev_cascade`)**: the same 4B SecJev model placed at both the Tool Output Filter (incoming tool-output filter) and Action Authorization Guard (outgoing tool-call filter), tested in both standard replay (`analyze.py`) and live 10-round adaptive red-team attacks (`adaptive.py`).
 - **Baselines**: PIGuard, DeBERTa (protectai v2), and LLM judge (`gpt-6.1-astra` with a fixed prompt).
 - SecJev runs on PyTorch 2.7.1+cu128; re-verified on its published test split: 419/426, 424/426, 124/124 (identical to the authors).
 

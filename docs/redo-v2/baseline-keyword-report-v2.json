@@ -1,0 +1,78 @@
+{
+  "scorer": "keyword_baseline",
+  "max_fpr": 0.05,
+  "kinds": {
+    "direct_prompt_injection": {
+      "calibrated_threshold": 0.6321205588285577,
+      "dev": {
+        "n": 7249,
+        "pos": 7118,
+        "neg": 131,
+        "threshold": 0.6321205588285577,
+        "auc": 0.5735,
+        "tpr": 0.147,
+        "fpr": 0.0,
+        "balanced_accuracy": 0.5735,
+        "brier": 0.8533,
+        "ece": 0.883
+      },
+      "test": {
+        "n": 7248,
+        "pos": 7118,
+        "neg": 130,
+        "threshold": 0.6321205588285577,
+        "auc": 0.569,
+        "tpr": 0.1454,
+        "fpr": 0.0077,
+        "balanced_accuracy": 0.5689,
+        "brier": 0.8548,
+        "ece": 0.8838
+      },
+      "test_balanced_ci": [
+        0.5385,
+        0.6075
+      ],
+      "trivial_balanced_accuracy": 0.5,
+      "counts": {
+        "dev": 7249,
+        "test": 7248
+      }
+    },
+    "tool_output_filter": {
+      "calibrated_threshold": 0.8646647167633873,
+      "dev": {
+        "n": 22047,
+        "pos": 20328,
+        "neg": 1719,
+        "threshold": 0.8646647167633873,
+        "auc": 0.5013,
+        "tpr": 0.0021,
+        "fpr": 0.0,
+        "balanced_accuracy": 0.5011,
+        "brier": 0.8508,
+        "ece": 0.8632
+      },
+      "test": {
+        "n": 22047,
+        "pos": 20328,
+        "neg": 1719,
+        "threshold": 0.8646647167633873,
+        "auc": 0.5021,
+        "tpr": 0.0022,
+        "fpr": 0.0,
+        "balanced_accuracy": 0.5011,
+        "brier": 0.8499,
+        "ece": 0.8626
+      },
+      "test_balanced_ci": [
+        0.5007,
+        0.5013
+      ],
+      "trivial_balanced_accuracy": 0.5,
+      "counts": {
+        "dev": 22047,
+        "test": 22047
+      }
+    }
+  }
+}

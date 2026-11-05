@@ -1,0 +1,118 @@
+{
+  "dataset": "redo-v2-canonical-spot1-direct-v0.1",
+  "created_utc": "2026-11-03T08:25:34.232987+00:00",
+  "git_head_at_build": "84e7c87bef635b6acca6f3f984c12de0018c94f9",
+  "tasks_covered": [
+    "tool_output_filter",
+    "direct_prompt_injection"
+  ],
+  "tasks_not_covered": [
+    "action_authorization_guard"
+  ],
+  "sources": [
+    {
+      "name": "llmail-inject-challenge",
+      "url": "https://huggingface.co/datasets/microsoft/llmail-inject-challenge",
+      "revision": "1063bdf01ec8762b812d5e06ee768a06faa5a6f7",
+      "license": "mit",
+      "tier": "A_human_adaptive",
+      "use": "train_dev_and_locked_test_after_group_split",
+      "supported_tasks": [
+        "tool_output_filter"
+      ],
+      "split_groups": [
+        "team_id",
+        "scenario",
+        "template_cluster"
+      ],
+      "local_path": "data/external/llmail-inject-challenge",
+      "status": "downloaded_pinned_revision"
+    },
+    {
+      "name": "ctf-satml24",
+      "url": "https://huggingface.co/datasets/ethz-spylab/ctf-satml24",
+      "revision": "11426babe61ee16b0efe7b55e0430359e0fc4235",
+      "license": "mit",
+      "tier": "A_human_adaptive",
+      "use": "direct_injection_train_dev_and_external_test",
+      "supported_tasks": [
+        "direct_prompt_injection"
+      ],
+      "split_groups": [
+        "user",
+        "defense",
+        "template_cluster"
+      ],
+      "local_path": "data/external/ctf-satml24",
+      "status": "downloaded_pinned_revision"
+    },
+    {
+      "name": "gandalf_ignore_instructions",
+      "url": "https://huggingface.co/datasets/Lakera/gandalf_ignore_instructions",
+      "revision": "04737b65e90a6794ec227012e4a255a7def6344b",
+      "license": "mit",
+      "tier": "A_human_adaptive",
+      "use": "seed_and_direct_injection_eval",
+      "supported_tasks": [
+        "direct_prompt_injection"
+      ],
+      "split_groups": [
+        "participant",
+        "template_cluster"
+      ],
+      "local_path": "data/external/gandalf_ignore_instructions",
+      "status": "downloaded_pinned_revision"
+    }
+  ],
+  "conversion_stats": {
+    "benign_converted": 203,
+    "duplicates_dropped": 103183,
+    "gandalf_converted": 1000,
+    "llmail_phase1_converted": 136828,
+    "llmail_phase1_skipped_unclear": 23913,
+    "llmail_phase2_converted": 23507,
+    "llmail_phase2_skipped_unclear": 13796,
+    "satml_converted": 136958,
+    "satml_errors": 105,
+    "satml_first_error": "ValueError: canonical row text must be non-empty"
+  },
+  "split_counts": {
+    "dev:ctf-satml24:True": 4496,
+    "dev:llmail-inject-challenge:False": 1684,
+    "dev:llmail-inject-challenge:True": 20457,
+    "dev:total": 26637,
+    "test:ctf-satml24:True": 2313,
+    "test:gandalf_ignore_instructions:True": 999,
+    "test:llmail-inject-challenge:False": 1738,
+    "test:llmail-inject-challenge:True": 20383,
+    "test:total": 25433,
+    "train:ctf-satml24:False": 872,
+    "train:ctf-satml24:True": 39649,
+    "train:llmail-inject-challenge:False": 8042,
+    "train:llmail-inject-challenge:True": 94680,
+    "train:total": 143243
+  },
+  "files": {
+    "train": {
+      "path": "data/external/redo_v2_out/canonical_train.jsonl",
+      "bytes": 356927313,
+      "sha256": "aa3a2f6423ff3f1dc443c9e36b454f20588c24e34e225dad2bd174f9862480b9"
+    },
+    "dev": {
+      "path": "data/external/redo_v2_out/canonical_dev.jsonl",
+      "bytes": 64846525,
+      "sha256": "dc5c50467deab2660285e7fa70cbecdc0f6f73e3b79a46617189f3ba579f30f3"
+    },
+    "test": {
+      "path": "data/external/redo_v2_out/canonical_test.jsonl",
+      "bytes": 61701411,
+      "sha256": "b469077ce2a787af3e993b4b81d755bdaae98da767ce3999813efe6d61128a8c"
+    }
+  },
+  "warnings": [
+    "LLMail labelled rows carry no team id; participant is a per-text pseudo-group (participant_known=false).",
+    "LLMail Unclear labels were dropped, not relabelled.",
+    "SaTML/Gandalf rows are direct-injection only; no action-authorization labels were derived.",
+    "Spot-2 action-authorization training data is not built yet; legacy ft/ splits remain quarantined."
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "files": {
+    "data/external/redo_v2_out/canonical_train.jsonl": {
+      "rows": 143243,
+      "counts": {
+        "ctf-satml24:direct_prompt_injection:False": 872,
+        "ctf-satml24:direct_prompt_injection:True": 39649,
+        "llmail-inject-challenge:tool_output_filter:False": 8042,
+        "llmail-inject-challenge:tool_output_filter:True": 94680
+      },
+      "label_conflicts_same_normalized_text": 0,
+      "sampled_rows": 3871,
+      "sample_every": 37,
+      "script_distribution_sampled": {
+        "latin": 3814,
+        "cjk": 48,
+        "other": 4,
+        "cyrillic": 4,
+        "arabic": 1
+      },
+      "text_length_sampled": {
+        "p50": 966,
+        "p90": 3925,
+        "p99": 10725,
+        "max": 23822
+      },
+      "pattern_hits_sampled": {
+        "email": 6606,
+        "url": 262,
+        "card_luhn": 89,
+        "password_assignment": 8
+      },
+      "pattern_rows_sampled": {
+        "email": 2508,
+        "url": 128,
+        "card_luhn": 10,
+        "password_assignment": 8
+      }
+    },
+    "data/external/redo_v2_out/canonical_dev.jsonl": {
+      "rows": 26637,
+      "counts": {
+        "ctf-satml24:direct_prompt_injection:True": 4496,
+        "llmail-inject-challenge:tool_output_filter:False": 1684,
+        "llmail-inject-challenge:tool_output_filter:True": 20457
+      },
+      "label_conflicts_same_normalized_text": 0,
+      "sampled_rows": 719,
+      "sample_every": 37,
+      "script_distribution_sampled": {
+        "latin": 705,
+        "cjk": 12,
+        "other": 1,
+        "cyrillic": 1
+      },
+      "text_length_sampled": {
+        "p50": 911,
+        "p90": 4028,
+        "p99": 10716,
+        "max": 18451
+      },
+      "pattern_hits_sampled": {
+        "email": 1619,
+        "url": 76,
+        "card_luhn": 1
+      },
+      "pattern_rows_sampled": {
+        "email": 540,
+        "url": 28,
+        "card_luhn": 1
+      }
+    },
+    "data/external/redo_v2_out/canonical_test.jsonl": {
+      "rows": 25433,
+      "counts": {
+        "ctf-satml24:direct_prompt_injection:True": 2313,
+        "gandalf_ignore_instructions:direct_prompt_injection:True": 999,
+        "llmail-inject-challenge:tool_output_filter:False": 1738,
+        "llmail-inject-challenge:tool_output_filter:True": 20383
+      },
+      "label_conflicts_same_normalized_text": 0,
+      "sampled_rows": 687,
+      "sample_every": 37,
+      "script_distribution_sampled": {
+        "latin": 679,
+        "cjk": 6,
+        "other": 1,
+        "arabic": 1
+      },
+      "text_length_sampled": {
+        "p50": 867,
+        "p90": 3877,
+        "p99": 9582,
+        "max": 37563
+      },
+      "pattern_hits_sampled": {
+        "email": 1456,
+        "url": 59
+      },
+      "pattern_rows_sampled": {
+        "email": 535,
+        "url": 23
+      }
+    },
+    "data/external/redo_v2_out/canonical_spot2v2_train.jsonl": {
+      "rows": 6413,
+      "counts": {
+        "agentdojo-recorded-runs:action_authorization_guard:False": 5983,
+        "agentdojo-recorded-runs:action_authorization_guard:True": 430
+      },
+      "label_conflicts_same_normalized_text": 0,
+      "sampled_rows": 173,
+      "sample_every": 37,
+      "script_distribution_sampled": {
+        "latin": 173
+      },
+      "text_length_sampled": {
+        "p50": 1985,
+        "p90": 5288,
+        "p99": 13064,
+        "max": 13292
+      },
+      "pattern_hits_sampled": {
+        "email": 719,
+        "url": 11,
+        "password_assignment": 5,
+        "card_luhn": 1
+      },
+      "pattern_rows_sampled": {
+        "email": 90,
+        "url": 3,
+        "password_assignment": 2,
+        "card_luhn": 1
+      }
+    },
+    "data/external/redo_v2_out/canonical_spot2v2_dev.jsonl": {
+      "rows": 1482,
+      "counts": {
+        "agentdojo-recorded-runs:action_authorization_guard:False": 1397,
+        "agentdojo-recorded-runs:action_authorization_guard:True": 85
+      },
+      "label_conflicts_same_normalized_text": 0,
+      "sampled_rows": 40,
+      "sample_every": 37,
+      "script_distribution_sampled": {
+        "latin": 40
+      },
+      "text_length_sampled": {
+        "p50": 2280,
+        "p90": 7572,
+        "p99": 9794,
+        "max": 9794
+      },
+      "pattern_hits_sampled": {
+        "email": 219,
+        "url": 5,
+        "password_assignment": 2
+      },
+      "pattern_rows_sampled": {
+        "email": 28,
+        "url": 3,
+        "password_assignment": 1
+      }
+    },
+    "data/external/redo_v2_out/canonical_spot2v2_test.jsonl": {
+      "rows": 7192,
+      "counts": {
+        "agentdojo-recorded-runs:action_authorization_guard:False": 5538,
+        "agentdojo-recorded-runs:action_authorization_guard:True": 1654
+      },
+      "label_conflicts_same_normalized_text": 0,
+      "sampled_rows": 194,
+      "sample_every": 37,
+      "script_distribution_sampled": {
+        "latin": 194
+      },
+      "text_length_sampled": {
+        "p50": 1455,
+        "p90": 2970,
+        "p99": 5098,
+        "max": 6050
+      },
+      "pattern_hits_sampled": {
+        "url": 99,
+        "email": 51
+      },
+      "pattern_rows_sampled": {
+        "url": 56,
+        "email": 31
+      }
+    }
+  },
+  "notes": [
+    "Pattern/script/length stats are deterministic samples (every Nth row), not full-corpus scans.",
+    "Script bucket is a dominant-script proxy, not language identification.",
+    "No matched text is stored; pattern results are counts only.",
+    "Human label adjudication is not replaced by this audit."
+  ]
+}

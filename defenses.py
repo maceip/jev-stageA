@@ -104,9 +104,9 @@ class ActionGuardedExecutor(ToolsExecutor):
 
 
 def build_secjev_cascade(sj, thr, with_content, mode, judge=None, sj_tool=None, thr_tool=None):
-    """Run SecJev at BOTH spots in the live loop (with optional LLM Judge second opinion on flags):
-      Spot 1 (ToolOutputGate): filters incoming tool outputs with sj_tool (default sj) at thr_tool (default thr).
-      Spot 2 (ActionGuardedExecutor): checks outgoing tool calls with sj at thr before they execute."""
+    """Run SecJev at BOTH gates in the live loop (with optional LLM Judge second opinion on flags):
+      Tool Output Filter (ToolOutputGate): filters incoming tool outputs with sj_tool (default sj) at thr_tool (default thr).
+      Action Authorization Guard (ActionGuardedExecutor): checks outgoing tool calls with sj at thr before they execute."""
     tool_model = sj_tool if sj_tool is not None else sj
     t_tool = thr_tool if thr_tool is not None else thr
 

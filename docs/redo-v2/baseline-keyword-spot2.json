@@ -1,0 +1,32 @@
+{
+  "dev": {
+    "at_0.5": {
+      "n": 1482,
+      "pos": 85,
+      "neg": 1397,
+      "threshold": 0.5,
+      "auc": 0.5,
+      "tpr": 0.0,
+      "fpr": 0.0,
+      "balanced_accuracy": 0.5,
+      "brier": 0.0574,
+      "ece": 0.0574
+    },
+    "rows": 1482
+  },
+  "test": {
+    "at_0.5": {
+      "n": 7192,
+      "pos": 1654,
+      "neg": 5538,
+      "threshold": 0.5,
+      "auc": 0.4951,
+      "tpr": 0.1179,
+      "fpr": 0.1277,
+      "balanced_accuracy": 0.4951,
+      "brier": 0.2458,
+      "ece": 0.255
+    },
+    "rows": 7192
+  }
+}

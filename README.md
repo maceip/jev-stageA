@@ -10,9 +10,9 @@ The same SecJev-4B family checkpoint is placed at up to two points in the agent 
 
 | Placement | Code | Checkpoint | Question SecJev-4B answers |
 |---|---|---|---|
-| Spot 1 — tool-output filter (`secjev_tool`) | `ToolOutputGate` in [defenses.py](defenses.py) | SecJev-4B v1.2.0 (zero-shot) | Does the incoming tool result contain an injected instruction? |
-| Spot 2 — action monitor (`secjev_action_content`) | `ActionGuardedExecutor` in [defenses.py](defenses.py) | SecJev-4B-Action-Monitor-C1 (fine-tuned) | Is the proposed outgoing tool call authorized by the user's request, given the tool outputs the agent has seen? |
-| Both spots (`secjev_cascade`) | `build_secjev_cascade` in [defenses.py](defenses.py) | SecJev-4B at Spot 1 + SecJev-4B-Action-Monitor-C1 at Spot 2 | Both questions; an optional LLM judge can give a second opinion on flagged calls (`secjev_cascade_judge`) |
+| Tool Output Filter (`secjev_tool`) | `ToolOutputGate` in [defenses.py](defenses.py) | SecJev-4B v1.2.0 (zero-shot) | Does the incoming tool result contain an injected instruction? |
+| Action Authorization Guard (`secjev_action_content`) | `ActionGuardedExecutor` in [defenses.py](defenses.py) | SecJev-4B-Action-Monitor-C1 (fine-tuned) | Is the proposed outgoing tool call authorized by the user's request, given the tool outputs the agent has seen? |
+| Both gates (`secjev_cascade`) | `build_secjev_cascade` in [defenses.py](defenses.py) | SecJev-4B at Tool Output Filter + SecJev-4B-Action-Monitor-C1 at Action Authorization Guard | Both questions; an optional LLM judge can give a second opinion on flagged calls (`secjev_cascade_judge`) |
 
 Each placement runs in two modes. **Stop mode** aborts the episode on the first flag. **Redact mode** replaces a flagged tool output with a fixed removal notice, or refuses only the flagged tool call, and the agent continues. A detector that cannot produce a verdict raises an error; no detector failure is silently passed through.
 
@@ -22,8 +22,8 @@ The programmatic interface is documented in [Defense API](docs/defense-api.md). 
 
 | Checkpoint | Hugging Face | Role |
 |---|---|---|
-| SecJev-4B v1.2.0 (unmodified upstream mirror) | [MetaPublic/SecJev-4B](https://huggingface.co/MetaPublic/SecJev-4B) | Spot 1 tool-output filter |
-| SecJev-4B-Action-Monitor-C1 (fine-tuned in jev-stageA) | [MetaPublic/SecJev-4B-Action-Monitor-C1](https://huggingface.co/MetaPublic/SecJev-4B-Action-Monitor-C1) | Spot 2 action monitor |
+| SecJev-4B v1.2.0 (unmodified upstream mirror) | [MetaPublic/SecJev-4B](https://huggingface.co/MetaPublic/SecJev-4B) | Tool Output Filter |
+| SecJev-4B-Action-Monitor-C1 (fine-tuned in jev-stageA) | [MetaPublic/SecJev-4B-Action-Monitor-C1](https://huggingface.co/MetaPublic/SecJev-4B-Action-Monitor-C1) | Action Authorization Guard |
 
 Each Hugging Face repository is a complete Kev/SecJev checkpoint directory: LoRA adapter, pointer decision head, tokenizer, calibration, inference code (`infer.py`), and a pinned bootstrap (`bootstrap.py`). The bootstrap downloads the two remaining upstream components from the upstream distributors: the Qwen3.5-4B-Base backbone (pinned revision `1001bb4d`, Apache-2.0, from the Qwen Hugging Face repository) and the Kev source code (pinned commit `90990a5f`, Apache-2.0, from GitHub). The Qwen3.5-4B-Base backbone weights are not re-hosted under MetaPublic because Qwen distributes the pinned backbone directly.
 
@@ -48,7 +48,7 @@ python checkpoints/SecJev-4B/bootstrap.py --inference-only
 export OPENAI_API_KEY=...   # never commit an API key; see .env.example
 export SECJEV_TF32=1        # validated fast mode; omit for reference numerics
 
-# Run AgentDojo banking+slack under the bland-note attack, defended at both spots, redact mode
+# Run AgentDojo banking+slack under the bland-note attack, defended at both gates, redact mode
 python run_agent.py --attack ood:bland_note --suites banking,slack --model gpt-5.4-mini \
   --defense cascade:content:0.35:redact \
   --secjev checkpoints/SecJev-4B-Action-Monitor-C1 \
@@ -81,8 +81,8 @@ Recorded trajectories and score archives from the reported runs are kept in `dat
 Headline findings, with full tables in `data/results/` and the run-by-run account in [docs/evaluation.md](docs/evaluation.md):
 
 - **SecJev-4B reproduces the SecJev paper numbers** (98.36% / 99.53% / 100% on the SecJev-4B test split; `verify_corpus.py`).
-- **Spot 1 (tool-output filter) works and is agent-independent.** Against previously unseen attack text, attack success fell from 6–26% undefended to 0–0.7% with SecJev-4B on both open-weight agents tested, at the smallest normal-task cost of any classifier tested (PIGuard and DeBERTa could not reach 95% normal-task retention at any threshold).
-- **Spot 2 (action monitor) preserves work under attack.** In live redact-mode runs on held-out banking+slack suites (`gpt-5.4-mini` agent, bland-note attacks), the fine-tuned C1 monitor kept 75.5% of tasks completing under attack at 0.8% hijacked, versus 28.5% completing for the LLM judge at 0.0% hijacked. Undefended: 78.3% completing, 34.1% hijacked.
+- **Tool Output Filter works and is agent-independent.** Against previously unseen attack text, attack success fell from 6–26% undefended to 0–0.7% with SecJev-4B on both open-weight agents tested, at the smallest normal-task cost of any classifier tested (PIGuard and DeBERTa could not reach 95% normal-task retention at any threshold).
+- **Action Authorization Guard preserves work under attack.** In live redact-mode runs on held-out banking+slack suites (`gpt-5.4-mini` agent, bland-note attacks), the fine-tuned C1 monitor kept 75.5% of tasks completing under attack at 0.8% hijacked, versus 28.5% completing for the LLM judge at 0.0% hijacked. Undefended: 78.3% completing, 34.1% hijacked.
 - **The pre-registered gate failed.** A strong LLM judge matches or beats SecJev-4B on attack success, and against a 10-round adaptive attacker the C1 monitor alone allows 53–58% hijacks (64% undefended, 25% LLM judge). Per the frozen rules in [docs/analysis-plan.md](docs/analysis-plan.md), the full layered build does not start on zero-shot SecJev-4B evidence.
 - **Current frontier agents resist static AgentDojo injection.** `gpt-6-astra` was hijacked 0 times in ~2,800 statically attacked runs, so adaptive attacks and false-alarm cost are the measurable outcomes for strong agents.
 
@@ -92,8 +92,8 @@ jev-stageA is an open research platform, not a finished product. The highest-val
 
 1. **RepE Sentinel probe.** A representation-engineering probe (linear probe + cosine danger direction at the tool-input position) read during the same forward pass as generation, blocking before a tool call is emitted. The probe plugs into the scorer interfaces in [defenses.py](defenses.py) documented in [Defense API](docs/defense-api.md); no probe ships yet.
 2. **CounterSteer.** Prefill-only, norm-preserving activation steering on tool-result tokens, fitted per agent model with causal and capability gates. Design specified; not implemented.
-3. **Argument provenance for the action monitor.** The C1 error analysis shows the missing signal is where each argument value came from (user request vs tool output). Fine-tune data builders live in `build_action_data.py` and `ft_action.py`.
-4. **Stage B on multi-CaMeL.** Test the JEV monitor against the attacks a capability-tracking interpreter lets through (branch steering, scope substitution, parameter manipulation), separating the value of the JEV interface from check placement.
+3. **Multi-view JEV head calibration and margin training.** Fine-tuning the JEV decision head (`ft_action.py`, `ft_clef.py`) jointly on Tool Output Filter and Action Authorization Guard (full-context) examples from `workspace + travel` reduces false alarms on indirect-reference tasks (such as paying a bill from a file) without brittle regex or string-matching heuristics.
+4. **Stage B on multi-CaMeL.** Test the learned JEV monitor against the semantic attacks a capability-tracking interpreter lets through, separating the value of the typed JEV interface from check placement.
 
 Contributions of new attack sets, RepE probe implementations, and additional agent-model evaluations are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 

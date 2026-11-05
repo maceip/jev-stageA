@@ -35,8 +35,8 @@ def wilson(k, n, z=1.96):
 
 def first_flag(points, det, thr, thr_tool=None):
     """Exact offline replay of live defenses.py:
-    Walks decision points in chronological order and cuts at the first flagged tool output (Spot 1)
-    or flagged action proposal (Spot 2), with zero ad-hoc coupling formulas."""
+    Walks decision points in chronological order and cuts at the first flagged tool output (Tool Output Filter)
+    or flagged action proposal (Action Authorization Guard), with zero ad-hoc coupling formulas."""
     t_act = thr
     t_tool = thr_tool if thr_tool is not None else thr
     if det == "secjev_cascade":

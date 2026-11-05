@@ -17,6 +17,20 @@ from kev.model import rows_of  # noqa: E402
 MAX = 8192
 
 
+def verdict_score(p, keys):
+    """Positive-class score for BOTH question types.
+
+    `noul` (injection) questions emit keys ["true","false"]; `score` (authorization)
+    questions emit ["0","1","2"]. The old p.get("2") statistic returned 0.0 for every
+    injection row, which is why spot1/joint training-time dev metrics were invalid.
+    """
+    if "true" in keys or "false" in keys:
+        return float(p.get("true", 0.0))
+    if "2" in keys:
+        return float(p.get("2", 0.0)) + 0.5 * float(p.get("1", 0.0))
+    return max([float(v) for k, v in p.items() if k != "0"] or [0.0])
+
+
 def load_jsonl(p):
     return [json.loads(l) for l in open(p)] if p else []
 
@@ -56,15 +70,24 @@ def main():
     ap.add_argument("--tok_budget", type=int, default=16384)
     ap.add_argument("--checkpointing", type=int, default=0)
     ap.add_argument("--seed", type=int, default=20261101)
+    ap.add_argument("--device", default=None, help="cuda|mps|cpu (default: cuda, else mps, else cpu)")
+    ap.add_argument("--dtype", default="fp32", choices=["fp32", "bf16", "fp16"])
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     out = pathlib.Path(a.out); out.mkdir(parents=True, exist_ok=False)
     random.seed(a.seed); torch.manual_seed(a.seed)
-    torch.backends.cuda.matmul.allow_tf32 = True; torch.backends.cudnn.allow_tf32 = True
+    device = a.device or ("cuda" if torch.cuda.is_available()
+                          else "mps" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+                          else "cpu")
+    if device == "cuda":
+        torch.backends.cuda.matmul.allow_tf32 = True; torch.backends.cudnn.allow_tf32 = True
+    print("device", device, flush=True)
 
     ck = Checkpoint(a.init)
     ck.meta.base = str(WORK / "base"); ck.meta.base_revision = None
-    tok, model = ck.load("cuda", LoadOptions(dtype=torch.float32, merge=False, attn="sdpa", temperature=1.0))
+    dtype = {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}[a.dtype]
+    print("dtype", a.dtype, flush=True)
+    tok, model = ck.load(device, LoadOptions(dtype=dtype, merge=False, attn="sdpa", temperature=1.0))
     for n, p in model.named_parameters():
         p.requires_grad = ("lora_" in n) or n.startswith("head.")
     params = [p for p in model.parameters() if p.requires_grad]
@@ -97,15 +120,28 @@ def main():
 
     def evaluate(epoch):
         model.eval(); P = []
-        with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
-            for enc, tgt, keys, _L in dev:
-                z = model.forward(enc)[0].float()
-                p = dict(zip(keys, torch.softmax(z, -1).tolist()))
-                P.append((p.get("2", 0.0) + 0.5 * p.get("1", 0.0), keys[tgt[0]]))
+        t_eval = time.time()
+        # Batched like the training path: length-sorted microbatches under
+        # the token budget. Same score statistic as the single-row path;
+        # single-row forwards measured >1.1 s/row on MPS (2026-11-03).
+        ordered = sorted(dev, key=lambda x: x[3])
+        micros, cur = [], []
+        for x in ordered:
+            if cur and (len(cur) + 1) * x[3] > a.tok_budget: micros.append(cur); cur = []
+            cur.append(x)
+        if cur: micros.append(cur)
+        with torch.no_grad(), torch.autocast(device, dtype=torch.bfloat16):
+            for micro in micros:
+                zss = model.forward_batch([x[0] for x in micro])
+                for zs, (_enc, tgt, keys, _L) in zip(zss, micro):
+                    p = dict(zip(keys, torch.softmax(zs[0].float(), -1).tolist()))
+                    P.append((verdict_score(p, keys), keys[tgt[0]]))
         model.train()
-        pos = [s for s, t in P if t != "0"]; neg = [s for s, t in P if t == "0"]
+        pos = [s for s, t in P if t not in ("0", "false")]
+        neg = [s for s, t in P if t in ("0", "false")]
         auc = sum((x > y) + 0.5 * (x == y) for x in pos for y in neg) / max(1, len(pos) * len(neg))
-        rec = {"epoch": epoch, "dev_n": len(P), "dev_pos": len(pos), "auc": auc}
+        rec = {"epoch": epoch, "dev_n": len(P), "dev_pos": len(pos), "auc": auc,
+               "eval_seconds": round(time.time() - t_eval, 1), "eval_batched": True}
         for thr in (0.5, 0.9):
             rec[f"tpr@{thr}"] = sum(s >= thr for s in pos) / max(1, len(pos))
             rec[f"fpr@{thr}"] = sum(s >= thr for s in neg) / max(1, len(neg))
@@ -140,7 +176,7 @@ def main():
                 cur.append(x)
             micros.append(cur)
             for micro in micros:
-                with torch.autocast("cuda", dtype=torch.bfloat16):
+                with torch.autocast(device, dtype=torch.bfloat16):
                     zss = model.forward_batch([x[0][0] for x in micro])
                 loss = 0.0
                 for zs, ((enc, tgt, _k, _L), _w) in zip(zss, micro):

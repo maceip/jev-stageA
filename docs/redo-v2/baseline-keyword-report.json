@@ -1,0 +1,49 @@
+{
+  "scorer": "keyword_baseline",
+  "max_fpr": 0.05,
+  "kinds": {
+    "direct_prompt_injection": {
+      "trivial_balanced_accuracy": 0.5,
+      "counts": {
+        "dev": 4496,
+        "test": 3312
+      }
+    },
+    "tool_output_filter": {
+      "calibrated_threshold": 0.8646647167633873,
+      "dev": {
+        "n": 22141,
+        "pos": 20457,
+        "neg": 1684,
+        "threshold": 0.8646647167633873,
+        "auc": 0.4984,
+        "tpr": 0.0024,
+        "fpr": 0.0,
+        "balanced_accuracy": 0.5012,
+        "brier": 0.8525,
+        "ece": 0.8646
+      },
+      "test": {
+        "n": 22121,
+        "pos": 20383,
+        "neg": 1738,
+        "threshold": 0.8646647167633873,
+        "auc": 0.5011,
+        "tpr": 0.0018,
+        "fpr": 0.0,
+        "balanced_accuracy": 0.5009,
+        "brier": 0.8505,
+        "ece": 0.8628
+      },
+      "test_balanced_ci": [
+        0.5007,
+        0.5013
+      ],
+      "trivial_balanced_accuracy": 0.5,
+      "counts": {
+        "dev": 22141,
+        "test": 22121
+      }
+    }
+  }
+}

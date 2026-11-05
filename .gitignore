@@ -18,6 +18,7 @@ env/
 /results/
 *.log
 *.tmp
+/data/external/
 ft/ckpt/adapter_model.safetensors
 
 # Secrets and local checkpoints (weights live on Hugging Face: MetaPublic)

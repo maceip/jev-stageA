@@ -23,12 +23,12 @@ probs = sj.score(request)   # {question_id: {candidate: probability}}
 
 | Function | Question | Return |
 |---|---|---|
-| `secjev_tool_score(sj, {"user", "call", "output"})` | Spot 1: does the tool output contain an injected instruction aimed at the agent? | `(score, request)` — probability the output is an injection |
-| `secjev_action_score(sj, {"user", "call", "history", "seen"}, with_content)` | Spot 2: is the proposed tool call authorized by the user's request? | `(probs, request)` — probabilities over `0` authorized / `1` partially / `2` unauthorized |
+| `secjev_tool_score(sj, {"user", "call", "output"})` | Tool Output Filter: does the tool output contain an injected instruction aimed at the agent? | `(score, request)` — probability the output is an injection |
+| `secjev_action_score(sj, {"user", "call", "history", "seen"}, with_content)` | Action Authorization Guard: is the proposed tool call authorized by the user's request? | `(probs, request)` — probabilities over `0` authorized / `1` partially / `2` unauthorized |
 
-The live action gate flags a call when `P(2) + 0.5 * P(1) >= threshold`. Reported thresholds: Spot 1 at 0.99, Spot 2 (C1 content monitor) at 0.35, both tuned on workspace+travel normal tasks and reported on banking+slack (see [analysis plan](analysis-plan.md)). Tune thresholds on tasks disjoint from reporting tasks; per-call false alarms compound over multi-call episodes.
+The live action gate flags a call when `P(2) + 0.5 * P(1) >= threshold`. Reported thresholds: Tool Output Filter at 0.99, Action Authorization Guard (C1 content monitor) at 0.35, both tuned on workspace+travel normal tasks and reported on banking+slack (see [analysis plan](analysis-plan.md)). Tune thresholds on tasks disjoint from reporting tasks; per-call false alarms compound over multi-call episodes.
 
-With `with_content=True` the Spot 2 state includes the tool outputs the agent has seen, which is the configuration SecJev-4B-Action-Monitor-C1 was trained for. The metadata view (`with_content=False`) sees only call names and arguments and transfers measurably worse to unseen tool sets.
+With `with_content=True` the Action Authorization Guard state includes the tool outputs the agent has seen, which is the configuration SecJev-4B-Action-Monitor-C1 was trained for. The metadata view (`with_content=False`) sees only call names and arguments and transfers measurably worse to unseen tool sets.
 
 ## Live pipeline gates (`defenses.py`)
 
@@ -50,7 +50,7 @@ Replaces `ToolsExecutor`. Every proposed tool call is scored by the action monit
 
 ### `build_secjev_cascade(sj, thr, with_content, mode, judge=None, sj_tool=None, thr_tool=None)`
 
-Returns `(ActionGuardedExecutor, [ToolOutputGate])` running Spot 1 and Spot 2 together. `sj_tool`/`thr_tool` select a separate Spot 1 checkpoint and threshold (the reported cascade uses zero-shot SecJev-4B at 0.99 for Spot 1 and SecJev-4B-Action-Monitor-C1 at 0.35 for Spot 2).
+Returns `(ActionGuardedExecutor, [ToolOutputGate])` running Tool Output Filter and Action Authorization Guard together. `sj_tool`/`thr_tool` select a separate Tool Output Filter checkpoint and threshold (the reported cascade uses zero-shot SecJev-4B at 0.99 for Tool Output Filter and SecJev-4B-Action-Monitor-C1 at 0.35 for Action Authorization Guard).
 
 `is_intervention(message)` identifies tool messages carrying a defense verdict (redacted output or blocked call), for scoring defended transcripts.
 
@@ -59,9 +59,9 @@ Returns `(ActionGuardedExecutor, [ToolOutputGate])` running Spot 1 and Spot 2 to
 | Spec | Meaning |
 |---|---|
 | `none` | Undefended baseline |
-| `tool:secjev_tool:<thr>:<mode>` | Spot 1 only |
-| `action:content:<thr>:<mode>` | Spot 2 only, content view |
-| `cascade:content:<thr>:<mode>` | Spot 1 + Spot 2 (`--secjev` = Spot 2 checkpoint, `--secjev-tool` = Spot 1 checkpoint, `--tool-threshold` = Spot 1 threshold) |
+| `tool:secjev_tool:<thr>:<mode>` | Tool Output Filter only |
+| `action:content:<thr>:<mode>` | Action Authorization Guard only, content view |
+| `cascade:content:<thr>:<mode>` | Tool Output Filter + Action Authorization Guard (`--secjev` = Action Authorization Guard checkpoint, `--secjev-tool` = Tool Output Filter checkpoint, `--tool-threshold` = Tool Output Filter threshold) |
 | `cascade_judge:content:<thr>:<mode>` | Cascade plus LLM-judge second opinion on flags (`--judge-model`) |
 
 `adaptive.py --defense` accepts `secjev_tool`, `secjev_action_content`, `secjev_cascade`, `secjev_cascade_judge`, plus baselines `llm_judge`, `piguard`, `deberta`, and `none`.
@@ -70,7 +70,10 @@ Returns `(ActionGuardedExecutor, [ToolOutputGate])` running Spot 1 and Spot 2 to
 
 The layered design in [Weaponizing JEV for Defenders](weaponizing-jev-for-defenders.md) adds two white-box layers that are specified but not implemented. Both layers integrate through the existing interfaces, without changing gate semantics:
 
-- **RepE Sentinel probe.** A representation-engineering probe scores the hidden state at the tool-input position during generation. A Sentinel implementation exposes the same contract as the Spot 2 second opinion: `judge_action(user, call, history, seen) -> float` returning a hijack probability, passed as `judge=` to `ActionGuardedExecutor`, or as `scorer=` to `ToolOutputGate` for a tool-output-position probe. Threshold the probe at a fixed calibration-split false-positive rate (the design target is FPR 5%) and report probe scores alongside SecJev probabilities in transcripts.
+- **RepE Sentinel probe.** A representation-engineering probe scores the hidden state at the tool-input position during generation. A Sentinel implementation exposes the same contract as the Action Authorization Guard second opinion: `judge_action(user, call, history, seen) -> float` returning a hijack probability, passed as `judge=` to `ActionGuardedExecutor`, or as `scorer=` to `ToolOutputGate` for a tool-output-position probe. Threshold the probe at a fixed calibration-split false-positive rate (the design target is FPR 5%) and report probe scores alongside SecJev probabilities in transcripts.
 - **CounterSteer steering hook.** Steering operates inside model serving, upstream of every gate: `h' = ||h|| * (h - a*s*d) / ||h - a*s*d||` applied at fitted layers to tool-result tokens during prefill. Gates then score the steered trajectory. Fit any downstream probe on steered activations, because steering shifts the activation distribution.
 
-New detectors must preserve two invariants: a detector that cannot produce a verdict raises instead of passing content through, and a defense layer may block or escalate but never converts a block from another layer into an approval.
+New detectors and tests must preserve three invariants:
+1. A detector that cannot produce a verdict raises instead of passing content through.
+2. A defense layer may block or escalate, but never converts a block from another layer into an approval.
+3. No regular-expression, keyword, or string-matching policy heuristics: detectors must never reject banking, payment, or messaging requests via regexes or verb/recipient string matching, and tests must derive expected calls and outcomes dynamically from AgentDojo task ground truth (`task.ground_truth(env)` / `task.security(...)`) rather than hardcoded strings.

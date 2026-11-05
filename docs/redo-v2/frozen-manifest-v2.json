@@ -1,0 +1,124 @@
+{
+  "dataset": "redo-v2-canonical-spot1-direct-v0.2",
+  "split_assignment": "stratified",
+  "created_utc": "2026-11-03T18:03:10.713334+00:00",
+  "git_head_at_build": "84e7c87bef635b6acca6f3f984c12de0018c94f9",
+  "tasks_covered": [
+    "tool_output_filter",
+    "direct_prompt_injection"
+  ],
+  "tasks_not_covered": [
+    "action_authorization_guard"
+  ],
+  "sources": [
+    {
+      "name": "llmail-inject-challenge",
+      "url": "https://huggingface.co/datasets/microsoft/llmail-inject-challenge",
+      "revision": "1063bdf01ec8762b812d5e06ee768a06faa5a6f7",
+      "license": "mit",
+      "tier": "A_human_adaptive",
+      "use": "train_dev_and_locked_test_after_group_split",
+      "supported_tasks": [
+        "tool_output_filter"
+      ],
+      "split_groups": [
+        "team_id",
+        "scenario",
+        "template_cluster"
+      ],
+      "local_path": "data/external/llmail-inject-challenge",
+      "status": "downloaded_pinned_revision"
+    },
+    {
+      "name": "ctf-satml24",
+      "url": "https://huggingface.co/datasets/ethz-spylab/ctf-satml24",
+      "revision": "11426babe61ee16b0efe7b55e0430359e0fc4235",
+      "license": "mit",
+      "tier": "A_human_adaptive",
+      "use": "direct_injection_train_dev_and_external_test",
+      "supported_tasks": [
+        "direct_prompt_injection"
+      ],
+      "split_groups": [
+        "user",
+        "defense",
+        "template_cluster"
+      ],
+      "local_path": "data/external/ctf-satml24",
+      "status": "downloaded_pinned_revision"
+    },
+    {
+      "name": "gandalf_ignore_instructions",
+      "url": "https://huggingface.co/datasets/Lakera/gandalf_ignore_instructions",
+      "revision": "04737b65e90a6794ec227012e4a255a7def6344b",
+      "license": "mit",
+      "tier": "A_human_adaptive",
+      "use": "seed_and_direct_injection_eval",
+      "supported_tasks": [
+        "direct_prompt_injection"
+      ],
+      "split_groups": [
+        "participant",
+        "template_cluster"
+      ],
+      "local_path": "data/external/gandalf_ignore_instructions",
+      "status": "downloaded_pinned_revision"
+    }
+  ],
+  "conversion_stats": {
+    "benign_converted": 203,
+    "duplicates_dropped": 103183,
+    "gandalf_converted": 1000,
+    "llmail_phase1_converted": 136828,
+    "llmail_phase1_skipped_unclear": 23913,
+    "llmail_phase2_converted": 23507,
+    "llmail_phase2_skipped_unclear": 13796,
+    "satml_converted": 136958,
+    "satml_errors": 105,
+    "satml_first_error": "ValueError: canonical row text must be non-empty"
+  },
+  "split_counts": {
+    "dev:ctf-satml24:False": 131,
+    "dev:ctf-satml24:True": 6959,
+    "dev:gandalf_ignore_instructions:True": 159,
+    "dev:llmail-inject-challenge:False": 1719,
+    "dev:llmail-inject-challenge:True": 20328,
+    "dev:total": 29296,
+    "test:ctf-satml24:False": 130,
+    "test:ctf-satml24:True": 6958,
+    "test:gandalf_ignore_instructions:True": 160,
+    "test:llmail-inject-challenge:False": 1719,
+    "test:llmail-inject-challenge:True": 20328,
+    "test:total": 29295,
+    "train:ctf-satml24:False": 611,
+    "train:ctf-satml24:True": 32541,
+    "train:gandalf_ignore_instructions:True": 680,
+    "train:llmail-inject-challenge:False": 8026,
+    "train:llmail-inject-challenge:True": 94864,
+    "train:total": 136722
+  },
+  "files": {
+    "train": {
+      "path": "data/external/redo_v2_out/canonical_v2_train.jsonl",
+      "bytes": 338342795,
+      "sha256": "a0eda263ab874f6e5e4d1acd4ff2e3c622d02c28c4927f0b367bb2ad6a0cdc49"
+    },
+    "dev": {
+      "path": "data/external/redo_v2_out/canonical_v2_dev.jsonl",
+      "bytes": 72895462,
+      "sha256": "cb74f8fb9e7d79b6eddc81f82c2ddc88a42e184297671f614a6591d8aa7899fb"
+    },
+    "test": {
+      "path": "data/external/redo_v2_out/canonical_v2_test.jsonl",
+      "bytes": 72227812,
+      "sha256": "8bcf3099f5ade0bb3a4ab7f6f03aa5db0ae7f751dad46c7272b5cd3cfc7138bc"
+    }
+  },
+  "warnings": [
+    "Stratified mode splits direct_prompt_injection rows at chat level (identical texts stay together); SaTML participants can appear in multiple splits for that kind. Participant-clustered bootstrap CIs are required for direct-kind metrics.",
+    "LLMail labelled rows carry no team id; participant is a per-text pseudo-group (participant_known=false).",
+    "LLMail Unclear labels were dropped, not relabelled.",
+    "SaTML/Gandalf rows are direct-injection only; no action-authorization labels were derived.",
+    "Spot-2 action-authorization training data is not built yet; legacy ft/ splits remain quarantined."
+  ]
+}

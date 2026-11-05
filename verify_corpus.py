@@ -28,10 +28,17 @@ def evaluate_corpus(model, corpus_path: str):
 
 
 def main(argv=None):
-    argv = argv or sys.argv[1:]
+    import os, pathlib
+    argv = list(argv if argv is not None else sys.argv[1:])
+    model_dir = argv[0] if len(argv) >= 1 else os.environ.get("SECJEV_MODEL", "checkpoints/SecJev-4B")
+    if len(argv) >= 2:
+        corpus_path = argv[1]
+    else:
+        work = os.environ.get("SECJEV_WORK", str(pathlib.Path.home() / "secjev-4b-work"))
+        corpus_path = str(pathlib.Path(work) / "data" / "test.jsonl.gz")
     from secjev_scorer import SecJev
-    m = SecJev(argv[0])
-    hit, tot, lat = evaluate_corpus(m, argv[1])
+    m = SecJev(model_dir)
+    hit, tot, lat = evaluate_corpus(m, corpus_path)
     for k in tot:
         print(f"{k}: {hit[k]}/{tot[k]} = {100*hit[k]/tot[k]:.2f}%")
     if lat:

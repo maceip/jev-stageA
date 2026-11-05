@@ -1,0 +1,118 @@
+{
+  "docs/redo-v2/frozen-manifest.json": {
+    "sha256": "37f8ccb34b0690af47a39549de8ce4ec3c8477b23ca912539c324c522a0a649c",
+    "bytes": 4040
+  },
+  "docs/redo-v2/frozen-manifest-v2.json": {
+    "sha256": "06557350c0cdd88421c07b7f97ad77da19788b871a28e5cc1a715e1151798044",
+    "bytes": 4498
+  },
+  "docs/redo-v2/frozen-manifest-spot2.json": {
+    "sha256": "3cf09fe65f36717ae18983f40ad51bea052c1b8fad297e30db7c71bfe68d71b9",
+    "bytes": 2108
+  },
+  "docs/redo-v2/frozen-manifest-spot2-v2.json": {
+    "sha256": "7ec06806f09fe84320b34e524dc765cc4afa4409c97f742382c6cdd8a7125b93",
+    "bytes": 3036
+  },
+  "docs/redo-v2/dataset-audit.json": {
+    "sha256": "cbe3c73d74365b604b847fe1a52171e81ec7d777e48f47d40be39c4205fc547c",
+    "bytes": 5454
+  },
+  "docs/redo-v2/baseline-keyword-report-v2.json": {
+    "sha256": "08e53faf5e8b396b78c77b1cc3bda5f1958e10bcf5abc06d2278f8f31f6306e4",
+    "bytes": 1707
+  },
+  "docs/redo-v2/baseline-keyword-spot2.json": {
+    "sha256": "965647906123ed68392a9dab52d492fe8e0157fd5e542a732e9f48a8f2394b8e",
+    "bytes": 541
+  },
+  "data/external/redo_v2_out/canonical_v2_train.jsonl": {
+    "sha256": "a0eda263ab874f6e5e4d1acd4ff2e3c622d02c28c4927f0b367bb2ad6a0cdc49",
+    "bytes": 338342795
+  },
+  "data/external/redo_v2_out/canonical_v2_dev.jsonl": {
+    "sha256": "cb74f8fb9e7d79b6eddc81f82c2ddc88a42e184297671f614a6591d8aa7899fb",
+    "bytes": 72895462
+  },
+  "data/external/redo_v2_out/canonical_v2_test.jsonl": {
+    "sha256": "8bcf3099f5ade0bb3a4ab7f6f03aa5db0ae7f751dad46c7272b5cd3cfc7138bc",
+    "bytes": 72227812
+  },
+  "data/external/redo_v2_out/canonical_spot2v2_train.jsonl": {
+    "sha256": "c391fa972775a6a6fd49af17fef092cc629c779320a21c26c2a445bcd909672d",
+    "bytes": 22737883
+  },
+  "data/external/redo_v2_out/canonical_spot2v2_dev.jsonl": {
+    "sha256": "e85064b2d5d2d22d1b6fe4a6dbff17f5668be665cf16fd8648924cefb61f5465",
+    "bytes": 5417426
+  },
+  "data/external/redo_v2_out/canonical_spot2v2_test.jsonl": {
+    "sha256": "0287c53c9ff1d3835a68eec9e497c6cc581c894275e38b5a2bba48694927eabe",
+    "bytes": 18142636
+  },
+  "data/external/redo_v2_out/ft_spot2v2_train.jsonl": {
+    "sha256": "dca42d5a1afda0fe73d7e60fab229f2f59eccafc9eb1caadc676ee7472cc417c",
+    "bytes": 22615993
+  },
+  "data/external/redo_v2_out/ft_spot2v2_dev.jsonl": {
+    "sha256": "6e055ad683a8ebb02d9c1371e64f9644472ac6e93f03fc2f07fd79f37f0ea1ac",
+    "bytes": 5369807
+  },
+  "data/external/redo_v2_out/ft_spot2v2_test.jsonl": {
+    "sha256": "a11b0cef8089083c8dec9db22ca0fbb1f50848ebce7e063557db77fb32ced1f2",
+    "bytes": 18380987
+  },
+  "data/external/redo_v2_out/ft_spot2v2_train_sub.jsonl": {
+    "sha256": "c2748bcd8e477bdab8e1821b98f85204d744ae4dea20d161e9cc12698a761d5e",
+    "bytes": 5870239
+  },
+  "data/external/redo_v2_out/ft_spot2v2_train_sub.jsonl.manifest.json": {
+    "sha256": "ce513582baab8b08a4b7441979f857175537ba1f2386bea723254729858f04a5",
+    "bytes": 124035
+  },
+  "data/external/redo_v2_out/ft_spot2v2_dev_sub.jsonl": {
+    "sha256": "e38273c4bc352b2e47f817b712d54973c6585773e867ebd48fcc9f87dc2fa7cd",
+    "bytes": 1735501
+  },
+  "data/external/redo_v2_out/ft_spot2v2_dev_sub.jsonl.manifest.json": {
+    "sha256": "a06811f02f7b1be08ba7462891eea0c06de39c970b1a8dd26e1e8af9e03e9c99",
+    "bytes": 37053
+  },
+  "data/external/redo_v2_out/clef_spot1v2_train.jsonl": {
+    "sha256": "a7225033203c366135f24aa15071c0904d97d57d58cca1229fb1b28818eace83",
+    "bytes": 267115969
+  },
+  "data/external/redo_v2_out/clef_spot1v2_dev.jsonl": {
+    "sha256": "86bfbd8a60584f558bdac4f617de3a959e2b285a485ee202fe1e5e2c48de9c33",
+    "bytes": 57688733
+  },
+  "data/external/redo_v2_out/clef_spot1v2_test.jsonl": {
+    "sha256": "cd7c69e5ec7a05344eb415e893ccd2be1f44aae6536561ec999005965eff370a",
+    "bytes": 56993150
+  },
+  "data/external/redo_v2_out/clef_encode_probe_50.jsonl": {
+    "sha256": "1846fc62f17b0b60b2895fbdfb8c4d6498fc9b71fc55e526bb40c204364cd12a",
+    "bytes": 68327
+  },
+  "data/external/redo_v2_out/canonical_benign_agentdojo.jsonl": {
+    "sha256": "7dfa9d030998e55aae965bbe4dc41af04999cbd94fcee4c1116ff7595f23c73a",
+    "bytes": 164351
+  },
+  "data/external/redo_v2_out/ft_spot2v2_test_adaptive_zerowidth.jsonl": {
+    "sha256": "170bcb771f5661d08b6976c190f382fdf0dc2f38aee7b17bc45c60db90ad1abc",
+    "bytes": 793611
+  },
+  "data/external/redo_v2_out/ft_spot2v2_test_adaptive_homoglyph.jsonl": {
+    "sha256": "1a91bbe47c20ed30de16ca1c5f6dec2bf8d1bf464bc3b9e9918fd7a7c25ef249",
+    "bytes": 783973
+  },
+  "data/external/redo_v2_out/ft_spot2v2_test_adaptive_quote.jsonl": {
+    "sha256": "24ad7bb57d77d44a3e5b6f79d6f0e844a5483aa3376d3af647b98d74be0ccdf4",
+    "bytes": 736399
+  },
+  "data/external/redo_v2_out/ft_spot2v2_test_adaptive_case.jsonl": {
+    "sha256": "93e11b94068f750e921277e00b74d0d396756c2e1c4a535efae8784959cb6944",
+    "bytes": 723346
+  }
+}

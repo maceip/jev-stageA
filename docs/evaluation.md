@@ -75,7 +75,7 @@ The attacker LLM receives the defense verdict and outcome of each live round and
 bash run_pentest_evals.sh
 ```
 
-`run_pentest_evals.sh` runs the component tests, then evaluates four arms live on banking+slack with a `gpt-5.4-mini` agent: Spot 1 alone (0.99), Spot 2 alone (C1 at 0.35), cascade, and cascade + LLM judge — each on normal tasks, the 1-try bland-note attack (249 episodes), and the 10-round adaptive attacker (100 targets), then prints a summary table. Checkpoint paths come from `SECJEV_MODEL` and `SECJEV_ACTION_CKPT`; the default local layout is `checkpoints/SecJev-4B` and `checkpoints/SecJev-4B-Action-Monitor-C1`.
+`run_pentest_evals.sh` runs the component tests, then evaluates four arms live on banking+slack with a `gpt-5.4-mini` agent: Tool Output Filter alone (0.99), Action Authorization Guard alone (C1 at 0.35), cascade, and cascade + LLM judge — each on normal tasks, the 1-try bland-note attack (249 episodes), and the 10-round adaptive attacker (100 targets), then prints a summary table. Checkpoint paths come from `SECJEV_MODEL` and `SECJEV_ACTION_CKPT`; the default local layout is `checkpoints/SecJev-4B` and `checkpoints/SecJev-4B-Action-Monitor-C1`.
 
 ## Tests
 
