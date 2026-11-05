@@ -40,3 +40,15 @@
    - Per Law 3, we will **not** delete or prune any `.raffle/worktrees` or `raffle/*` branches; all 7 raffle branches stay 100% intact.
    - `README.md` is updated in his exact lowercase format with the 7 repo names and `C1` vs `Spot2` separation.
 ################################################################################
+
+################################################################################
+# CHART CHECK (2026-11-05, after the 12:45 review)
+################################################################################
+
+The three chart cells were checked against primary records, then the chart was redrawn from `docs/redo-v2/jev_human_questions_chart.html`.
+
+1. Q1 row 2 is one threshold. Stop replay @ 0.99 of `run3/mini` banking+slack is 51/249 work (20.5%), 7/249 hijacked (2.8%), normal 35/37 (94.6%). The same episodes with no defense are 202/249 work and 85/249 hijacked. Adaptive at that same threshold is 53/100 (`run3/adaptive_mini/mini_secjev_tool.jsonl`). The old 31% figure is the 0.5-threshold file and is not on this row.
+2. Q1 row 4 normal rate is 141/148 (95.3%) from the four live judge-redact benign repeats. 60.7% is not used. The 10-try cell is 25/100 and is stop mode, labeled on the cell. The verdict uses 71/249 tasks finished, not "71.5% of real work."
+3. No per-check timing is on the chart. `0.15s` and `0.06–0.11s` have no timing artifact in this check, so both are omitted.
+4. `build_replication_package.py` rerun: published AUCs match the per-row files (CLEF-Screen-V2 test 0.9833, CLEF-Screen test 0.9897, Spot2-V3 test 0.8661). Two gaps remain, both already recorded: CLEF-DualScreen per-row test scores, and SecJev redo bench-draw scope. CLEF-Screen caught rate on the chart is the exact count 20098/20271 (99.1%), which the report stores as tpr 0.9915.
+################################################################################
