@@ -23,7 +23,7 @@ whether the call is authorized by the user's request, given the tool outputs the
 SecJev-4B-Action-Monitor-C1 is the Spot 2 (outgoing tool-call) half of the JEV defense evaluated in the
 [jev-stageA](https://github.com/maceip/jev-stagea) research repository. The Spot 1 (incoming tool-output)
 half uses the unmodified upstream SecJev-4B checkpoint, mirrored at
-[MetaPublic/SecJev-4B](https://huggingface.co/MetaPublic/SecJev-4B). Used together, the two checkpoints form
+[macmacmacmac/SecJev-4B](https://huggingface.co/macmacmacmac/SecJev-4B). Used together, the two checkpoints form
 the `secjev_cascade` defense.
 
 ## What changed relative to upstream SecJev-4B
@@ -43,7 +43,7 @@ Qwen3.5-4B-Base backbone and the Kev source code are fetched by the included boo
 is distributed from the Qwen Hugging Face repository under Apache-2.0 and is not re-hosted here).
 
 ```bash
-hf download MetaPublic/SecJev-4B-Action-Monitor-C1 --local-dir SecJev-4B-Action-Monitor-C1
+hf download macmacmacmac/SecJev-4B-Action-Monitor-C1 --local-dir SecJev-4B-Action-Monitor-C1
 python -m pip install -r SecJev-4B-Action-Monitor-C1/requirements.txt
 export SECJEV_WORK="$PWD/secjev-4b-work"
 python SecJev-4B-Action-Monitor-C1/bootstrap.py --inference-only
@@ -54,7 +54,7 @@ python SecJev-4B-Action-Monitor-C1/infer.py --model ./SecJev-4B-Action-Monitor-C
 To run SecJev-4B-Action-Monitor-C1 as a live agent defense (stop or redact mode, alone or cascaded with the
 tool-output filter), use `defenses.py` and `secjev_scorer.py` from the jev-stageA repository and pass this
 directory as `--secjev`. The Kev checkpoint loader also accepts the Hub repo id directly
-(`MetaPublic/SecJev-4B-Action-Monitor-C1`).
+(`macmacmacmac/SecJev-4B-Action-Monitor-C1`).
 
 ## Reported results (read the caveats)
 

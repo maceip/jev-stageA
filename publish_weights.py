@@ -52,7 +52,7 @@ def assemble(upstream, root, ft_ckpt, org):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--org", default="MetaPublic")
+    ap.add_argument("--org", default="macmacmacmac")
     ap.add_argument("--upstream", required=True, help="local unmodified SecJev-4B v1.2.0 release directory")
     ap.add_argument("--ft-ckpt", default="ft/ckpt")
     ap.add_argument("--staging", default="/tmp/hf-secjev")

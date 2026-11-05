@@ -13,12 +13,12 @@ tags:
 
 # SecJev-4B
 
-> **Mirror note (MetaPublic):** This repository is an unmodified mirror of the upstream SecJev-4B v1.2.0
+> **Mirror note (macmacmacmac):** This repository is an unmodified mirror of the upstream SecJev-4B v1.2.0
 > release from [UESTC1010/SecJev](https://github.com/UESTC1010/SecJev/releases/tag/v1.2.0), redistributed
 > under section 3 of the SecJev Use and Distribution Agreement v1.0 with `LICENSE`, notices, and provenance
 > retained. The mirror exists so the [jev-stageA](https://github.com/maceip/jev-stagea) JEV agent-defense
 > evaluations can fetch both required checkpoints (this checkpoint and
-> [MetaPublic/SecJev-4B-Action-Monitor-C1](https://huggingface.co/MetaPublic/SecJev-4B-Action-Monitor-C1))
+> [macmacmacmac/SecJev-4B-Action-Monitor-C1](https://huggingface.co/macmacmacmac/SecJev-4B-Action-Monitor-C1))
 > from the Hub. Cite the upstream SecJev project for the checkpoint. The original upstream model card
 > follows unchanged.
 
