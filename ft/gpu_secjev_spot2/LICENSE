@@ -1,0 +1,112 @@
+SecJev Use and Distribution Agreement
+Version 1.0 — 23 September 2026
+
+Copyright (c) 2026 the respective SecJev contributors, for their original
+contributions only.
+
+1. Scope and rights holders
+
+This agreement covers the original SecJev contributions in releases that
+expressly reference it: code, documentation, dataset compilation and original
+annotations, and model adaptations, only to the extent the relevant contributor
+holds rights that can be licensed. It does not claim ownership of upstream
+datasets, model weights, software, individual facts or public-domain material.
+
+Third-party components and source-derived records retain their own applicable
+terms. Consult SOURCES.md, UPSTREAM.md and THIRD_PARTY_NOTICES.md where supplied,
+the licenses/ directory, and record-level provenance. Inclusion in a SecJev
+release does not turn third-party material into material licensed solely under
+this agreement. This agreement does not withdraw permissions validly granted
+for earlier releases under another license.
+
+2. Permission for original SecJev contributions
+
+Subject to this agreement, each contributor grants a worldwide, non-exclusive,
+royalty-free copyright license to use, copy, study, modify and distribute that
+contributor's covered contributions, including for research, education,
+evaluation, training, fine-tuning and distillation. This grant does not itself
+prohibit commercial use of those contributions; section 4 governs uses that
+also involve upstream rights or conditions. Permissions remain available for
+the duration of the licensed rights while the applicable conditions are met.
+
+3. Attribution, modifications and redistribution
+
+When distributing covered contributions or modifications, retain this agreement,
+applicable copyright and attribution notices, source references and required
+third-party license texts. Identify the SecJev release used, describe material
+changes, and distinguish modified releases from the original project. Preserve
+source-to-record mappings, or provide an equivalent usable provenance mapping,
+when distributing source-derived data.
+
+Redistribute upstream material only to the extent its own terms or a separate
+authorization permit. If permission for a particular act of redistribution is
+unclear, this agreement does not supply that permission; obtain clarification
+or distribute acquisition/transformation instructions instead of that material.
+Do not represent this agreement as removing upstream conditions. Do not impose
+restrictions on a recipient's independent rights in third-party or public-domain
+material. Derivatives may carry additional terms for new contributions only
+where those terms respect the existing rights and obligations.
+
+4. Source-specific conditions and commercial use
+
+The complete corpus has multiple sources and no blanket unrestricted commercial
+clearance. In particular:
+
+- ToN-IoT's official terms grant academic research use and require permission
+  from its author for commercial use. This agreement grants neither that
+  permission nor a broader redistribution right on the author's behalf.
+- CIC requires dataset and paper attribution for its permitted redistribution.
+- VeReMi material licensed under CC BY 4.0 retains attribution, change-notice
+  and other requirements of that license, and its independently granted rights.
+- LANL material covered by a public-domain dedication remains public domain.
+- MIT- and Apache-licensed upstream software and model components retain their
+  license texts and applicable notices; simulator licenses must not be assumed
+  to determine every right in their outputs or input datasets.
+
+The source-specific register gives details and links to the original terms.
+Where a proposed use requires additional authorization, obtain it from each
+relevant rights holder. SecJev contributors cannot grant upstream permissions.
+
+Training on data does not, by this agreement alone, automatically assign the
+data's license to every resulting weight or output, or establish that every
+such weight or output is cleared for commercial use. Model releases must identify
+their upstream components and training sources. Users must assess the terms
+applicable to their actual data use, model use and redistribution. This agreement
+does not assert that ordinary model outputs are owned by SecJev or must carry
+this agreement merely because the model produced them.
+
+5. Priority and reserved rights
+
+Upstream terms govern upstream material; this agreement governs only the rights
+granted by SecJev contributors. It must not be read to narrow CC BY, MIT, Apache,
+CC0 or other independently granted upstream permissions. Statutory exceptions
+and uses that require no permission remain unaffected. No trademark rights or
+right to imply endorsement are granted. No additional patent license is granted
+here; independently applicable upstream patent grants remain unaffected.
+
+6. No warranties; responsibility for use
+
+To the extent permitted by applicable law, covered contributions are supplied
+as available without warranties, including as to accuracy, fitness for purpose
+or non-infringement. Contributors are not liable for losses arising from their
+use to the extent such liability may lawfully be excluded. This agreement does
+not exclude rights or liabilities that applicable law makes non-excludable.
+
+7. Noncompliance
+
+Permissions under this agreement terminate for a use that violates its
+conditions. They are reinstated when the violation is remedied within 30 days
+of the user's discovery, or with the relevant contributor's written permission.
+This does not change upstream licenses or remedies available under applicable
+law. A legally ineffective provision does not invalidate the remainder where
+the remainder can operate consistently with this agreement's scope.
+
+8. Versions and inquiries
+
+This version applies to releases that expressly adopt it. Later versions do not
+automatically change the terms of existing copies. The accompanying Chinese
+translation is for convenience; this English text controls in a discrepancy.
+Project inquiries: https://github.com/UESTC1010/SecJev/issues
+
+This is a project-specific agreement, not a claim of OSI approval or a substitute
+for permissions that only upstream rights holders can grant.
