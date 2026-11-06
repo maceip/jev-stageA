@@ -1,0 +1,83 @@
+{
+  "device": "CUDA",
+  "precision": "FP32 unmerged",
+  "compared_with": "original evaluated GPU checkpoint, development split, raw logits",
+  "cases": [
+    {
+      "case": 4222,
+      "qid": "injection",
+      "qtype": "noul",
+      "tokens": 140,
+      "expected_label": 0,
+      "max_probability_difference": 3.9981387089937925e-09,
+      "max_logit_difference": 0.0003533363342285156,
+      "exported_prediction": 0,
+      "reference_prediction": 0
+    },
+    {
+      "case": 4654,
+      "qid": "injection",
+      "qtype": "noul",
+      "tokens": 152,
+      "expected_label": 0,
+      "max_probability_difference": 0.00026088953018188477,
+      "max_logit_difference": 0.0010182857513427734,
+      "exported_prediction": 0,
+      "reference_prediction": 0
+    },
+    {
+      "case": 4222,
+      "qid": "boundary_action",
+      "qtype": "choice",
+      "tokens": 192,
+      "expected_label": 0,
+      "max_probability_difference": 1.1920928955078125e-07,
+      "max_logit_difference": 0.002742290496826172,
+      "exported_prediction": 0,
+      "reference_prediction": 0
+    },
+    {
+      "case": 4654,
+      "qid": "boundary_action",
+      "qtype": "choice",
+      "tokens": 204,
+      "expected_label": 0,
+      "max_probability_difference": 3.2186508178710938e-06,
+      "max_logit_difference": 0.0013228654861450195,
+      "exported_prediction": 0,
+      "reference_prediction": 0
+    },
+    {
+      "case": 2334,
+      "qid": "evidence_level",
+      "qtype": "score",
+      "tokens": 234,
+      "expected_label": 1,
+      "max_probability_difference": 9.085852070711553e-10,
+      "max_logit_difference": 0.0014123916625976562,
+      "exported_prediction": 1,
+      "reference_prediction": 1
+    },
+    {
+      "case": 1790,
+      "qid": "evidence_level",
+      "qtype": "score",
+      "tokens": 250,
+      "expected_label": 1,
+      "max_probability_difference": 1.3608314475277439e-09,
+      "max_logit_difference": 0.0016317367553710938,
+      "exported_prediction": 1,
+      "reference_prediction": 1
+    }
+  ],
+  "all_predictions_match": true,
+  "max_probability_difference": 0.00026088953018188477,
+  "tolerance": 0.001,
+  "sample_selection": "two shortest development rows for each of three types; packaging parity only",
+  "handwritten_example": {
+    "expected_action": "reject",
+    "actual_prediction": "reject",
+    "matches_label": true,
+    "purpose": "Interface smoke example; not a benchmark result"
+  }
+}
