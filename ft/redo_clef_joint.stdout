@@ -1,0 +1,116 @@
+{"event": "start", "device": "mps", "train_raw": 1000, "dev_raw": 300, "test_raw": 400, "lr": 3e-05, "epochs": 3, "batch": 16, "pos_weight": 1.0, "ts": 1793761634.51}
+{"event": "model_loaded", "trainable_params": 121762820, "ts": 1793761635.31}
+INFO: [environment.cc:30] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(/Users/mac/Library/Python/3.14/lib/python/site-packages/ai_edge_litert/libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(/Users/mac/Library/Python/3.14/lib/python/site-packages/ai_edge_litert/libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(/Users/mac/Library/Python/3.14/lib/python/site-packages/ai_edge_litert/libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79c4854f50, name=GPU Metal
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79c4855a40, name=CpuAccelerator
+INFO: [cpu_registry.cc:42] CPU accelerator registered.
+INFO: [environment.cc:30] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79c4854fa0, name=GPU Metal
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79c4855b30, name=CpuAccelerator
+INFO: [cpu_registry.cc:42] CPU accelerator registered.
+INFO: [compiled_model.cc:805] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1793761665.513946 5120592 delegate_metal.mm:88] Created a Metal device.
+INFO: [environment.cc:41] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:41] Adding options to the existing LiteRT environment
+I0000 00:00:1793761669.936295 5120592 delegate_kernel.cc:845] Initializing Metal-based API from graph.
+AGX: exceeded compiled variants footprint limit
+INFO: [environment.cc:30] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79eaea8500, name=GPU Metal
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79eaea8550, name=CpuAccelerator
+INFO: [cpu_registry.cc:42] CPU accelerator registered.
+{"event": "prep_dev", "done": 20, "of": 300, "elapsed_min": 3.51, "ts": 1793761846.08}
+{"event": "prep_dev", "done": 40, "of": 300, "elapsed_min": 5.21, "ts": 1793761947.72}
+{"event": "prep_dev", "done": 60, "of": 300, "elapsed_min": 7.14, "ts": 1793762063.87}
+{"event": "prep_dev", "done": 80, "of": 300, "elapsed_min": 8.67, "ts": 1793762155.61}
+{"event": "prep_dev", "done": 100, "of": 300, "elapsed_min": 10.52, "ts": 1793762266.69}
+{"event": "prep_dev", "done": 120, "of": 300, "elapsed_min": 12.36, "ts": 1793762376.94}
+{"event": "prep_dev", "done": 140, "of": 300, "elapsed_min": 14.0, "ts": 1793762475.13}
+{"event": "prep_dev", "done": 160, "of": 300, "elapsed_min": 15.84, "ts": 1793762585.66}
+{"event": "prep_dev", "done": 180, "of": 300, "elapsed_min": 17.57, "ts": 1793762689.32}
+{"event": "prep_dev", "done": 200, "of": 300, "elapsed_min": 19.28, "ts": 1793762792.09}
+{"event": "prep_dev", "done": 220, "of": 300, "elapsed_min": 21.09, "ts": 1793762900.66}
+{"event": "prep_dev", "done": 240, "of": 300, "elapsed_min": 23.0, "ts": 1793763015.53}
+{"event": "prep_dev", "done": 260, "of": 300, "elapsed_min": 24.8, "ts": 1793763123.59}
+{"event": "prep_dev", "done": 280, "of": 300, "elapsed_min": 26.61, "ts": 1793763231.68}
+{"event": "prep_dev", "done": 300, "of": 300, "elapsed_min": 28.01, "ts": 1793763316.13}
+{"event": "eval", "split": "dev", "epoch": 0, "step": 0, "loss": 0.7185, "tool_output_filter": {"n": 150, "pos": 75, "neg": 75, "auc": 0.8074, "tpr@0.5": 0.4533, "fpr@0.5": 0.0267, "tpr@0.9": 0.1867, "fpr@0.9": 0.0133, "tpr@0.99": 0.0, "fpr@0.99": 0.0}, "action_authorization_guard": {"n": 150, "pos": 75, "neg": 75, "auc": 0.9705, "tpr@0.35": 0.9067, "fpr@0.35": 0.1333, "tpr@0.5": 0.88, "fpr@0.5": 0.0533, "tpr@0.9": 0.0, "fpr@0.9": 0.0}, "elapsed_min": 28.15, "ts": 1793763324.02}
+{"event": "step", "epoch": 1, "step": 1, "of": 189, "encoded_train": 16, "train_total": 1000, "loss": 0.9189, "lr": 4e-06, "elapsed_min": 29.59, "ts": 1793763410.46}
+{"event": "step", "epoch": 1, "step": 2, "of": 189, "encoded_train": 32, "train_total": 1000, "loss": 1.1388, "lr": 6e-06, "elapsed_min": 30.81, "ts": 1793763484.18}
+{"event": "step", "epoch": 1, "step": 3, "of": 189, "encoded_train": 48, "train_total": 1000, "loss": 1.0456, "lr": 8e-06, "elapsed_min": 32.25, "ts": 1793763570.06}
+{"event": "step", "epoch": 1, "step": 4, "of": 189, "encoded_train": 64, "train_total": 1000, "loss": 0.9016, "lr": 1e-05, "elapsed_min": 33.58, "ts": 1793763650.14}
+{"event": "step", "epoch": 1, "step": 5, "of": 189, "encoded_train": 80, "train_total": 1000, "loss": 0.8278, "lr": 1.2e-05, "elapsed_min": 35.02, "ts": 1793763736.46}
+{"event": "step", "epoch": 1, "step": 6, "of": 189, "encoded_train": 96, "train_total": 1000, "loss": 0.6177, "lr": 1.4e-05, "elapsed_min": 36.55, "ts": 1793763828.24}
+{"event": "step", "epoch": 1, "step": 7, "of": 189, "encoded_train": 112, "train_total": 1000, "loss": 0.6886, "lr": 1.6e-05, "elapsed_min": 38.0, "ts": 1793763915.11}
+{"event": "step", "epoch": 1, "step": 8, "of": 189, "encoded_train": 128, "train_total": 1000, "loss": 0.898, "lr": 1.8e-05, "elapsed_min": 39.55, "ts": 1793764008.17}
+{"event": "step", "epoch": 1, "step": 9, "of": 189, "encoded_train": 144, "train_total": 1000, "loss": 0.8421, "lr": 2e-05, "elapsed_min": 41.09, "ts": 1793764100.66}
+{"event": "step", "epoch": 1, "step": 10, "of": 189, "encoded_train": 160, "train_total": 1000, "loss": 0.6561, "lr": 2.2e-05, "elapsed_min": 42.42, "ts": 1793764180.22}
+{"event": "eval", "split": "dev", "epoch": 1, "step": 10, "loss": 0.6542, "tool_output_filter": {"n": 150, "pos": 75, "neg": 75, "auc": 0.842, "tpr@0.5": 0.4667, "fpr@0.5": 0.0267, "tpr@0.9": 0.0933, "fpr@0.9": 0.0133, "tpr@0.99": 0.0, "fpr@0.99": 0.0}, "action_authorization_guard": {"n": 150, "pos": 75, "neg": 75, "auc": 0.9728, "tpr@0.35": 0.9067, "fpr@0.35": 0.1467, "tpr@0.5": 0.88, "fpr@0.5": 0.0533, "tpr@0.9": 0.0, "fpr@0.9": 0.0}, "elapsed_min": 42.55, "ts": 1793764188.08}
+{"event": "step", "epoch": 1, "step": 11, "of": 189, "encoded_train": 176, "train_total": 1000, "loss": 0.6918, "lr": 2.4e-05, "elapsed_min": 43.97, "ts": 1793764273.56}
+{"event": "step", "epoch": 1, "step": 12, "of": 189, "encoded_train": 192, "train_total": 1000, "loss": 0.7566, "lr": 2.6e-05, "elapsed_min": 45.22, "ts": 1793764348.73}
+{"event": "step", "epoch": 1, "step": 13, "of": 189, "encoded_train": 208, "train_total": 1000, "loss": 0.5026, "lr": 2.8e-05, "elapsed_min": 46.56, "ts": 1793764429.04}
+{"event": "step", "epoch": 1, "step": 14, "of": 189, "encoded_train": 224, "train_total": 1000, "loss": 0.2239, "lr": 3e-05, "elapsed_min": 48.01, "ts": 1793764516.08}
+{"event": "step", "epoch": 1, "step": 15, "of": 189, "encoded_train": 240, "train_total": 1000, "loss": 0.8252, "lr": 3e-05, "elapsed_min": 49.34, "ts": 1793764595.89}
+{"event": "step", "epoch": 1, "step": 16, "of": 189, "encoded_train": 256, "train_total": 1000, "loss": 0.824, "lr": 3e-05, "elapsed_min": 50.78, "ts": 1793764682.08}
+{"event": "step", "epoch": 1, "step": 17, "of": 189, "encoded_train": 272, "train_total": 1000, "loss": 0.7264, "lr": 3e-05, "elapsed_min": 52.33, "ts": 1793764775.34}
+{"event": "step", "epoch": 1, "step": 18, "of": 189, "encoded_train": 288, "train_total": 1000, "loss": 0.6595, "lr": 3e-05, "elapsed_min": 53.9, "ts": 1793764869.09}
+{"event": "step", "epoch": 1, "step": 19, "of": 189, "encoded_train": 304, "train_total": 1000, "loss": 0.2721, "lr": 3e-05, "elapsed_min": 55.44, "ts": 1793764961.85}
+{"event": "step", "epoch": 1, "step": 20, "of": 189, "encoded_train": 320, "train_total": 1000, "loss": 0.7402, "lr": 2.99e-05, "elapsed_min": 57.09, "ts": 1793765060.88}
+{"event": "eval", "split": "dev", "epoch": 1, "step": 20, "loss": 0.5861, "tool_output_filter": {"n": 150, "pos": 75, "neg": 75, "auc": 0.7539, "tpr@0.5": 0.4667, "fpr@0.5": 0.0267, "tpr@0.9": 0.2267, "fpr@0.9": 0.0133, "tpr@0.99": 0.0, "fpr@0.99": 0.0}, "action_authorization_guard": {"n": 150, "pos": 75, "neg": 75, "auc": 0.9748, "tpr@0.35": 0.9067, "fpr@0.35": 0.16, "tpr@0.5": 0.88, "fpr@0.5": 0.0667, "tpr@0.9": 0.0, "fpr@0.9": 0.0}, "elapsed_min": 57.23, "ts": 1793765068.85}
+{"event": "step", "epoch": 1, "step": 21, "of": 189, "encoded_train": 336, "train_total": 1000, "loss": 1.0074, "lr": 2.99e-05, "elapsed_min": 58.58, "ts": 1793765150.23}
+{"event": "step", "epoch": 1, "step": 22, "of": 189, "encoded_train": 352, "train_total": 1000, "loss": 0.5983, "lr": 2.99e-05, "elapsed_min": 60.14, "ts": 1793765243.98}
+{"event": "step", "epoch": 1, "step": 23, "of": 189, "encoded_train": 368, "train_total": 1000, "loss": 0.4322, "lr": 2.99e-05, "elapsed_min": 61.6, "ts": 1793765331.34}
+{"event": "step", "epoch": 1, "step": 24, "of": 189, "encoded_train": 384, "train_total": 1000, "loss": 0.4706, "lr": 2.98e-05, "elapsed_min": 62.94, "ts": 1793765411.98}
+{"event": "step", "epoch": 1, "step": 25, "of": 189, "encoded_train": 400, "train_total": 1000, "loss": 0.6244, "lr": 2.98e-05, "elapsed_min": 64.19, "ts": 1793765486.86}
+{"event": "step", "epoch": 1, "step": 26, "of": 189, "encoded_train": 416, "train_total": 1000, "loss": 0.6759, "lr": 2.97e-05, "elapsed_min": 65.64, "ts": 1793765573.63}
+{"event": "step", "epoch": 1, "step": 27, "of": 189, "encoded_train": 432, "train_total": 1000, "loss": 0.733, "lr": 2.97e-05, "elapsed_min": 67.18, "ts": 1793765665.87}
+{"event": "step", "epoch": 1, "step": 28, "of": 189, "encoded_train": 448, "train_total": 1000, "loss": 0.5668, "lr": 2.96e-05, "elapsed_min": 68.22, "ts": 1793765728.54}
+{"event": "step", "epoch": 1, "step": 29, "of": 189, "encoded_train": 464, "train_total": 1000, "loss": 0.4645, "lr": 2.96e-05, "elapsed_min": 69.78, "ts": 1793765822.08}
+{"event": "step", "epoch": 1, "step": 30, "of": 189, "encoded_train": 480, "train_total": 1000, "loss": 0.9772, "lr": 2.95e-05, "elapsed_min": 71.02, "ts": 1793765896.57}
+{"event": "eval", "split": "dev", "epoch": 1, "step": 30, "loss": 0.5614, "tool_output_filter": {"n": 150, "pos": 75, "neg": 75, "auc": 0.7421, "tpr@0.5": 0.44, "fpr@0.5": 0.0267, "tpr@0.9": 0.2533, "fpr@0.9": 0.0267, "tpr@0.99": 0.0, "fpr@0.99": 0.0}, "action_authorization_guard": {"n": 150, "pos": 75, "neg": 75, "auc": 0.9632, "tpr@0.35": 0.9333, "fpr@0.35": 0.1867, "tpr@0.5": 0.88, "fpr@0.5": 0.0667, "tpr@0.9": 0.0, "fpr@0.9": 0.0}, "elapsed_min": 71.15, "ts": 1793765904.57}
+{"event": "step", "epoch": 1, "step": 31, "of": 189, "encoded_train": 496, "train_total": 1000, "loss": 0.4867, "lr": 2.94e-05, "elapsed_min": 72.5, "ts": 1793765985.23}
+{"event": "step", "epoch": 1, "step": 32, "of": 189, "encoded_train": 512, "train_total": 1000, "loss": 0.636, "lr": 2.94e-05, "elapsed_min": 73.84, "ts": 1793766065.88}
+{"event": "step", "epoch": 1, "step": 33, "of": 189, "encoded_train": 528, "train_total": 1000, "loss": 0.7946, "lr": 2.93e-05, "elapsed_min": 75.18, "ts": 1793766146.24}
+{"event": "step", "epoch": 1, "step": 34, "of": 189, "encoded_train": 544, "train_total": 1000, "loss": 0.4457, "lr": 2.92e-05, "elapsed_min": 76.55, "ts": 1793766228.06}
+{"event": "step", "epoch": 1, "step": 35, "of": 189, "encoded_train": 560, "train_total": 1000, "loss": 0.3788, "lr": 2.91e-05, "elapsed_min": 78.23, "ts": 1793766328.95}
+{"event": "step", "epoch": 1, "step": 36, "of": 189, "encoded_train": 576, "train_total": 1000, "loss": 0.6266, "lr": 2.9e-05, "elapsed_min": 79.83, "ts": 1793766425.2}
+{"event": "step", "epoch": 1, "step": 37, "of": 189, "encoded_train": 592, "train_total": 1000, "loss": 0.6351, "lr": 2.89e-05, "elapsed_min": 81.33, "ts": 1793766515.12}
+{"event": "step", "epoch": 1, "step": 38, "of": 189, "encoded_train": 608, "train_total": 1000, "loss": 0.6223, "lr": 2.89e-05, "elapsed_min": 82.93, "ts": 1793766611.33}
+{"event": "step", "epoch": 1, "step": 39, "of": 189, "encoded_train": 624, "train_total": 1000, "loss": 0.7125, "lr": 2.88e-05, "elapsed_min": 84.41, "ts": 1793766699.85}
+{"event": "step", "epoch": 1, "step": 40, "of": 189, "encoded_train": 640, "train_total": 1000, "loss": 0.6384, "lr": 2.86e-05, "elapsed_min": 86.05, "ts": 1793766798.15}
+{"event": "eval", "split": "dev", "epoch": 1, "step": 40, "loss": 0.5242, "tool_output_filter": {"n": 150, "pos": 75, "neg": 75, "auc": 0.7233, "tpr@0.5": 0.44, "fpr@0.5": 0.0267, "tpr@0.9": 0.2933, "fpr@0.9": 0.0267, "tpr@0.99": 0.08, "fpr@0.99": 0.0133}, "action_authorization_guard": {"n": 150, "pos": 75, "neg": 75, "auc": 0.973, "tpr@0.35": 0.92, "fpr@0.35": 0.16, "tpr@0.5": 0.9067, "fpr@0.5": 0.0667, "tpr@0.9": 0.04, "fpr@0.9": 0.0}, "elapsed_min": 86.18, "ts": 1793766805.88}
+{"event": "step", "epoch": 1, "step": 41, "of": 189, "encoded_train": 656, "train_total": 1000, "loss": 0.7946, "lr": 2.85e-05, "elapsed_min": 87.75, "ts": 1793766900.2}
+{"event": "step", "epoch": 1, "step": 42, "of": 189, "encoded_train": 672, "train_total": 1000, "loss": 1.0604, "lr": 2.84e-05, "elapsed_min": 89.21, "ts": 1793766988.13}
+{"event": "step", "epoch": 1, "step": 43, "of": 189, "encoded_train": 688, "train_total": 1000, "loss": 0.5132, "lr": 2.83e-05, "elapsed_min": 90.74, "ts": 1793767079.83}
+{"event": "step", "epoch": 1, "step": 44, "of": 189, "encoded_train": 704, "train_total": 1000, "loss": 0.8418, "lr": 2.82e-05, "elapsed_min": 92.17, "ts": 1793767165.24}
+{"event": "step", "epoch": 1, "step": 45, "of": 189, "encoded_train": 720, "train_total": 1000, "loss": 0.3474, "lr": 2.81e-05, "elapsed_min": 93.78, "ts": 1793767262.33}
+{"event": "step", "epoch": 1, "step": 46, "of": 189, "encoded_train": 736, "train_total": 1000, "loss": 0.2255, "lr": 2.79e-05, "elapsed_min": 94.91, "ts": 1793767330.11}
+{"event": "step", "epoch": 1, "step": 47, "of": 189, "encoded_train": 752, "train_total": 1000, "loss": 0.4489, "lr": 2.78e-05, "elapsed_min": 96.37, "ts": 1793767417.79}
+{"event": "step", "epoch": 1, "step": 48, "of": 189, "encoded_train": 768, "train_total": 1000, "loss": 0.5927, "lr": 2.77e-05, "elapsed_min": 97.73, "ts": 1793767499.06}
+{"event": "step", "epoch": 1, "step": 49, "of": 189, "encoded_train": 784, "train_total": 1000, "loss": 0.6105, "lr": 2.75e-05, "elapsed_min": 99.19, "ts": 1793767586.58}
+{"event": "step", "epoch": 1, "step": 50, "of": 189, "encoded_train": 800, "train_total": 1000, "loss": 0.9614, "lr": 2.74e-05, "elapsed_min": 100.85, "ts": 1793767686.05}
+{"event": "eval", "split": "dev", "epoch": 1, "step": 50, "loss": 0.4912, "tool_output_filter": {"n": 150, "pos": 75, "neg": 75, "auc": 0.7174, "tpr@0.5": 0.44, "fpr@0.5": 0.0267, "tpr@0.9": 0.28, "fpr@0.9": 0.0267, "tpr@0.99": 0.0133, "fpr@0.99": 0.0}, "action_authorization_guard": {"n": 150, "pos": 75, "neg": 75, "auc": 0.9764, "tpr@0.35": 0.9333, "fpr@0.35": 0.16, "tpr@0.5": 0.9067, "fpr@0.5": 0.08, "tpr@0.9": 0.0933, "fpr@0.9": 0.0}, "elapsed_min": 100.99, "ts": 1793767694.62}
+{"event": "step", "epoch": 1, "step": 51, "of": 189, "encoded_train": 816, "train_total": 1000, "loss": 0.5737, "lr": 2.72e-05, "elapsed_min": 102.68, "ts": 1793767796.11}
+{"event": "step", "epoch": 1, "step": 52, "of": 189, "encoded_train": 832, "train_total": 1000, "loss": 0.4789, "lr": 2.71e-05, "elapsed_min": 104.38, "ts": 1793767898.05}
+{"event": "step", "epoch": 1, "step": 53, "of": 189, "encoded_train": 848, "train_total": 1000, "loss": 0.7273, "lr": 2.69e-05, "elapsed_min": 105.89, "ts": 1793767988.97}
+{"event": "step", "epoch": 1, "step": 54, "of": 189, "encoded_train": 864, "train_total": 1000, "loss": 0.5648, "lr": 2.68e-05, "elapsed_min": 107.52, "ts": 1793768086.78}
+{"event": "step", "epoch": 1, "step": 55, "of": 189, "encoded_train": 880, "train_total": 1000, "loss": 0.5106, "lr": 2.66e-05, "elapsed_min": 108.93, "ts": 1793768170.93}
+{"event": "step", "epoch": 1, "step": 56, "of": 189, "encoded_train": 896, "train_total": 1000, "loss": 0.3916, "lr": 2.65e-05, "elapsed_min": 110.55, "ts": 1793768268.16}
+{"event": "step", "epoch": 1, "step": 57, "of": 189, "encoded_train": 912, "train_total": 1000, "loss": 0.5799, "lr": 2.63e-05, "elapsed_min": 111.95, "ts": 1793768352.3}
