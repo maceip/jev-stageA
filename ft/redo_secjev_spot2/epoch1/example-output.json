@@ -1,0 +1,24 @@
+{
+  "model": "SecJev-4B",
+  "answers": {
+    "certificate_action": {
+      "type": "choice",
+      "choice": "reject",
+      "confidence": 0.99,
+      "probabilities": {
+        "accept": 0.0,
+        "reject": 0.99,
+        "wait": 0.01
+      }
+    }
+  },
+  "probabilities": {
+    "certificate_action": {
+      "accept": 2.5144670871668495e-05,
+      "reject": 0.9922695159912109,
+      "wait": 0.0077053275890648365
+    }
+  },
+  "temperature": 1.334968103387446,
+  "forward_ms": 10437.744742259383
+}
