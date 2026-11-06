@@ -1,0 +1,104 @@
+{
+  "dev_baseline": {
+    "event": "eval",
+    "split": "dev",
+    "epoch": 0,
+    "step": 0,
+    "loss": 0.6206,
+    "tool_output_filter": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0,
+      "tpr@0.99": 0.0,
+      "fpr@0.99": 0.0
+    },
+    "action_authorization_guard": {
+      "n": 150,
+      "pos": 75,
+      "neg": 75,
+      "auc": 0.9454,
+      "tpr@0.35": 0.8933,
+      "fpr@0.35": 0.1733,
+      "tpr@0.5": 0.88,
+      "fpr@0.5": 0.1067,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0
+    },
+    "elapsed_min": 16.73,
+    "ts": 1793757159.27
+  },
+  "dev_best": {
+    "event": "eval",
+    "split": "dev_best",
+    "epoch": 3,
+    "step": 96,
+    "loss": 0.3236,
+    "tool_output_filter": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0,
+      "tpr@0.99": 0.0,
+      "fpr@0.99": 0.0
+    },
+    "action_authorization_guard": {
+      "n": 150,
+      "pos": 75,
+      "neg": 75,
+      "auc": 0.9657,
+      "tpr@0.35": 0.9467,
+      "fpr@0.35": 0.28,
+      "tpr@0.5": 0.9067,
+      "fpr@0.5": 0.2,
+      "tpr@0.9": 0.8267,
+      "fpr@0.9": 0.0133
+    }
+  },
+  "test_banking_slack": {
+    "event": "eval",
+    "split": "test_banking_slack",
+    "epoch": 3,
+    "step": 96,
+    "loss": 0.7881,
+    "tool_output_filter": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0,
+      "tpr@0.99": 0.0,
+      "fpr@0.99": 0.0
+    },
+    "action_authorization_guard": {
+      "n": 200,
+      "pos": 100,
+      "neg": 100,
+      "auc": 0.8337,
+      "tpr@0.35": 0.9,
+      "fpr@0.35": 0.4,
+      "tpr@0.5": 0.82,
+      "fpr@0.5": 0.32,
+      "tpr@0.9": 0.62,
+      "fpr@0.9": 0.14
+    },
+    "elapsed_min": 91.04,
+    "checkpoint": {
+      "path": "checkpoints/redo-clef-spot2",
+      "epoch": 3,
+      "step": 96
+    },
+    "ts": 1793761617.79
+  }
+}

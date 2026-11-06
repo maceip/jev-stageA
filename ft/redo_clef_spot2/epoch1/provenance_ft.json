@@ -1,0 +1,40 @@
+{
+  "epoch": 1,
+  "step": 32,
+  "dev_eval": {
+    "event": "eval",
+    "split": "dev",
+    "epoch": 1,
+    "step": 32,
+    "loss": 0.4401,
+    "tool_output_filter": {
+      "n": 0,
+      "pos": 0,
+      "neg": 0,
+      "auc": 0.0,
+      "tpr@0.5": 0.0,
+      "fpr@0.5": 0.0,
+      "tpr@0.9": 0.0,
+      "fpr@0.9": 0.0,
+      "tpr@0.99": 0.0,
+      "fpr@0.99": 0.0
+    },
+    "action_authorization_guard": {
+      "n": 150,
+      "pos": 75,
+      "neg": 75,
+      "auc": 0.9508,
+      "tpr@0.35": 0.9467,
+      "fpr@0.35": 0.2667,
+      "tpr@0.5": 0.8933,
+      "fpr@0.5": 0.16,
+      "tpr@0.9": 0.1467,
+      "fpr@0.9": 0.0
+    },
+    "elapsed_min": 68.6,
+    "ts": 1793760271.42
+  },
+  "lr": 3e-05,
+  "pos_weight": 1.0,
+  "seed": 20261101
+}
