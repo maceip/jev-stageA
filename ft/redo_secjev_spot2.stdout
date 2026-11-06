@@ -1,0 +1,20 @@
+W1103 13:10:05.234000 46966 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+W1103 13:10:05.266000 46966 torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 13:10:05.284000 46966 torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/426 [00:00<?, ?it/s]Loading weights:   0%|          | 1/426 [00:00<06:35,  1.07it/s]Loading weights:  53%|█████▎    | 226/426 [00:01<00:00, 299.84it/s]Loading weights:  84%|████████▍ | 358/426 [00:01<00:00, 299.06it/s]Loading weights: 100%|██████████| 426/426 [00:01<00:00, 251.77it/s]
+trainable 33776128
+train encoded 3000 skipped_over_window 0
+dev encoded 500 skipped_over_window 0
+EVAL {"epoch": 0, "dev_n": 500, "dev_pos": 85, "auc": 0.8983416017009214, "tpr@0.5": 0.788235294117647, "fpr@0.5": 0.10361445783132531, "tpr@0.9": 0.27058823529411763, "fpr@0.9": 0.016867469879518072}
+/Users/mac/jev-stageA/ft_action_redo.py:154: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /Users/runner/work/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:839.)
+  (loss / nq).backward(); tot += float(loss)
+STEP {"step": 10, "of": 94, "loss": 0.36888544997782446, "lr": 2.9790281926131377e-05, "min": 10.883505233128865}
+SAVED ft/redo_secjev_spot2/epoch1
+STEP {"step": 20, "of": 94, "loss": 0.0055018716884660535, "lr": 2.815142971168314e-05, "min": 23.355459598700204}
+STEP {"step": 30, "of": 94, "loss": 0.013561280894009542, "lr": 2.507581554661477e-05, "min": 38.948484698931374}
+SAVED ft/redo_secjev_spot2/epoch1
+STEP {"step": 40, "of": 94, "loss": 0.15193656575866044, "lr": 2.0942699789226136e-05, "min": 56.21927676598231}
+/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/multiprocessing/resource_tracker.py:475: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/loky-46966-ka9adtvj'}
+  warnings.warn(
